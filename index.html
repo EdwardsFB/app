@@ -30,7 +30,7 @@
         <div class="card-body">
           <h2 class="h6">Ordered With Us Before?</h2>
           <div class="input-group">
-            <input id="lookupPhone" type="tel" class="form-control" placeholder="Enter your phone number"/>
+            <input id="lookupPhone" type="tel" class="form-control" placeholder="Enter your phone number" oninput="formatPhoneInput(this)"/>
             <button class="btn btn-outline-secondary" onclick="lookupReturningCustomer()">Find My Info</button>
           </div>
           <div id="lookupMsg" class="small mt-2"></div>
@@ -48,7 +48,7 @@
             <div class="col"><label class="form-label small">Last Name</label><input id="cf-last" class="form-control" type="text"/></div>
           </div>
           <div class="row g-2 mb-2">
-            <div class="col"><label class="form-label small">Phone</label><input id="cf-phone" class="form-control" type="tel"/></div>
+            <div class="col"><label class="form-label small">Phone</label><input id="cf-phone" class="form-control" type="tel" oninput="formatPhoneInput(this)"/></div>
             <div class="col"><label class="form-label small">Preferred Day</label><input id="cf-date" class="form-control" type="date"/></div>
           </div>
           <div class="mb-2">

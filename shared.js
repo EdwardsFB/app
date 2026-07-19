@@ -31,6 +31,15 @@ function esc(s) {
 
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
+// ── Force phone inputs into ###.###.#### as the user types ──
+function formatPhoneInput(el) {
+  const digits = el.value.replace(/\D/g, '').slice(0, 10);
+  let formatted = digits;
+  if (digits.length > 6) formatted = digits.slice(0,3) + '.' + digits.slice(3,6) + '.' + digits.slice(6);
+  else if (digits.length > 3) formatted = digits.slice(0,3) + '.' + digits.slice(3);
+  el.value = formatted;
+}
+
 // ── Phone/customer matching ──
 function normPhone(p) { return String(p == null ? '' : p).replace(/\D/g, ''); }
 function custKey(c) { const np = normPhone(c.phone); return np ? 'p:' + np : 'n:' + ((c.firstName||'')+' '+(c.lastName||'')).trim().toLowerCase(); }
