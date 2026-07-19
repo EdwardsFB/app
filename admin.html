@@ -12,6 +12,7 @@
   .sidebar { width: 230px; min-width: 230px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
   @media (max-width: 900px) { .sidebar { position: relative; height: auto; width: 100%; min-width: 0; } }
   .main-content { min-width: 0; }
+  .page-header { min-height: 40px; }
   .drag-handle { cursor: grab; }
 </style>
 </head>
@@ -59,7 +60,7 @@
   </div>
 
   <div class="flex-grow-1 p-4 main-content">
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 page-header">
       <h1 class="h4 mb-0" id="pageTitle">Home</h1>
       <div>
         <button class="btn btn-dark d-none" id="newOrderBtn" onclick="openOrderModal()">New Order</button>
