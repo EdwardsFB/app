@@ -32,7 +32,7 @@ function esc(s) {
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
 // ── Phone/customer matching ──
-function normPhone(p) { return (p || '').replace(/\D/g, ''); }
+function normPhone(p) { return String(p == null ? '' : p).replace(/\D/g, ''); }
 function custKey(c) { const np = normPhone(c.phone); return np ? 'p:' + np : 'n:' + ((c.firstName||'')+' '+(c.lastName||'')).trim().toLowerCase(); }
 
 function formatAddress(street, city, state, zip) {
