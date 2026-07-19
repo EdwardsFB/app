@@ -64,7 +64,10 @@ async function loadAndShowApp() {
   applyLogo();
   document.getElementById('loading').classList.add('d-none');
   document.getElementById('app').classList.remove('d-none');
-  switchTab('home');
+
+  const validTabs = ['home','orders','customers','bake','route','products'];
+  const hashTab = location.hash.replace('#','');
+  switchTab(validTabs.includes(hashTab) ? hashTab : 'home');
 }
 
 async function refreshData() {
@@ -86,6 +89,7 @@ function applyLogo() {
 // ══════════════════════════════════════════
 function switchTab(tab) {
   currentAdminTab = tab;
+  location.hash = tab;
   document.querySelectorAll('#sidebarNav .nav-link').forEach(el => {
     el.classList.toggle('active', el.dataset.tab === tab);
     el.classList.toggle('text-white', el.dataset.tab === tab);
