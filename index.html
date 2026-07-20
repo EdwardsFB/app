@@ -45,12 +45,12 @@
         <div class="card-body">
           <h2 class="h6 mb-3">Your Info</h2>
           <div class="row g-2 mb-2">
-            <div class="col"><label class="form-label small">First Name</label><input id="cf-first" class="form-control" type="text"/></div>
-            <div class="col"><label class="form-label small">Last Name</label><input id="cf-last" class="form-control" type="text"/></div>
+            <div class="col"><label class="form-label small">First Name <span class="text-danger">*</span></label><input id="cf-first" class="form-control" type="text"/></div>
+            <div class="col"><label class="form-label small">Last Name <span class="text-danger">*</span></label><input id="cf-last" class="form-control" type="text"/></div>
           </div>
           <div class="row g-2 mb-2">
-            <div class="col"><label class="form-label small">Phone</label><input id="cf-phone" class="form-control" type="tel" oninput="formatPhoneInput(this)"/></div>
-            <div class="col"><label class="form-label small">Email (optional)</label><input id="cf-email" class="form-control" type="email"/></div>
+            <div class="col"><label class="form-label small">Phone <span class="text-danger">*</span></label><input id="cf-phone" class="form-control" type="tel" oninput="formatPhoneInput(this)"/></div>
+            <div class="col"><label class="form-label small">Email</label><input id="cf-email" class="form-control" type="email"/></div>
           </div>
           <div class="row g-2 mb-2">
             <div class="col"><label class="form-label small">Preferred Day</label><input id="cf-date" class="form-control" type="date"/></div>
@@ -66,11 +66,11 @@
             </div>
           </div>
           <div class="mb-2 d-none" id="addressField">
-            <label class="form-label small">Delivery Address</label>
+            <label class="form-label small">Delivery Address <span class="text-danger">*</span></label>
             <input id="cf-address" class="form-control" type="text" placeholder="123 Main St, Nolensville, TN"/>
           </div>
           <div class="mb-0">
-            <label class="form-label small">Notes (optional)</label>
+            <label class="form-label small">Notes</label>
             <textarea id="cf-notes" class="form-control" rows="2" placeholder="Sliced, gate code, allergies, etc."></textarea>
           </div>
         </div>

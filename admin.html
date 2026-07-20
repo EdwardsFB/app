@@ -18,6 +18,7 @@
   .merge-bar { position: fixed; bottom: 0; left: 230px; right: 0; padding: 14px 24px; box-shadow: 0 -2px 12px rgba(0,0,0,0.2); z-index: 40; display: flex; justify-content: center; align-items: center; gap: 0.5rem; }
   @media (max-width: 900px) { .merge-bar { left: 0; } }
   .drag-handle { cursor: grab; }
+  table td, table th { vertical-align: middle !important; }
   .badge { vertical-align: middle; }
 </style>
 </head>
@@ -108,11 +109,11 @@
           <select id="om-existing-select" class="form-select" onchange="onOmExistingSelect()"></select>
         </div>
         <div class="row g-2 mb-2">
-          <div class="col"><label class="form-label small">First Name</label><input id="om-first" class="form-control" type="text" autocomplete="off"/></div>
-          <div class="col"><label class="form-label small">Last Name</label><input id="om-last" class="form-control" type="text" autocomplete="off"/></div>
+          <div class="col"><label class="form-label small">First Name <span class="text-danger">*</span></label><input id="om-first" class="form-control" type="text" autocomplete="off"/></div>
+          <div class="col"><label class="form-label small">Last Name <span class="text-danger">*</span></label><input id="om-last" class="form-control" type="text" autocomplete="off"/></div>
         </div>
         <div class="row g-2 mb-3">
-          <div class="col"><label class="form-label small">Phone</label><input id="om-phone" class="form-control" type="tel" autocomplete="off" oninput="formatPhoneInput(this)"/></div>
+          <div class="col"><label class="form-label small">Phone <span class="text-danger">*</span></label><input id="om-phone" class="form-control" type="tel" autocomplete="off" oninput="formatPhoneInput(this)"/></div>
           <div class="col"><label class="form-label small">Date</label><input id="om-date" class="form-control" type="date"/></div>
         </div>
 
@@ -139,7 +140,7 @@
             <select id="om-payment" class="form-select"><option value="venmo">Venmo</option><option value="cash">Cash</option></select>
           </div>
         </div>
-        <div class="mb-2 d-none" id="om-addressField"><label class="form-label small">Delivery Address</label><input id="om-address" class="form-control" type="text"/></div>
+        <div class="mb-2 d-none" id="om-addressField"><label class="form-label small">Delivery Address <span class="text-danger">*</span></label><input id="om-address" class="form-control" type="text"/></div>
         <div class="row g-2 mb-2">
           <div class="col">
             <label class="form-label small">Payment Status</label>
@@ -213,11 +214,11 @@
       </div>
       <div class="modal-body">
         <div class="row g-2 mb-2">
-          <div class="col"><label class="form-label small">First Name</label><input id="cm-first" class="form-control" type="text"/></div>
+          <div class="col"><label class="form-label small">First Name <span class="text-danger">*</span></label><input id="cm-first" class="form-control" type="text"/></div>
           <div class="col"><label class="form-label small">Last Name</label><input id="cm-last" class="form-control" type="text"/></div>
         </div>
         <div class="mb-2"><label class="form-label small">Phone</label><input id="cm-phone" class="form-control" type="tel" oninput="formatPhoneInput(this)"/></div>
-        <div class="mb-2"><label class="form-label small">Email (optional)</label><input id="cm-email" class="form-control" type="email"/></div>
+        <div class="mb-2"><label class="form-label small">Email</label><input id="cm-email" class="form-control" type="email"/></div>
         <div class="mb-2"><label class="form-label small">Street Address</label><input id="cm-street" class="form-control" type="text"/></div>
         <div class="row g-2 mb-2">
           <div class="col"><label class="form-label small">City</label><input id="cm-city" class="form-control" type="text"/></div>

@@ -434,6 +434,9 @@ async function saveOrderFromModal() {
   if (!phone) { alert('Please enter a phone number — this keeps orders correctly matched to the right customer.'); return; }
   const items = products.filter(p => (omQty[p.id]||0) > 0).map(p => ({ productId:p.id, qty:omQty[p.id] }));
   if (!items.length) { alert('Please add at least one item.'); return; }
+  if (document.getElementById('om-fulfillment').value === 'delivery' && !document.getElementById('om-address').value.trim()) {
+    alert('Please enter a delivery address.'); return;
+  }
 
   const discountPct = omDiscountPct();
   const totals = computeOrderTotals(products, items, discountPct);
@@ -720,19 +723,19 @@ function renderProductionTab() {
       const doneArr = (o.madeItems && o.madeItems[i.productId]) || [];
       return Array.from({length: i.qty}).map((_, idx) => {
         const done = !!doneArr[idx];
-        return `<button class="btn ${done ? 'btn-success' : 'btn-outline-secondary'} mb-2 me-2 d-flex justify-content-between align-items-center" style="min-width:160px;" onclick="toggleUnit('${o.id}','${i.productId}',${idx})"><span>${esc(p.name)}</span><span class="ms-2" style="visibility:${done?'visible':'hidden'};">✓</span></button>`;
+        return `<button class="btn ${done ? 'btn-success' : 'btn-outline-secondary'} d-flex justify-content-between align-items-center" style="min-width:160px;" onclick="toggleUnit('${o.id}','${i.productId}',${idx})"><span>${esc(p.name)}</span><span class="ms-2" style="visibility:${done?'visible':'hidden'};">✓</span></button>`;
       }).join('');
     }).filter(Boolean).join('');
     const ready = allItemsMade(o);
     return `<div class="card mb-2"><div class="card-body py-2">
-      <div class="d-grid align-items-center gap-2" style="grid-template-columns: 22% 1fr 140px;">
-        <div>
+      <div style="display:grid; grid-template-columns: 22% 1fr 140px; align-items:center; gap:0.5rem;">
+        <div style="align-self:center;">
           <div>${esc(o.firstName)} ${esc(o.lastName)}</div>
           <div class="small text-muted">${esc(o.phone||'')}</div>
           ${o.notes ? `<div class="small text-muted fst-italic">${esc(o.notes)}</div>` : ''}
         </div>
-        <div class="d-flex flex-wrap align-items-center align-content-center">${itemButtons}</div>
-        <div class="d-flex align-items-center justify-content-end">
+        <div style="align-self:center; display:flex; flex-wrap:wrap; gap:0.5rem;">${itemButtons}</div>
+        <div style="align-self:center; display:flex; justify-content:flex-end;">
           <button class="btn ${ready ? 'btn-primary' : 'btn-outline-secondary'}" ${ready ? '' : 'disabled'} onclick="markOrderReady('${o.id}')">Mark Ready</button>
         </div>
       </div>
