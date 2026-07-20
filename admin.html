@@ -46,7 +46,6 @@
       <a href="#" onclick="switchTab('home'); return false;" class="text-decoration-none text-white">
         <img id="logoImg" class="d-none mt-1 mb-2" style="max-height:60px;" alt="Edwards Family Bakery"/>
         <div id="brandText" class="fw-bold">Edwards Family Bakery</div>
-        <div class="small text-white-50">Bakery Admin</div>
       </a>
     </div>
     <div class="nav flex-column flex-grow-1 py-2" id="sidebarNav">
@@ -188,9 +187,15 @@
           <div class="col"><label class="form-label small">Cost ($)</label><input id="pm-cost" class="form-control" type="number" step="0.01"/></div>
         </div>
         <div class="mb-3"><label class="form-label small">Unit (e.g. "per loaf")</label><input id="pm-unit" class="form-control" type="text"/></div>
-        <div class="form-check form-switch">
-          <input class="form-check-input" type="checkbox" id="pm-active" checked>
-          <label class="form-check-label small" for="pm-active">Active (shows on customer menu)</label>
+        <div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="pm-active-radio" id="pm-active-yes" value="yes">
+            <label class="form-check-label" for="pm-active-yes">Active</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="pm-active-radio" id="pm-active-no" value="no">
+            <label class="form-check-label" for="pm-active-no">Inactive</label>
+          </div>
         </div>
       </div>
       <div class="modal-footer">

@@ -267,7 +267,7 @@ function renderOrdersList() {
         const itemStr = (o.items||[]).map(i => { const p = products.find(p=>p.id===i.productId); return p ? `${i.qty}× ${p.name}` : ''; }).filter(Boolean).join(', ');
         return `<tr title="${esc(itemStr)}">
           <td class="text-muted small">#${String(numberMap.get(o.id)).padStart(3,'0')}</td>
-          <td><div class="fw-bold">${esc(o.firstName)} ${esc(o.lastName)}</div><div class="small text-muted">${esc(o.phone||'')}</div></td>
+          <td><div>${esc(o.firstName)} ${esc(o.lastName)}</div><div class="small text-muted">${esc(o.phone||'')}</div></td>
           <td><span class="badge text-bg-secondary">${cap(o.fulfillment)}</span></td>
           <td>${cap(o.payment)}</td>
           <td class="small text-muted">${o.date||'—'}</td>
@@ -280,7 +280,7 @@ function renderOrdersList() {
                 <option value="delivered" ${o.fulfillmentStatus==='delivered'?'selected':''}>Delivered</option>
                 <option value="pickedup" ${o.fulfillmentStatus==='pickedup'?'selected':''}>Picked Up</option>
               </select></td>
-          <td class="text-end fw-bold">$${Number(o.total).toFixed(2)}</td>
+          <td class="text-end">$${Number(o.total).toFixed(2)}</td>
           <td class="text-end">
             <button class="btn btn-outline-secondary btn-sm" onclick="openOrderModal('${o.id}')">Edit</button>
             <button class="btn btn-outline-danger btn-sm" onclick="deleteOrder('${o.id}')">Delete</button>
@@ -728,7 +728,9 @@ function openProductModal(id) {
   document.getElementById('pm-price').value = p ? p.price : '';
   document.getElementById('pm-cost').value = p ? p.cost : '';
   document.getElementById('pm-unit').value = p ? (p.unit||'') : '';
-  document.getElementById('pm-active').checked = p ? (p.active !== false) : true;
+  const isActive = p ? (p.active !== false) : true;
+  document.getElementById('pm-active-yes').checked = isActive;
+  document.getElementById('pm-active-no').checked = !isActive;
   productModal.show();
 }
 function deleteProductRow(id) {
@@ -747,7 +749,7 @@ async function saveProductFromModal() {
     price: parseFloat(document.getElementById('pm-price').value)||0,
     cost: parseFloat(document.getElementById('pm-cost').value)||0,
     unit: document.getElementById('pm-unit').value.trim(),
-    active: document.getElementById('pm-active').checked
+    active: document.getElementById('pm-active-yes').checked
   };
   if (editingProductId) {
     const p = products.find(p=>p.id===editingProductId);
