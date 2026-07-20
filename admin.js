@@ -74,7 +74,7 @@ async function loadAndShowApp() {
   document.getElementById('loading').classList.add('d-none');
   document.getElementById('app').classList.remove('d-none');
 
-  const validTabs = ['home','orders','production','customers','products'];
+  const validTabs = ['home','orders','production','fulfillment','customers','products'];
   const hashTab = location.hash.replace('#','');
   switchTab(validTabs.includes(hashTab) ? hashTab : 'home');
   setTimeout(() => window.scrollTo(0, 1), 50);
@@ -106,10 +106,10 @@ function switchTab(tab) {
     el.classList.toggle('text-white', el.dataset.tab === tab);
     el.classList.toggle('text-white-50', el.dataset.tab !== tab);
   });
-  ['home','orders','production','customers','products'].forEach(t => {
+  ['home','orders','production','fulfillment','customers','products'].forEach(t => {
     document.getElementById('tab-'+t).classList.toggle('d-none', t !== tab);
   });
-  const titles = { home:'Home', orders:'Orders', production:'Production', customers:'Customers', products:'Products' };
+  const titles = { home:'Home', orders:'Orders', production:'Production', fulfillment:'Fulfillment', customers:'Customers', products:'Products' };
   document.getElementById('pageTitle').textContent = titles[tab];
   document.getElementById('newOrderBtn').classList.toggle('d-none', tab !== 'orders');
   document.getElementById('addCustomerBtn').classList.toggle('d-none', tab !== 'customers');
@@ -120,6 +120,7 @@ function switchTab(tab) {
   if (tab === 'orders') refreshAndRenderTab('orders', renderOrdersTab);
   if (tab === 'customers') refreshAndRenderTab('customers', renderCustomersTab);
   if (tab === 'production') refreshAndRenderTab('production', renderProductionTab);
+  if (tab === 'fulfillment') refreshAndRenderTab('fulfillment', renderFulfillmentTab);
   if (tab === 'products') refreshAndRenderTab('products', renderProductsTab);
 }
 
@@ -652,54 +653,118 @@ async function saveCustomerFromModal() {
 }
 
 // ══════════════════════════════════════════
-// PRODUCTION DAY — combined Bake List + Fulfillment + Delivery Route
+// PRODUCTION — mark individual items made, per order, live-decrementing totals
 // ══════════════════════════════════════════
-let bakedProductIds = new Set(); // session-only "done baking" checkmarks, resets on reload
-
-function toggleBaked(productId) {
-  if (bakedProductIds.has(productId)) bakedProductIds.delete(productId);
-  else bakedProductIds.add(productId);
+async function toggleItemMade(orderId, productId) {
+  const o = orders.find(o=>o.id===orderId); if (!o) return;
+  o.madeItems = o.madeItems || [];
+  const idx = o.madeItems.indexOf(productId);
+  if (idx === -1) o.madeItems.push(productId);
+  else o.madeItems.splice(idx, 1);
   renderProductionTab();
+  await apiWrite('orders','update',orderId,{madeItems: o.madeItems});
 }
 
-function setFulfillmentStatus(id, status) {
+function allItemsMade(o) {
+  const madeItems = o.madeItems || [];
+  return (o.items||[]).every(i => madeItems.includes(i.productId));
+}
+
+async function markOrderReady(id) {
   const o = orders.find(o=>o.id===id); if (!o) return;
-  o.fulfillmentStatus = status;
+  o.fulfillmentStatus = 'ready';
   renderProductionTab();
-  apiWrite('orders','update',id,{fulfillmentStatus: status});
-}
-
-function statusButtonGroup(o) {
-  const finalStatus = o.fulfillment === 'delivery' ? 'delivered' : 'pickedup';
-  const finalLabel = o.fulfillment === 'delivery' ? 'Delivered' : 'Picked Up';
-  const steps = [
-    { status: 'pending', label: 'New' },
-    { status: 'ready', label: 'Ready' },
-    { status: finalStatus, label: finalLabel }
-  ];
-  return `<div class="btn-group" role="group">
-    ${steps.map(s => {
-      const active = o.fulfillmentStatus === s.status;
-      return `<button type="button" class="btn btn-sm ${active ? 'btn-dark' : 'btn-outline-secondary'}" onclick="setFulfillmentStatus('${o.id}','${s.status}')">${s.label}</button>`;
-    }).join('')}
-  </div>`;
+  await apiWrite('orders','update',id,{fulfillmentStatus:'ready'});
 }
 
 function renderProductionTab() {
   const container = document.getElementById('tab-production');
-  const active = orders.filter(o => o.fulfillmentStatus !== 'delivered' && o.fulfillmentStatus !== 'pickedup');
+  const active = orders.filter(o => o.fulfillmentStatus === 'pending');
 
-  if (!active.length) { container.innerHTML = '<div class="text-center text-muted py-5">Nothing active right now — all caught up!</div>'; return; }
+  if (!active.length) { container.innerHTML = '<div class="text-center text-muted py-5">Nothing waiting to be made — all caught up!</div>'; return; }
 
-  // Bake list totals
+  // Bake list totals — only counts items not yet marked made, on orders not yet ready
   const totals = {};
   products.forEach(p => totals[p.id]=0);
-  active.forEach(o => (o.items||[]).forEach(i => totals[i.productId]=(totals[i.productId]||0)+i.qty));
-  const bakeProducts = products.filter(p=>totals[p.id]>0);
+  active.forEach(o => (o.items||[]).forEach(i => {
+    if (!(o.madeItems||[]).includes(i.productId)) totals[i.productId] = (totals[i.productId]||0) + i.qty;
+  }));
+  const bakeProducts = products.filter(p => totals[p.id] > 0);
 
-  // Fulfillment groups
   const pickups = active.filter(o => o.fulfillment === 'pickup');
   const deliveries = active.filter(o => o.fulfillment === 'delivery');
+
+  function orderCard(o) {
+    const madeItems = o.madeItems || [];
+    const itemLines = (o.items||[]).map(i => {
+      const p = products.find(p=>p.id===i.productId);
+      if (!p) return '';
+      const made = madeItems.includes(i.productId);
+      return `<div class="form-check">
+        <input class="form-check-input" type="checkbox" id="item-${o.id}-${i.productId}" ${made?'checked':''} onchange="toggleItemMade('${o.id}','${i.productId}')">
+        <label class="form-check-label ${made?'text-decoration-line-through text-muted':''}" for="item-${o.id}-${i.productId}">
+          <span class="badge text-bg-secondary">${i.qty}</span> ${esc(p.name)}
+        </label>
+      </div>`;
+    }).filter(Boolean).join('');
+    const ready = allItemsMade(o);
+    return `<div class="card mb-2"><div class="card-body py-2">
+      <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+        <div>
+          <div>${esc(o.firstName)} ${esc(o.lastName)} <span class="small text-muted">${esc(o.phone||'')}</span></div>
+          ${o.fulfillment==='delivery' ? `<div class="small text-muted">${esc(o.deliveryAddress||o.address||'')}</div>` : ''}
+          <div class="mt-1">${itemLines}</div>
+          ${o.notes ? `<div class="small text-muted fst-italic">"${esc(o.notes)}"</div>` : ''}
+        </div>
+        <button class="btn btn-sm ${ready ? 'btn-success' : 'btn-outline-secondary'}" ${ready ? '' : 'disabled'} onclick="markOrderReady('${o.id}')">Mark Ready</button>
+      </div>
+    </div></div>`;
+  }
+
+  container.innerHTML = `
+    <h6 class="text-uppercase text-muted small">Bake List</h6>
+    <div class="row row-cols-2 row-cols-md-3 g-3 mb-4">
+      ${bakeProducts.map(p => `
+        <div class="col"><div class="card h-100"><div class="card-body">
+          <div class="fs-5 fw-bold">${esc(p.name)}</div>
+          <div class="display-5 fw-bold">${totals[p.id]}</div>
+        </div></div></div>
+      `).join('')}
+    </div>
+
+    <h6 class="text-uppercase text-muted small">Pickup Orders <span class="badge text-bg-secondary">${pickups.length}</span></h6>
+    ${pickups.length ? pickups.map(o => orderCard(o)).join('') : '<p class="small text-muted">None right now.</p>'}
+
+    <h6 class="text-uppercase text-muted small mt-4">Delivery Orders <span class="badge text-bg-secondary">${deliveries.length}</span></h6>
+    ${deliveries.length ? deliveries.map(o => orderCard(o)).join('') : '<p class="small text-muted">None right now.</p>'}
+  `;
+}
+
+// ══════════════════════════════════════════
+// FULFILLMENT — final handoff step for orders already marked Ready
+// ══════════════════════════════════════════
+async function completeOrder(id) {
+  const o = orders.find(o=>o.id===id); if (!o) return;
+  const finalStatus = o.fulfillment === 'delivery' ? 'delivered' : 'pickedup';
+  o.fulfillmentStatus = finalStatus;
+  renderFulfillmentTab();
+  await apiWrite('orders','update',id,{fulfillmentStatus: finalStatus});
+}
+async function moveBackToProduction(id) {
+  const o = orders.find(o=>o.id===id); if (!o) return;
+  o.fulfillmentStatus = 'pending';
+  renderFulfillmentTab();
+  await apiWrite('orders','update',id,{fulfillmentStatus:'pending'});
+}
+
+function renderFulfillmentTab() {
+  const container = document.getElementById('tab-fulfillment');
+  const ready = orders.filter(o => o.fulfillmentStatus === 'ready');
+
+  if (!ready.length) { container.innerHTML = '<div class="text-center text-muted py-5">Nothing ready for pickup or delivery yet — check Production.</div>'; return; }
+
+  const pickups = ready.filter(o => o.fulfillment === 'pickup');
+  const deliveries = ready.filter(o => o.fulfillment === 'delivery');
   if (!routeOrder.length || routeOrder.length !== deliveries.length || !deliveries.every(o=>routeOrder.includes(o.id))) {
     routeOrder = deliveries.map(o=>o.id);
   }
@@ -710,6 +775,7 @@ function renderProductionTab() {
       const p = products.find(p=>p.id===i.productId);
       return p ? `<div><span class="badge text-bg-secondary">${i.qty}</span> ${esc(p.name)}</div>` : '';
     }).filter(Boolean).join('');
+    const label = o.fulfillment === 'delivery' ? 'Mark Delivered' : 'Mark Picked Up';
     return `<div class="card mb-2"><div class="card-body py-2">
       <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
         <div class="d-flex align-items-start gap-2">
@@ -718,34 +784,21 @@ function renderProductionTab() {
             <div>${esc(o.firstName)} ${esc(o.lastName)} <span class="small text-muted">${esc(o.phone||'')}</span></div>
             ${o.fulfillment==='delivery' ? `<div class="small text-muted">${esc(o.deliveryAddress||o.address||'')}</div>` : ''}
             <div class="small mt-1">${itemLines}</div>
-            ${o.notes ? `<div class="small text-muted fst-italic">"${esc(o.notes)}"</div>` : ''}
           </div>
         </div>
-        ${statusButtonGroup(o)}
+        <div class="text-end">
+          <button class="btn btn-sm btn-success" onclick="completeOrder('${o.id}')">${label}</button>
+          <div class="small mt-1"><a href="#" class="text-muted" onclick="moveBackToProduction('${o.id}'); return false;">Not ready yet</a></div>
+        </div>
       </div>
     </div></div>`;
   }
 
   container.innerHTML = `
-    <h6 class="text-uppercase text-muted small">Bake List</h6>
-    <div class="row row-cols-2 row-cols-md-3 g-3 mb-4">
-      ${bakeProducts.map(p => {
-        const done = bakedProductIds.has(p.id);
-        return `
-        <div class="col"><div class="card h-100 ${done?'bg-light':''}">
-          <div class="card-body">
-            <div class="fs-5 fw-bold ${done?'text-decoration-line-through text-muted':''}">${esc(p.name)}</div>
-            <div class="display-5 fw-bold mb-2 ${done?'text-muted':''}">${totals[p.id]}</div>
-            <button class="btn btn-sm ${done?'btn-success':'btn-outline-secondary'} w-100" onclick="toggleBaked('${p.id}')">${done ? '✓ Done' : 'Mark Done'}</button>
-          </div>
-        </div></div>`;
-      }).join('')}
-    </div>
-
-    <h6 class="text-uppercase text-muted small">Pickup Orders <span class="badge text-bg-secondary">${pickups.length}</span></h6>
+    <h6 class="text-uppercase text-muted small">Pickup <span class="badge text-bg-secondary">${pickups.length}</span></h6>
     ${pickups.length ? pickups.map(o => orderRow(o)).join('') : '<p class="small text-muted">None right now.</p>'}
 
-    <h6 class="text-uppercase text-muted small mt-4">Delivery Orders <span class="badge text-bg-secondary">${orderedDeliveries.length}</span></h6>
+    <h6 class="text-uppercase text-muted small mt-4">Delivery <span class="badge text-bg-secondary">${orderedDeliveries.length}</span></h6>
     ${orderedDeliveries.length ? `
       ${orderedDeliveries.map((o,idx) => orderRow(o, idx, true)).join('')}
       <button class="btn btn-dark mt-2 mb-4" onclick="openRouteMap()">Open Route in Google Maps</button>
@@ -756,10 +809,10 @@ function renderProductionTab() {
 function moveRoute(idx, dir) {
   const newIdx = idx+dir; if (newIdx<0 || newIdx>=routeOrder.length) return;
   [routeOrder[idx], routeOrder[newIdx]] = [routeOrder[newIdx], routeOrder[idx]];
-  renderProductionTab();
+  renderFulfillmentTab();
 }
 function openRouteMap() {
-  const deliveries = orders.filter(o => o.fulfillment==='delivery' && o.fulfillmentStatus!=='delivered' && (o.deliveryAddress||o.address));
+  const deliveries = orders.filter(o => o.fulfillment==='delivery' && o.fulfillmentStatus==='ready' && (o.deliveryAddress||o.address));
   const ordered = routeOrder.map(id => deliveries.find(o=>o.id===id)).filter(Boolean);
   const addresses = ordered.map(o => encodeURIComponent(o.deliveryAddress||o.address));
   if (!addresses.length) return;
