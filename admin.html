@@ -11,16 +11,16 @@
   html { overflow-y: scroll; scrollbar-gutter: stable; }
   body.modal-open { padding-right: 0 !important; }
   /* Minimal layout-only CSS — everything else is plain Bootstrap for now */
-  .sidebar { width: 230px; min-width: 230px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; height: 100dvh; overflow-y: auto; }
-  @media (max-width: 900px) { .sidebar { position: relative; height: auto; width: 100%; min-width: 0; } }
-  .main-content { min-width: 0; }
+  .sidebar { width: 230px; min-width: 230px; flex-shrink: 0; position: fixed; top: 0; left: 0; height: 100vh; height: 100dvh; overflow-y: auto; z-index: 30; }
+  @media (max-width: 900px) { .sidebar { position: relative; height: auto; width: 100%; min-width: 0; } .main-content { margin-left: 0 !important; } body { background-image: none !important; } }
+  .main-content { min-width: 0; margin-left: 230px; }
   .page-header { min-height: 40px; }
   .merge-bar { position: fixed; bottom: 0; left: 230px; right: 0; background: #1c1a17; color: #fff; padding: 14px 24px; box-shadow: 0 -2px 12px rgba(0,0,0,0.2); z-index: 40; display: flex; justify-content: space-between; align-items: center; }
   @media (max-width: 900px) { .merge-bar { left: 0; } }
   .drag-handle { cursor: grab; }
 </style>
 </head>
-<body class="bg-light">
+<body class="bg-light" style="background-image: linear-gradient(to right, #1c1a17 0, #1c1a17 230px, transparent 230px, transparent 100%); background-repeat: no-repeat;">
 
 <div id="loading" class="d-flex justify-content-center align-items-center" style="height:100vh;">
   <div class="spinner-border text-secondary" role="status"></div>
