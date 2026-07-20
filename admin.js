@@ -854,7 +854,7 @@ function renderFulfillmentTab() {
           </div>
           <ul class="list-group mb-3">${itemListItems}</ul>
           <div class="mt-auto">
-            <button class="btn btn-outline-secondary me-2" onclick="moveBackToProduction('${o.id}')" title="Send back to Production"><i class="bi bi-arrow-counterclockwise"></i></button>
+            <button class="btn btn-outline-secondary me-2" onclick="moveBackToProduction('${o.id}')" title="Send back to Production"><i class="bi bi-reply"></i></button>
             <button class="btn btn-primary text-nowrap" onclick="completeOrder('${o.id}')">${label}</button>
           </div>
         </div>
