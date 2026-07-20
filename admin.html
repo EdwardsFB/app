@@ -14,6 +14,8 @@
   @media (max-width: 900px) { .sidebar { position: relative; height: auto; width: 100%; min-width: 0; } }
   .main-content { min-width: 0; }
   .page-header { min-height: 40px; }
+  .merge-bar { position: fixed; bottom: 0; left: 230px; right: 0; background: #1c1a17; color: #fff; padding: 14px 24px; box-shadow: 0 -2px 12px rgba(0,0,0,0.2); z-index: 40; display: flex; justify-content: space-between; align-items: center; }
+  @media (max-width: 900px) { .merge-bar { left: 0; } }
   .drag-handle { cursor: grab; }
 </style>
 </head>
@@ -76,6 +78,14 @@
     <div id="tab-bake" class="d-none"></div>
     <div id="tab-route" class="d-none"></div>
     <div id="tab-products" class="d-none"></div>
+  </div>
+</div>
+
+<div class="merge-bar d-none" id="mergeBar">
+  <div><strong id="mergeBarCount">0</strong> customers selected</div>
+  <div>
+    <button class="btn btn-outline-light btn-sm" onclick="clearCustomerSelection()">Clear</button>
+    <button class="btn btn-light btn-sm" onclick="openMergeModal()">Merge...</button>
   </div>
 </div>
 
@@ -210,6 +220,26 @@
       <div class="modal-footer">
         <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
         <button class="btn btn-success" onclick="saveCustomerFromModal()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MERGE MODAL -->
+<div class="modal fade" id="mergeModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Merge Customers</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="small text-muted">Pick which record's info to keep. Every order from the others will be moved under this one.</p>
+        <div id="mergeModalOptions"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-dark" onclick="performMerge()">Merge Now</button>
       </div>
     </div>
   </div>
