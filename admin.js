@@ -736,6 +736,7 @@ async function markOrderReady(id) {
   const o = orders.find(o=>o.id===id); if (!o) return;
   o.fulfillmentStatus = 'ready';
   renderProductionTab();
+  showToast('Order marked as Ready on Fulfillment screen!');
   await apiWrite('orders','update',id,{fulfillmentStatus:'ready'});
 }
 
@@ -805,10 +806,10 @@ function renderProductionTab() {
 // ══════════════════════════════════════════
 // FULFILLMENT — final handoff step for orders already marked Ready
 // ══════════════════════════════════════════
-function showToast(message) {
+function showToast(message, bgClass) {
   const container = document.getElementById('toastContainer');
   const el = document.createElement('div');
-  el.className = 'toast align-items-center text-white bg-success border-0';
+  el.className = `toast align-items-center text-white ${bgClass || 'bg-success'} border-0`;
   el.setAttribute('role', 'alert');
   el.innerHTML = `
     <div class="d-flex">
@@ -835,6 +836,7 @@ async function moveBackToProduction(id) {
   const o = orders.find(o=>o.id===id); if (!o) return;
   o.fulfillmentStatus = 'pending';
   renderFulfillmentTab();
+  showToast('Order sent back to Production!', 'bg-secondary');
   await apiWrite('orders','update',id,{fulfillmentStatus:'pending'});
 }
 
