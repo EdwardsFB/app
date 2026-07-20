@@ -655,19 +655,21 @@ async function saveCustomerFromModal() {
 // ══════════════════════════════════════════
 // PRODUCTION — mark individual items made, per order, live-decrementing totals
 // ══════════════════════════════════════════
-async function toggleItemMade(orderId, productId) {
+async function toggleUnit(orderId, productId, unitIdx) {
   const o = orders.find(o=>o.id===orderId); if (!o) return;
-  o.madeItems = o.madeItems || [];
-  const idx = o.madeItems.indexOf(productId);
-  if (idx === -1) o.madeItems.push(productId);
-  else o.madeItems.splice(idx, 1);
+  o.madeItems = o.madeItems || {};
+  o.madeItems[productId] = o.madeItems[productId] || [];
+  o.madeItems[productId][unitIdx] = !o.madeItems[productId][unitIdx];
   renderProductionTab();
   await apiWrite('orders','update',orderId,{madeItems: o.madeItems});
 }
 
+function unitsDoneCount(o, productId) {
+  return ((o.madeItems && o.madeItems[productId]) || []).filter(Boolean).length;
+}
+
 function allItemsMade(o) {
-  const madeItems = o.madeItems || [];
-  return (o.items||[]).every(i => madeItems.includes(i.productId));
+  return (o.items||[]).every(i => unitsDoneCount(o, i.productId) >= i.qty);
 }
 
 async function markOrderReady(id) {
@@ -683,29 +685,26 @@ function renderProductionTab() {
 
   if (!active.length) { container.innerHTML = '<div class="text-center text-muted py-5">Nothing waiting to be made — all caught up!</div>'; return; }
 
-  // Bake list totals — only counts items not yet marked made, on orders not yet ready
+  // Bake totals — cards stay visible even at 0 remaining, showing a green checkmark instead
   const totals = {};
-  products.forEach(p => totals[p.id]=0);
   active.forEach(o => (o.items||[]).forEach(i => {
-    if (!(o.madeItems||[]).includes(i.productId)) totals[i.productId] = (totals[i.productId]||0) + i.qty;
+    const remaining = Math.max(0, i.qty - unitsDoneCount(o, i.productId));
+    totals[i.productId] = (totals[i.productId]||0) + remaining;
   }));
-  const bakeProducts = products.filter(p => totals[p.id] > 0);
+  const bakeProducts = products.filter(p => totals[p.id] !== undefined);
 
   const pickups = active.filter(o => o.fulfillment === 'pickup');
   const deliveries = active.filter(o => o.fulfillment === 'delivery');
 
   function orderCard(o) {
-    const madeItems = o.madeItems || [];
-    const itemLines = (o.items||[]).map(i => {
+    const itemButtons = (o.items||[]).map(i => {
       const p = products.find(p=>p.id===i.productId);
       if (!p) return '';
-      const made = madeItems.includes(i.productId);
-      return `<div class="form-check">
-        <input class="form-check-input" type="checkbox" id="item-${o.id}-${i.productId}" ${made?'checked':''} onchange="toggleItemMade('${o.id}','${i.productId}')">
-        <label class="form-check-label ${made?'text-decoration-line-through text-muted':''}" for="item-${o.id}-${i.productId}">
-          <span class="badge text-bg-secondary">${i.qty}</span> ${esc(p.name)}
-        </label>
-      </div>`;
+      const doneArr = (o.madeItems && o.madeItems[i.productId]) || [];
+      return Array.from({length: i.qty}).map((_, idx) => {
+        const done = !!doneArr[idx];
+        return `<button class="btn ${done ? 'btn-success' : 'btn-outline-secondary'} mb-1 me-1 text-start" style="min-width:160px;" onclick="toggleUnit('${o.id}','${i.productId}',${idx})">${done ? '✓ ' : ''}${esc(p.name)}</button>`;
+      }).join('');
     }).filter(Boolean).join('');
     const ready = allItemsMade(o);
     return `<div class="card mb-2"><div class="card-body py-2">
@@ -713,8 +712,8 @@ function renderProductionTab() {
         <div>
           <div>${esc(o.firstName)} ${esc(o.lastName)} <span class="small text-muted">${esc(o.phone||'')}</span></div>
           ${o.fulfillment==='delivery' ? `<div class="small text-muted">${esc(o.deliveryAddress||o.address||'')}</div>` : ''}
-          <div class="mt-1">${itemLines}</div>
-          ${o.notes ? `<div class="small text-muted fst-italic">"${esc(o.notes)}"</div>` : ''}
+          <div class="mt-2 d-flex flex-wrap">${itemButtons}</div>
+          ${o.notes ? `<div class="small text-muted fst-italic mt-1">"${esc(o.notes)}"</div>` : ''}
         </div>
         <button class="btn btn-sm ${ready ? 'btn-success' : 'btn-outline-secondary'}" ${ready ? '' : 'disabled'} onclick="markOrderReady('${o.id}')">Mark Ready</button>
       </div>
@@ -724,12 +723,14 @@ function renderProductionTab() {
   container.innerHTML = `
     <h6 class="text-uppercase text-muted small">Bake List</h6>
     <div class="row row-cols-2 row-cols-md-3 g-3 mb-4">
-      ${bakeProducts.map(p => `
-        <div class="col"><div class="card h-100"><div class="card-body">
+      ${bakeProducts.map(p => {
+        const done = totals[p.id] === 0;
+        return `
+        <div class="col"><div class="card h-100 ${done ? 'border-success' : ''}"><div class="card-body">
           <div class="fs-5 fw-bold">${esc(p.name)}</div>
-          <div class="display-5 fw-bold">${totals[p.id]}</div>
+          <div class="display-5 fw-bold ${done ? 'text-success' : ''}">${done ? '✓' : totals[p.id]}</div>
         </div></div></div>
-      `).join('')}
+      `;}).join('')}
     </div>
 
     <h6 class="text-uppercase text-muted small">Pickup Orders <span class="badge text-bg-secondary">${pickups.length}</span></h6>
