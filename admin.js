@@ -109,7 +109,7 @@ function switchTab(tab) {
   ['home','orders','production','customers','products'].forEach(t => {
     document.getElementById('tab-'+t).classList.toggle('d-none', t !== tab);
   });
-  const titles = { home:'Home', orders:'Orders', production:'Production Day', customers:'Customers', products:'Products' };
+  const titles = { home:'Home', orders:'Orders', production:'Production', customers:'Customers', products:'Products' };
   document.getElementById('pageTitle').textContent = titles[tab];
   document.getElementById('newOrderBtn').classList.toggle('d-none', tab !== 'orders');
   document.getElementById('addCustomerBtn').classList.toggle('d-none', tab !== 'customers');
@@ -698,7 +698,10 @@ function renderProductionTab() {
   const orderedDeliveries = routeOrder.map(id => deliveries.find(o=>o.id===id)).filter(Boolean);
 
   function orderRow(o, idx, showMoveArrows) {
-    const itemStr = (o.items||[]).map(i=>{const p=products.find(p=>p.id===i.productId); return p?`${i.qty}× ${p.name}`:'';}).filter(Boolean).join(', ');
+    const itemLines = (o.items||[]).map(i=>{
+      const p = products.find(p=>p.id===i.productId);
+      return p ? `<div><span class="badge text-bg-secondary">${i.qty}</span> ${esc(p.name)}</div>` : '';
+    }).filter(Boolean).join('');
     const btn = statusButtonLabel(o);
     return `<div class="card mb-2"><div class="card-body py-2">
       <div class="d-flex justify-content-between align-items-start gap-2">
@@ -707,7 +710,7 @@ function renderProductionTab() {
           <div>
             <div>${esc(o.firstName)} ${esc(o.lastName)} <span class="small text-muted">${esc(o.phone||'')}</span></div>
             ${o.fulfillment==='delivery' ? `<div class="small text-muted">${esc(o.deliveryAddress||o.address||'')}</div>` : ''}
-            <div class="small">${esc(itemStr)}</div>
+            <div class="small mt-1">${itemLines}</div>
             ${o.notes ? `<div class="small text-muted fst-italic">"${esc(o.notes)}"</div>` : ''}
           </div>
         </div>
@@ -733,10 +736,10 @@ function renderProductionTab() {
       }).join('')}
     </div>
 
-    <h6 class="text-uppercase text-muted small">Pickup Orders (${pickups.length})</h6>
+    <h6 class="text-uppercase text-muted small">Pickup Orders <span class="badge text-bg-secondary">${pickups.length}</span></h6>
     ${pickups.length ? pickups.map(o => orderRow(o)).join('') : '<p class="small text-muted">None right now.</p>'}
 
-    <h6 class="text-uppercase text-muted small mt-4">Delivery Orders (${orderedDeliveries.length})</h6>
+    <h6 class="text-uppercase text-muted small mt-4">Delivery Orders <span class="badge text-bg-secondary">${orderedDeliveries.length}</span></h6>
     ${orderedDeliveries.length ? `
       ${orderedDeliveries.map((o,idx) => orderRow(o, idx, true)).join('')}
       <button class="btn btn-dark mt-2 mb-4" onclick="openRouteMap()">Open Route in Google Maps</button>

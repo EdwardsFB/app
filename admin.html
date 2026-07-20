@@ -15,7 +15,7 @@
   @media (max-width: 900px) { .sidebar { position: relative; height: auto; width: 100%; min-width: 0; } .main-content { margin-left: 0 !important; } body { background-image: none !important; } }
   .main-content { min-width: 0; margin-left: 230px; }
   .page-header { min-height: 40px; }
-  .merge-bar { position: fixed; bottom: 0; left: 230px; right: 0; background: #1c1a17; color: #fff; padding: 14px 24px; box-shadow: 0 -2px 12px rgba(0,0,0,0.2); z-index: 40; display: flex; justify-content: space-between; align-items: center; }
+  .merge-bar { position: fixed; bottom: 0; left: 230px; right: 0; padding: 14px 24px; box-shadow: 0 -2px 12px rgba(0,0,0,0.2); z-index: 40; display: flex; justify-content: center; align-items: center; gap: 16px; }
   @media (max-width: 900px) { .merge-bar { left: 0; } }
   .drag-handle { cursor: grab; }
 </style>
@@ -50,8 +50,8 @@
     </div>
     <div class="nav flex-column flex-grow-1 py-2" id="sidebarNav">
       <a class="nav-link text-white-50 px-3 py-2" data-tab="home" href="#" onclick="switchTab('home'); return false;"><i class="bi bi-house me-2"></i>Home</a>
+      <a class="nav-link text-white-50 px-3 py-2" data-tab="production" href="#" onclick="switchTab('production'); return false;"><i class="bi bi-basket me-2"></i>Production</a>
       <a class="nav-link text-white-50 px-3 py-2" data-tab="orders" href="#" onclick="switchTab('orders'); return false;"><i class="bi bi-list-check me-2"></i>Orders</a>
-      <a class="nav-link text-white-50 px-3 py-2" data-tab="production" href="#" onclick="switchTab('production'); return false;"><i class="bi bi-basket me-2"></i>Production Day</a>
       <a class="nav-link text-white-50 px-3 py-2" data-tab="customers" href="#" onclick="switchTab('customers'); return false;"><i class="bi bi-people me-2"></i>Customers</a>
       <a class="nav-link text-white-50 px-3 py-2" data-tab="products" href="#" onclick="switchTab('products'); return false;"><i class="bi bi-basket2 me-2"></i>Products</a>
     </div>
@@ -79,12 +79,10 @@
   </div>
 </div>
 
-<div class="merge-bar d-none" id="mergeBar">
-  <div><strong id="mergeBarCount">0</strong> customers selected</div>
-  <div>
-    <button class="btn btn-outline-light btn-sm" onclick="clearCustomerSelection()">Clear</button>
-    <button class="btn btn-light btn-sm" onclick="openMergeModal()">Merge...</button>
-  </div>
+<div class="merge-bar bg-info d-none" id="mergeBar">
+  <div><span class="badge text-bg-dark" id="mergeBarCount">0</span> customers selected</div>
+  <button class="btn btn-outline-dark btn-sm" onclick="clearCustomerSelection()">Clear</button>
+  <button class="btn btn-dark btn-sm" onclick="openMergeModal()">Merge...</button>
 </div>
 
 <!-- ORDER MODAL -->
