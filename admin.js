@@ -784,7 +784,7 @@ function renderProductionTab() {
   }
 
   container.innerHTML = `
-    <h5 class="text-uppercase text-muted">Bake List</h5>
+    <h5 class="text-muted">Bake List</h5>
     <div class="row row-cols-2 row-cols-md-3 g-3 mb-4">
       ${bakeProducts.map(p => {
         const done = totals[p.id] === 0;
@@ -796,10 +796,10 @@ function renderProductionTab() {
       `;}).join('')}
     </div>
 
-    <h5 class="text-uppercase text-muted d-flex align-items-center gap-2">Pickup Orders <span class="badge text-bg-secondary">${pickups.length}</span></h5>
+    <h5 class="text-muted d-flex align-items-center gap-2">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h5>
     ${pickups.length ? pickups.map(o => orderCard(o)).join('') : '<p class="small text-muted">None right now.</p>'}
 
-    <h5 class="text-uppercase text-muted mt-4 d-flex align-items-center gap-2">Delivery Orders <span class="badge text-bg-secondary">${deliveries.length}</span></h5>
+    <h5 class="text-muted mt-4 d-flex align-items-center gap-2">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${deliveries.length}</span></h5>
     ${deliveries.length ? deliveries.map(o => orderCard(o)).join('') : '<p class="small text-muted">None right now.</p>'}
   `;
 }
@@ -834,35 +834,43 @@ function renderFulfillmentTab() {
   }
   const orderedDeliveries = routeOrder.map(id => deliveries.find(o=>o.id===id)).filter(Boolean);
 
-  function orderRow(o, idx, showMoveArrows) {
+  function orderRow(o, idx, total) {
     const itemListItems = (o.items||[]).map(i=>{
       const p = products.find(p=>p.id===i.productId);
       return p ? `<li class="list-group-item d-flex justify-content-between align-items-center">${esc(p.name)}<span class="badge text-bg-secondary">${i.qty}</span></li>` : '';
     }).filter(Boolean).join('');
     const label = o.fulfillment === 'delivery' ? 'Mark Delivered' : 'Mark Picked Up';
-    return `<div class="card mb-3" style="width:fit-content; max-width:100%;">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-start">
-          <h5 class="card-title mb-1">${esc(o.firstName)} ${esc(o.lastName)}</h5>
-          ${showMoveArrows ? `<div><button class="btn btn-outline-secondary btn-sm py-0 px-1 me-2" onclick="moveRoute(${idx},-1)">↑</button><button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="moveRoute(${idx},1)">↓</button></div>` : ''}
+    const showArrows = total !== undefined;
+    const addr = o.fulfillment==='delivery' ? parseAddress(o.deliveryAddress||o.address||'') : null;
+    return `<div class="col">
+      <div class="card h-100">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start">
+            <h4 class="fw-bold mb-0">${esc(o.firstName)} ${esc(o.lastName)}</h4>
+            ${showArrows ? `<div>${idx>0 ? `<button class="btn btn-outline-secondary btn-sm py-0 px-1 me-1" onclick="moveRoute(${idx},-1)">↑</button>` : ''}${idx<total-1 ? `<button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="moveRoute(${idx},1)">↓</button>` : ''}</div>` : ''}
+          </div>
+          <div class="mt-3 mb-3">
+            <div class="mb-2">${esc(o.phone||'')}</div>
+            ${addr ? `<div class="mb-2">${esc(addr.street)}<br>${esc([addr.city, [addr.state, addr.zip].filter(Boolean).join(' ')].filter(Boolean).join(', '))}</div>` : ''}
+            ${o.notes ? `<div class="fst-italic mb-2">${esc(o.notes)}</div>` : ''}
+          </div>
+          <ul class="list-group mb-3">${itemListItems}</ul>
+          <div class="mt-auto">
+            <button class="btn btn-outline-secondary text-nowrap me-2" onclick="moveBackToProduction('${o.id}')">Not Ready Yet</button>
+            <button class="btn btn-primary text-nowrap" onclick="completeOrder('${o.id}')">${label}</button>
+          </div>
         </div>
-        <h6 class="card-subtitle mb-1">${esc(o.phone||'')}</h6>
-        ${o.fulfillment==='delivery' ? `<h6 class="card-subtitle mb-1">${esc(o.deliveryAddress||o.address||'')}</h6>` : ''}
-        ${o.notes ? `<p class="card-text fst-italic mt-2 mb-0">${esc(o.notes)}</p>` : ''}
-        <ul class="list-group list-group-flush my-3">${itemListItems}</ul>
-        <button class="btn btn-outline-secondary text-nowrap me-2" onclick="moveBackToProduction('${o.id}')">Not Ready Yet</button>
-        <button class="btn btn-primary text-nowrap" onclick="completeOrder('${o.id}')">${label}</button>
       </div>
     </div>`;
   }
 
   container.innerHTML = `
-    <h5 class="text-uppercase text-muted d-flex align-items-center gap-2">Pickup <span class="badge text-bg-secondary">${pickups.length}</span></h5>
-    ${pickups.length ? pickups.map(o => orderRow(o)).join('') : '<p class="small text-muted">None right now.</p>'}
+    <h5 class="text-muted d-flex align-items-center gap-2">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h5>
+    ${pickups.length ? `<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-4">${pickups.map(o => orderRow(o)).join('')}</div>` : '<p class="small text-muted">None right now.</p>'}
 
-    <h5 class="text-uppercase text-muted mt-4 d-flex align-items-center gap-2">Delivery <span class="badge text-bg-secondary">${orderedDeliveries.length}</span></h5>
+    <h5 class="text-muted mt-4 d-flex align-items-center gap-2">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${orderedDeliveries.length}</span></h5>
     ${orderedDeliveries.length ? `
-      ${orderedDeliveries.map((o,idx) => orderRow(o, idx, true)).join('')}
+      <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-3">${orderedDeliveries.map((o,idx) => orderRow(o, idx, orderedDeliveries.length)).join('')}</div>
       <button class="btn btn-dark mt-2 mb-4" onclick="openRouteMap()">Open Route in Google Maps</button>
     ` : '<p class="small text-muted">None right now.</p>'}
   `;
