@@ -29,6 +29,12 @@ async function init() {
   confirmModalEl = new bootstrap.Modal(document.getElementById('confirmModal'));
   mergeModal = new bootstrap.Modal(document.getElementById('mergeModal'));
 
+  ['orderModal','productModal','customerModal','confirmModal','mergeModal'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('show.bs.modal', () => { document.getElementById('mergeBar').classList.add('d-none'); });
+    el.addEventListener('hidden.bs.modal', () => { updateMergeBar(); });
+  });
+
   document.getElementById('qrImg').src =
     'https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=0&data=' + encodeURIComponent(location.origin + location.pathname.replace('admin.html','index.html'));
 
@@ -71,7 +77,7 @@ async function loadAndShowApp() {
   const validTabs = ['home','orders','customers','bake','route','products'];
   const hashTab = location.hash.replace('#','');
   switchTab(validTabs.includes(hashTab) ? hashTab : 'home');
-  setTimeout(() => window.scrollTo(0, 0), 50);
+  setTimeout(() => window.scrollTo(0, 1), 50);
 }
 
 async function refreshData() {
@@ -154,7 +160,6 @@ function renderHomeTab() {
   const cards = [
     ['New Orders', newCount, newOrderColor],
     ['Unpaid Orders', unpaidCount, unpaidColor],
-    ['Total Revenue', '$'+totalRevenue.toFixed(0), ''],
     ['Total Profit', '$'+totalProfit.toFixed(0), 'success'],
     ['Average Order', '$'+avgOrder.toFixed(2), ''],
     ['Average Margin', avgMargin.toFixed(0)+'%', ''],
@@ -165,6 +170,7 @@ function renderHomeTab() {
 
   const paymentStats = { venmo:0, cash:0 };
   orders.forEach(o => { paymentStats[o.payment] = (paymentStats[o.payment]||0) + Number(o.total); });
+  cards.push(['Total Revenue', '$'+totalRevenue.toFixed(0), '']);
   cards.push(['Venmo / Cash', `$${(paymentStats.venmo||0).toFixed(0)} / $${(paymentStats.cash||0).toFixed(0)}`, '']);
 
   function borderClass(c) {

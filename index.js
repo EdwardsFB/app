@@ -20,6 +20,7 @@ async function init() {
   updateSummary();
   document.getElementById('loading').classList.add('d-none');
   document.getElementById('app').classList.remove('d-none');
+  setTimeout(() => window.scrollTo(0, 1), 50);
 }
 
 function applyLogo() {
