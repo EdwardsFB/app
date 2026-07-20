@@ -93,7 +93,13 @@ function lookupReturningCustomer() {
   document.getElementById('cf-last').value = match.lastName;
   document.getElementById('cf-phone').value = match.phone;
   if (match.address) {
-    document.getElementById('cf-address').value = match.address;
+    const parts = (match.street || match.city || match.state || match.zip)
+      ? { street: match.street, city: match.city, state: match.state, zip: match.zip }
+      : parseAddress(match.address);
+    document.getElementById('cf-street').value = parts.street || '';
+    document.getElementById('cf-city').value = parts.city || '';
+    document.getElementById('cf-state').value = parts.state || '';
+    document.getElementById('cf-zip').value = parts.zip || '';
     document.getElementById('rad-delivery').checked = true;
     setFulfillment('delivery');
   }
@@ -107,7 +113,11 @@ async function submitOrder() {
   const phone = document.getElementById('cf-phone').value.trim();
   const email = document.getElementById('cf-email').value.trim();
   const date = document.getElementById('cf-date').value;
-  const address = document.getElementById('cf-address').value.trim();
+  const street = document.getElementById('cf-street').value.trim();
+  const city = document.getElementById('cf-city').value.trim();
+  const state = document.getElementById('cf-state').value.trim();
+  const zip = document.getElementById('cf-zip').value.trim();
+  const address = formatAddress(street, city, state, zip);
   const notes = document.getElementById('cf-notes').value.trim();
   const errEl = document.getElementById('formError');
 
@@ -116,7 +126,7 @@ async function submitOrder() {
   if (!first || !last) { errEl.textContent = 'Please enter your first and last name.'; return; }
   if (!phone) { errEl.textContent = 'Please enter a phone number.'; return; }
   if (!items.length) { errEl.textContent = 'Please select at least one item.'; return; }
-  if (currentFulfillment === 'delivery' && !address) { errEl.textContent = 'Please enter a delivery address.'; return; }
+  if (currentFulfillment === 'delivery' && !street) { errEl.textContent = 'Please enter a delivery street address.'; return; }
   errEl.textContent = '';
 
   const totals = computeOrderTotals(products, items, 0);

@@ -4,7 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Edwards Family Bakery — Order</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍞</text></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍞</text></svg>">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 </head>
@@ -66,8 +66,13 @@
             </div>
           </div>
           <div class="mb-2 d-none" id="addressField">
-            <label class="form-label small">Delivery Address <span class="text-danger">*</span></label>
-            <input id="cf-address" class="form-control" type="text" placeholder="123 Main St, Nolensville, TN"/>
+            <label class="form-label small">Street Address <span class="text-danger">*</span></label>
+            <input id="cf-street" class="form-control mb-2" type="text" placeholder="123 Main St"/>
+            <div class="row g-2">
+              <div class="col-6"><label class="form-label small">City</label><input id="cf-city" class="form-control" type="text"/></div>
+              <div class="col-3"><label class="form-label small">State</label><input id="cf-state" class="form-control" type="text" maxlength="2"/></div>
+              <div class="col-3"><label class="form-label small">ZIP</label><input id="cf-zip" class="form-control" type="text"/></div>
+            </div>
           </div>
           <div class="mb-0">
             <label class="form-label small">Notes</label>

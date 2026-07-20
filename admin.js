@@ -351,7 +351,7 @@ function setOmCustomerMode(mode) {
     document.getElementById('om-first').value='';
     document.getElementById('om-last').value='';
     document.getElementById('om-phone').value='';
-    document.getElementById('om-address').value='';
+    ['om-street','om-city','om-state','om-zip'].forEach(id => document.getElementById(id).value='');
   }
 }
 function populateOmExistingSelect() {
@@ -367,7 +367,11 @@ function onOmExistingSelect() {
   document.getElementById('om-last').value = c.lastName;
   document.getElementById('om-phone').value = c.phone||'';
   if (c.address) {
-    document.getElementById('om-address').value = c.address;
+    const parts = (c.street || c.city || c.state || c.zip) ? c : parseAddress(c.address);
+    document.getElementById('om-street').value = parts.street || '';
+    document.getElementById('om-city').value = parts.city || '';
+    document.getElementById('om-state').value = parts.state || '';
+    document.getElementById('om-zip').value = parts.zip || '';
     document.getElementById('om-fulfillment').value = 'delivery';
     document.getElementById('om-addressField').classList.remove('d-none');
   }
@@ -394,7 +398,15 @@ function openOrderModal(id) {
   document.getElementById('om-date').value = order ? order.date : '';
   document.getElementById('om-fulfillment').value = fulfillment;
   document.getElementById('om-payment').value = order ? order.payment : 'venmo';
-  document.getElementById('om-address').value = order ? (order.address||order.deliveryAddress||'') : '';
+  if (order) {
+    const parsed = parseAddress(order.deliveryAddress || order.address || '');
+    document.getElementById('om-street').value = parsed.street || '';
+    document.getElementById('om-city').value = parsed.city || '';
+    document.getElementById('om-state').value = parsed.state || '';
+    document.getElementById('om-zip').value = parsed.zip || '';
+  } else {
+    ['om-street','om-city','om-state','om-zip'].forEach(id => document.getElementById(id).value='');
+  }
   document.getElementById('om-paymentStatus').value = order ? order.paymentStatus : 'unpaid';
   document.getElementById('om-fulfillmentStatus').value = order ? order.fulfillmentStatus : 'pending';
   document.getElementById('om-notes').value = order ? order.notes : '';
@@ -434,14 +446,19 @@ async function saveOrderFromModal() {
   if (!phone) { alert('Please enter a phone number — this keeps orders correctly matched to the right customer.'); return; }
   const items = products.filter(p => (omQty[p.id]||0) > 0).map(p => ({ productId:p.id, qty:omQty[p.id] }));
   if (!items.length) { alert('Please add at least one item.'); return; }
-  if (document.getElementById('om-fulfillment').value === 'delivery' && !document.getElementById('om-address').value.trim()) {
-    alert('Please enter a delivery address.'); return;
+  if (document.getElementById('om-fulfillment').value === 'delivery' && !document.getElementById('om-street').value.trim()) {
+    alert('Please enter a delivery street address.'); return;
   }
 
   const discountPct = omDiscountPct();
   const totals = computeOrderTotals(products, items, discountPct);
   const fulfillment = document.getElementById('om-fulfillment').value;
-  const address = document.getElementById('om-address').value.trim();
+  const address = formatAddress(
+    document.getElementById('om-street').value.trim(),
+    document.getElementById('om-city').value.trim(),
+    document.getElementById('om-state').value.trim(),
+    document.getElementById('om-zip').value.trim()
+  );
 
   const orderData = {
     firstName:first, lastName:last,
@@ -794,26 +811,33 @@ function renderFulfillmentTab() {
   const orderedDeliveries = routeOrder.map(id => deliveries.find(o=>o.id===id)).filter(Boolean);
 
   function orderRow(o, idx, showMoveArrows) {
-    const itemLines = (o.items||[]).map(i=>{
+    const itemListItems = (o.items||[]).map(i=>{
       const p = products.find(p=>p.id===i.productId);
-      return p ? `<div><span class="badge text-bg-secondary">${i.qty}</span> ${esc(p.name)}</div>` : '';
+      return p ? `<li class="list-group-item d-flex justify-content-between align-items-center">${esc(p.name)}<span class="badge text-bg-secondary">${i.qty}</span></li>` : '';
     }).filter(Boolean).join('');
     const label = o.fulfillment === 'delivery' ? 'Mark Delivered' : 'Mark Picked Up';
-    return `<div class="card mb-2"><div class="card-body py-2">
-      <div class="d-grid align-items-center gap-2" style="grid-template-columns: 22% 1fr 320px;">
-        <div>
-          ${showMoveArrows ? `<div class="mb-1"><button class="btn btn-outline-secondary btn-sm py-0 px-1 me-2" onclick="moveRoute(${idx},-1)">↑</button><button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="moveRoute(${idx},1)">↓</button></div>` : ''}
-          <div>${esc(o.firstName)} ${esc(o.lastName)}</div>
-          <div class="small text-muted">${esc(o.phone||'')}</div>
-          ${o.fulfillment==='delivery' ? `<div class="small text-muted">${esc(o.deliveryAddress||o.address||'')}</div>` : ''}
-        </div>
-        <div>${itemLines}</div>
-        <div class="d-flex align-items-center justify-content-end gap-2">
-          <button class="btn btn-outline-secondary text-nowrap" onclick="moveBackToProduction('${o.id}')">Not Ready Yet</button>
-          <button class="btn btn-primary text-nowrap" onclick="completeOrder('${o.id}')">${label}</button>
+    return `<div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <strong>${esc(o.firstName)} ${esc(o.lastName)}</strong>
+        ${showMoveArrows ? `<div><button class="btn btn-outline-secondary btn-sm py-0 px-1 me-2" onclick="moveRoute(${idx},-1)">↑</button><button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="moveRoute(${idx},1)">↓</button></div>` : ''}
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-5 mb-3 mb-md-0">
+            <div class="text-muted">${esc(o.phone||'')}</div>
+            ${o.fulfillment==='delivery' ? `<div class="text-muted">${esc(o.deliveryAddress||o.address||'')}</div>` : ''}
+            ${o.notes ? `<div class="fst-italic mt-2">${esc(o.notes)}</div>` : ''}
+          </div>
+          <div class="col-md-7">
+            <ul class="list-group list-group-flush">${itemListItems}</ul>
+          </div>
         </div>
       </div>
-    </div></div>`;
+      <div class="card-footer d-flex justify-content-end gap-2">
+        <button class="btn btn-outline-secondary text-nowrap" onclick="moveBackToProduction('${o.id}')">Not Ready Yet</button>
+        <button class="btn btn-primary text-nowrap" onclick="completeOrder('${o.id}')">${label}</button>
+      </div>
+    </div>`;
   }
 
   container.innerHTML = `
