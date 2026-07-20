@@ -762,7 +762,7 @@ function renderFulfillmentTab() {
   const container = document.getElementById('tab-fulfillment');
   const ready = orders.filter(o => o.fulfillmentStatus === 'ready');
 
-  if (!ready.length) { container.innerHTML = '<div class="text-center text-muted py-5">Nothing ready for pickup or delivery yet — check Production.</div>'; return; }
+  if (!ready.length) { container.innerHTML = '<div class="alert alert-light text-center" role="alert">Zero orders ready for pickup or delivery</div>'; return; }
 
   const pickups = ready.filter(o => o.fulfillment === 'pickup');
   const deliveries = ready.filter(o => o.fulfillment === 'delivery');
