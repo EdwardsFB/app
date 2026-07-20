@@ -31,7 +31,7 @@ async function init() {
 
   ['orderModal','productModal','customerModal','confirmModal','mergeModal'].forEach(id => {
     const el = document.getElementById(id);
-    el.addEventListener('show.bs.modal', () => { document.getElementById('mergeBar').classList.add('d-none'); });
+    el.addEventListener('shown.bs.modal', () => { document.getElementById('mergeBar').classList.add('d-none'); });
     el.addEventListener('hidden.bs.modal', () => { updateMergeBar(); });
   });
 
