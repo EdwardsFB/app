@@ -445,26 +445,94 @@ function sortCustomersBy(col) {
 }
 function sortArrow(col) { return customerSortCol===col ? (customerSortDir==='asc'?' ▲':' ▼') : ''; }
 
+let selectedCustomerKeys = new Set();
+
+function toggleCustomerSelect(key) {
+  if (selectedCustomerKeys.has(key)) selectedCustomerKeys.delete(key);
+  else selectedCustomerKeys.add(key);
+  renderCustomersTab();
+}
+function clearCustomerSelection() { selectedCustomerKeys.clear(); renderCustomersTab(); }
+
 function renderCustomersTab() {
   let list = getMergedCustomers(products, orders, customers);
+  list.forEach(c => c._key = custKey(c));
   list.sort((a,b) => {
     let av=a[customerSortCol], bv=b[customerSortCol];
     if (typeof av==='string') { av=av.toLowerCase(); bv=(bv||'').toLowerCase(); }
     return av<bv ? (customerSortDir==='asc'?-1:1) : av>bv ? (customerSortDir==='asc'?1:-1) : 0;
   });
   const cols = [['firstName','First Name',''],['lastName','Last Name',''],['phone','Phone',''],['address','Address',''],['orderCount','Orders','end'],['totalSpent','Total Spent','end']];
+  const selected = list.filter(c => selectedCustomerKeys.has(c._key));
+
+  let mergeBar = '';
+  if (selected.length >= 2) {
+    mergeBar = `
+      <div class="card mb-3 border-primary">
+        <div class="card-body">
+          <h6>Merge ${selected.length} customers into one</h6>
+          <p class="small text-muted mb-2">Pick which record's info to keep. Every order from the others will be moved under this one.</p>
+          ${selected.map((c,i) => `
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="mergeCanonical" id="mergeCanon${i}" value="${esc(c._key)}" ${i===0?'checked':''}>
+              <label class="form-check-label" for="mergeCanon${i}">${esc(c.firstName)} ${esc(c.lastName)} — ${esc(c.phone||'no phone on file')} — ${c.orderCount} order(s)</label>
+            </div>
+          `).join('')}
+          <button class="btn btn-dark btn-sm mt-2" onclick="performMerge()">Merge Now</button>
+          <button class="btn btn-outline-secondary btn-sm mt-2" onclick="clearCustomerSelection()">Cancel</button>
+        </div>
+      </div>
+    `;
+  }
 
   document.getElementById('tab-customers').innerHTML = `
+    ${mergeBar}
     <div class="table-responsive"><table class="table table-striped table-bordered bg-white">
-      <thead><tr>${cols.map(([k,l,a])=>`<th class="text-${a||'start'}" style="cursor:pointer;" onclick="sortCustomersBy('${k}')">${l}${sortArrow(k)}</th>`).join('')}<th></th></tr></thead>
+      <thead><tr><th></th>${cols.map(([k,l,a])=>`<th class="text-${a||'start'}" style="cursor:pointer;" onclick="sortCustomersBy('${k}')">${l}${sortArrow(k)}</th>`).join('')}<th></th></tr></thead>
       <tbody>${list.map(c => `<tr>
+        <td><input type="checkbox" ${selectedCustomerKeys.has(c._key)?'checked':''} onchange="toggleCustomerSelect('${c._key}')"></td>
         <td>${esc(c.firstName)}</td><td>${esc(c.lastName)}</td><td>${esc(c.phone||'—')}</td><td>${esc(c.address||'—')}</td>
         <td class="text-end">${c.orderCount}</td><td class="text-end">$${c.totalSpent.toFixed(2)}</td>
         <td class="text-end"><button class="btn btn-outline-secondary btn-sm" onclick='openCustomerModal(${JSON.stringify(c).replace(/'/g,"&apos;")})'>Edit</button></td>
       </tr>`).join('')}</tbody>
     </table></div>
     ${list.length===0 ? '<div class="text-center text-muted py-5">No customers yet</div>' : ''}
+    <p class="small text-muted">Check 2 or more customers above to merge them into one.</p>
   `;
+}
+
+async function performMerge() {
+  const checkedEl = document.querySelector('input[name="mergeCanonical"]:checked');
+  if (!checkedEl) return;
+  const canonicalKey = checkedEl.value;
+  const list = getMergedCustomers(products, orders, customers);
+  list.forEach(c => c._key = custKey(c));
+  const canonical = list.find(c => c._key === canonicalKey);
+  const otherKeys = [...selectedCustomerKeys].filter(k => k !== canonicalKey);
+  if (!canonical || !otherKeys.length) return;
+
+  const updates = { firstName: canonical.firstName, lastName: canonical.lastName, phone: canonical.phone };
+
+  for (const o of orders) {
+    const k = custKey({firstName:o.firstName, lastName:o.lastName, phone:o.phone});
+    if (otherKeys.includes(k)) {
+      o.firstName = updates.firstName;
+      o.lastName = updates.lastName;
+      o.phone = updates.phone;
+      await apiWrite('orders','update',o.id,updates);
+    }
+  }
+
+  for (const key of otherKeys) {
+    const rec = list.find(c => c._key === key);
+    if (rec && rec.recordId) {
+      customers = customers.filter(c => c.id !== rec.recordId);
+      await apiWrite('customers','delete',rec.recordId,null);
+    }
+  }
+
+  selectedCustomerKeys.clear();
+  renderCustomersTab();
 }
 
 function openCustomerModal(existing) {
@@ -610,7 +678,7 @@ function renderProductsTab() {
           <td class="drag-handle text-muted">⠿</td>
           <td>${esc(p.name)}</td><td>${esc(p.desc||'')}</td>
           <td class="text-end">$${Number(p.price).toFixed(2)}</td><td class="text-end">$${Number(p.cost).toFixed(2)}</td><td>${esc(p.unit||'')}</td>
-          <td class="text-end"><button class="btn btn-outline-secondary btn-sm" onclick="openProductModal('${p.id}')">Edit</button></td>
+          <td class="text-end"><button class="btn btn-outline-secondary btn-sm" onclick="openProductModal('${p.id}')">Edit</button> <button class="btn btn-outline-danger btn-sm" onclick="deleteProductRow('${p.id}')">Delete</button></td>
         </tr>`).join('')}
       </tbody>
     </table></div>
@@ -642,16 +710,14 @@ function openProductModal(id) {
   document.getElementById('pm-price').value = p ? p.price : '';
   document.getElementById('pm-cost').value = p ? p.cost : '';
   document.getElementById('pm-unit').value = p ? (p.unit||'') : '';
-  document.getElementById('pm-delete-btn').classList.toggle('d-none', !p);
   productModal.show();
 }
-function confirmDeleteProduct() {
-  const p = products.find(p=>p.id===editingProductId); if (!p) return;
+function deleteProductRow(id) {
+  const p = products.find(p=>p.id===id); if (!p) return;
   openConfirm(`Delete "${p.name}" from the menu? This won't affect past orders.`, async () => {
-    products = products.filter(pr=>pr.id!==editingProductId);
-    productModal.hide();
+    products = products.filter(pr=>pr.id!==id);
     renderProductsTab();
-    await apiWrite('products','delete',editingProductId,null);
+    await apiWrite('products','delete',id,null);
   });
 }
 async function saveProductFromModal() {

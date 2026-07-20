@@ -39,9 +39,9 @@
 <div id="app" class="d-none d-flex">
 
   <div class="sidebar bg-dark text-white d-flex flex-column">
-    <div class="py-5 px-3 border-bottom border-secondary text-center">
+    <div class="py-3 px-3 border-bottom border-secondary text-center">
       <a href="#" onclick="switchTab('home'); return false;" class="text-decoration-none text-white">
-        <img id="logoImg" class="d-none mt-2 mb-4" style="max-height:60px;" alt="Edwards Family Bakery"/>
+        <img id="logoImg" class="d-none mt-1 mb-2" style="max-height:60px;" alt="Edwards Family Bakery"/>
         <div id="brandText" class="fw-bold">Edwards Family Bakery</div>
         <div class="small text-white-50">Bakery Admin</div>
       </a>
@@ -179,7 +179,6 @@
         <div class="mb-0"><label class="form-label small">Unit (e.g. "per loaf")</label><input id="pm-unit" class="form-control" type="text"/></div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-danger d-none me-auto" id="pm-delete-btn" onclick="confirmDeleteProduct()">Delete Product</button>
         <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
         <button class="btn btn-success" onclick="saveProductFromModal()">Save</button>
       </div>
