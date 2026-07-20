@@ -724,7 +724,7 @@ function renderProductionTab() {
       const doneArr = (o.madeItems && o.madeItems[i.productId]) || [];
       return Array.from({length: i.qty}).map((_, idx) => {
         const done = !!doneArr[idx];
-        return `<button class="btn ${done ? 'btn-success' : 'btn-outline-secondary'} mb-1 me-1 d-flex justify-content-between align-items-center" style="min-width:160px;" onclick="toggleUnit('${o.id}','${i.productId}',${idx})"><span>${esc(p.name)}</span><span class="ms-2" style="visibility:${done?'visible':'hidden'};">✓</span></button>`;
+        return `<button class="btn ${done ? 'btn-success' : 'btn-outline-secondary'} mb-2 me-2 d-flex justify-content-between align-items-center" style="min-width:160px;" onclick="toggleUnit('${o.id}','${i.productId}',${idx})"><span>${esc(p.name)}</span><span class="ms-2" style="visibility:${done?'visible':'hidden'};">✓</span></button>`;
       }).join('');
     }).filter(Boolean).join('');
     const ready = allItemsMade(o);
@@ -802,17 +802,17 @@ function renderFulfillmentTab() {
     }).filter(Boolean).join('');
     const label = o.fulfillment === 'delivery' ? 'Mark Delivered' : 'Mark Picked Up';
     return `<div class="card mb-2"><div class="card-body py-2">
-      <div class="d-grid align-items-center gap-2" style="grid-template-columns: 22% 1fr 260px;">
+      <div class="d-grid align-items-center gap-2" style="grid-template-columns: 22% 1fr 320px;">
         <div>
-          ${showMoveArrows ? `<div class="mb-1"><button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="moveRoute(${idx},-1)">↑</button> <button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="moveRoute(${idx},1)">↓</button></div>` : ''}
+          ${showMoveArrows ? `<div class="mb-1"><button class="btn btn-outline-secondary btn-sm py-0 px-1 me-2" onclick="moveRoute(${idx},-1)">↑</button><button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="moveRoute(${idx},1)">↓</button></div>` : ''}
           <div>${esc(o.firstName)} ${esc(o.lastName)}</div>
           <div class="small text-muted">${esc(o.phone||'')}</div>
           ${o.fulfillment==='delivery' ? `<div class="small text-muted">${esc(o.deliveryAddress||o.address||'')}</div>` : ''}
         </div>
         <div>${itemLines}</div>
         <div class="d-flex align-items-center justify-content-end gap-2">
-          <button class="btn btn-outline-secondary" onclick="moveBackToProduction('${o.id}')">Not Ready Yet</button>
-          <button class="btn btn-primary" onclick="completeOrder('${o.id}')">${label}</button>
+          <button class="btn btn-outline-secondary text-nowrap" onclick="moveBackToProduction('${o.id}')">Not Ready Yet</button>
+          <button class="btn btn-primary text-nowrap" onclick="completeOrder('${o.id}')">${label}</button>
         </div>
       </div>
     </div></div>`;
