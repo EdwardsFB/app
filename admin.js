@@ -307,10 +307,7 @@ function renderOrdersList() {
                 <option value="pickedup" ${o.fulfillmentStatus==='pickedup'?'selected':''}>Picked Up</option>
               </select></td>
           <td class="text-end">$${Number(o.total).toFixed(2)}</td>
-          <td class="text-end">
-            <button class="btn btn-outline-secondary btn-sm me-2" onclick="openOrderModal('${o.id}')">Edit</button>
-            <button class="btn btn-outline-danger btn-sm" onclick="deleteOrder('${o.id}')">Delete</button>
-          </td>
+          <td class="text-end"><button class="btn btn-outline-secondary btn-sm me-2" onclick="openOrderModal('${o.id}')">Edit</button><button class="btn btn-outline-danger btn-sm" onclick="deleteOrder('${o.id}')">Delete</button></td>
         </tr>`;
       }).join('')}
     </tbody>
@@ -525,7 +522,6 @@ function renderCustomersTab() {
       </tr>`).join('')}</tbody>
     </table></div>
     ${list.length===0 ? '<div class="text-center text-muted py-5">No customers yet</div>' : ''}
-    ${mergeModeOn ? '<p class="small text-muted mb-2">Check 2 or more customers above to merge them into one.</p>' : ''}
     <div class="form-check form-switch mt-2 mb-5">
       <input class="form-check-input" type="checkbox" id="mergeModeToggle" ${mergeModeOn?'checked':''} onchange="setMergeMode(this.checked)">
       <label class="form-check-label small" for="mergeModeToggle">Merge Mode</label>
@@ -733,10 +729,9 @@ function renderProductionTab() {
         <div>
           <div>${esc(o.firstName)} ${esc(o.lastName)}</div>
           <div class="small text-muted">${esc(o.phone||'')}</div>
-          ${o.fulfillment==='delivery' ? `<div class="small text-muted">${esc(o.deliveryAddress||o.address||'')}</div>` : ''}
-          ${o.notes ? `<div class="small text-muted fst-italic">"${esc(o.notes)}"</div>` : ''}
+          ${o.notes ? `<div class="small text-muted fst-italic">${esc(o.notes)}</div>` : ''}
         </div>
-        <div class="d-flex flex-wrap align-items-center">${itemButtons}</div>
+        <div class="d-flex flex-wrap align-items-center align-content-center">${itemButtons}</div>
         <div class="d-flex align-items-center justify-content-end">
           <button class="btn ${ready ? 'btn-primary' : 'btn-outline-secondary'}" ${ready ? '' : 'disabled'} onclick="markOrderReady('${o.id}')">Mark Ready</button>
         </div>
