@@ -116,11 +116,25 @@ function switchTab(tab) {
   document.getElementById('newProductBtn').classList.toggle('d-none', tab !== 'products');
   if (tab !== 'customers') { document.getElementById('mergeBar').classList.add('d-none'); }
 
-  if (tab === 'home') renderHomeTab();
-  if (tab === 'orders') renderOrdersTab();
-  if (tab === 'customers') renderCustomersTab();
-  if (tab === 'production') renderProductionTab();
-  if (tab === 'products') renderProductsTab();
+  if (tab === 'home') refreshAndRenderTab('home', renderHomeTab);
+  if (tab === 'orders') refreshAndRenderTab('orders', renderOrdersTab);
+  if (tab === 'customers') refreshAndRenderTab('customers', renderCustomersTab);
+  if (tab === 'production') refreshAndRenderTab('production', renderProductionTab);
+  if (tab === 'products') refreshAndRenderTab('products', renderProductsTab);
+}
+
+async function refreshAndRenderTab(tab, renderFn) {
+  renderFn(); // show existing data immediately so navigation feels instant
+  try {
+    const fresh = await apiGetAll();
+    products = fresh.products || products;
+    orders = fresh.orders || orders;
+    customers = fresh.customers || customers;
+  } catch (err) {
+    console.error('Could not refresh data for ' + tab, err);
+    return;
+  }
+  if (currentAdminTab === tab) renderFn(); // only re-render if still on this tab (avoids stomping a newer tab's content)
 }
 
 // ══════════════════════════════════════════
@@ -517,7 +531,10 @@ function openMergeModal() {
   mergeModal.show();
 }
 
+let mergeInProgress = false;
+
 async function performMerge() {
+  if (mergeInProgress) return; // guard against double-click starting a second overlapping merge
   const checkedEl = document.querySelector('input[name="mergeCanonical"]:checked');
   if (!checkedEl) return;
   const canonicalKey = checkedEl.value;
@@ -527,24 +544,44 @@ async function performMerge() {
   const otherKeys = [...selectedCustomerKeys].filter(k => k !== canonicalKey);
   if (!canonical || !otherKeys.length) return;
 
+  mergeInProgress = true;
+  const mergeBtn = document.querySelector('#mergeModal .modal-footer .btn-dark');
+  const originalBtnText = mergeBtn.textContent;
+  mergeBtn.disabled = true;
+  mergeBtn.textContent = 'Merging...';
+
   const updates = { firstName: canonical.firstName, lastName: canonical.lastName, phone: canonical.phone };
 
-  for (const o of orders) {
-    const k = custKey({firstName:o.firstName, lastName:o.lastName, phone:o.phone});
-    if (otherKeys.includes(k)) {
-      o.firstName = updates.firstName;
-      o.lastName = updates.lastName;
-      o.phone = updates.phone;
-      await apiWrite('orders','update',o.id,updates);
+  try {
+    for (const o of orders) {
+      const k = custKey({firstName:o.firstName, lastName:o.lastName, phone:o.phone});
+      if (otherKeys.includes(k)) {
+        o.firstName = updates.firstName;
+        o.lastName = updates.lastName;
+        o.phone = updates.phone;
+        await apiWrite('orders','update',o.id,updates);
+      }
     }
-  }
 
-  for (const key of otherKeys) {
-    const rec = list.find(c => c._key === key);
-    if (rec && rec.recordId) {
-      customers = customers.filter(c => c.id !== rec.recordId);
-      await apiWrite('customers','delete',rec.recordId,null);
+    for (const key of otherKeys) {
+      const rec = list.find(c => c._key === key);
+      if (rec && rec.recordId) {
+        customers = customers.filter(c => c.id !== rec.recordId);
+        await apiWrite('customers','delete',rec.recordId,null);
+      }
     }
+
+    // Re-fetch from the actual Sheet rather than trust local state, so the UI reflects true server data
+    const fresh = await apiGetAll();
+    products = fresh.products || [];
+    orders = fresh.orders || [];
+    customers = fresh.customers || [];
+  } catch (err) {
+    alert('Something went wrong during the merge: ' + err.message + '\n\nPlease refresh the page and check whether it completed before trying again.');
+  } finally {
+    mergeBtn.disabled = false;
+    mergeBtn.textContent = originalBtnText;
+    mergeInProgress = false;
   }
 
   selectedCustomerKeys.clear();
