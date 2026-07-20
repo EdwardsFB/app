@@ -743,7 +743,7 @@ function renderProductionTab() {
   const container = document.getElementById('tab-production');
   const active = orders.filter(o => o.fulfillmentStatus === 'pending');
 
-  if (!active.length) { container.innerHTML = '<div class="text-center text-muted py-5">Nothing waiting to be made — all caught up!</div>'; return; }
+  if (!active.length) { container.innerHTML = '<div class="text-center"><div class="alert alert-info d-inline-block" role="alert">Nothing waiting to be made — all caught up!</div></div>'; return; }
 
   // Bake totals — cards stay visible even at 0 remaining, showing a green checkmark instead
   const totals = {};
