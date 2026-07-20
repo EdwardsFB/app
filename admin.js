@@ -74,7 +74,7 @@ async function loadAndShowApp() {
   document.getElementById('loading').classList.add('d-none');
   document.getElementById('app').classList.remove('d-none');
 
-  const validTabs = ['home','orders','customers','bake','route','products'];
+  const validTabs = ['home','orders','production','customers','products'];
   const hashTab = location.hash.replace('#','');
   switchTab(validTabs.includes(hashTab) ? hashTab : 'home');
   setTimeout(() => window.scrollTo(0, 1), 50);
@@ -106,10 +106,10 @@ function switchTab(tab) {
     el.classList.toggle('text-white', el.dataset.tab === tab);
     el.classList.toggle('text-white-50', el.dataset.tab !== tab);
   });
-  ['home','orders','customers','bake','route','products'].forEach(t => {
+  ['home','orders','production','customers','products'].forEach(t => {
     document.getElementById('tab-'+t).classList.toggle('d-none', t !== tab);
   });
-  const titles = { home:'Home', orders:'Orders', customers:'Customers', bake:'Bake List', route:'Delivery Route', products:'Products' };
+  const titles = { home:'Home', orders:'Orders', production:'Production Day', customers:'Customers', products:'Products' };
   document.getElementById('pageTitle').textContent = titles[tab];
   document.getElementById('newOrderBtn').classList.toggle('d-none', tab !== 'orders');
   document.getElementById('addCustomerBtn').classList.toggle('d-none', tab !== 'customers');
@@ -119,8 +119,7 @@ function switchTab(tab) {
   if (tab === 'home') renderHomeTab();
   if (tab === 'orders') renderOrdersTab();
   if (tab === 'customers') renderCustomersTab();
-  if (tab === 'bake') renderBakeTab();
-  if (tab === 'route') renderRouteTab();
+  if (tab === 'production') renderProductionTab();
   if (tab === 'products') renderProductsTab();
 }
 
@@ -277,6 +276,7 @@ function renderOrdersList() {
               </select></td>
           <td><select class="form-select form-select-sm" onchange="updateFulfillmentStatus('${o.id}', this.value)">
                 <option value="pending" ${o.fulfillmentStatus==='pending'?'selected':''}>Pending</option>
+                <option value="ready" ${o.fulfillmentStatus==='ready'?'selected':''}>Ready</option>
                 <option value="delivered" ${o.fulfillmentStatus==='delivered'?'selected':''}>Delivered</option>
                 <option value="pickedup" ${o.fulfillmentStatus==='pickedup'?'selected':''}>Picked Up</option>
               </select></td>
@@ -613,61 +613,104 @@ async function saveCustomerFromModal() {
 }
 
 // ══════════════════════════════════════════
-// BAKE LIST
+// PRODUCTION DAY — combined Bake List + Fulfillment + Delivery Route
 // ══════════════════════════════════════════
-function renderBakeTab() {
-  const active = orders.filter(o => o.fulfillmentStatus!=='delivered' && o.fulfillmentStatus!=='pickedup');
-  const container = document.getElementById('tab-bake');
-  if (!active.length) { container.innerHTML = '<div class="text-center text-muted py-5">Nothing to bake right now.</div>'; return; }
+let bakedProductIds = new Set(); // session-only "done baking" checkmarks, resets on reload
+
+function toggleBaked(productId) {
+  if (bakedProductIds.has(productId)) bakedProductIds.delete(productId);
+  else bakedProductIds.add(productId);
+  renderProductionTab();
+}
+
+function cycleFulfillment(id) {
+  const o = orders.find(o=>o.id===id); if (!o) return;
+  const finalStatus = o.fulfillment === 'delivery' ? 'delivered' : 'pickedup';
+  const next = o.fulfillmentStatus === 'pending' ? 'ready'
+             : o.fulfillmentStatus === 'ready' ? finalStatus
+             : 'pending'; // clicking a finished order resets it (undo)
+  o.fulfillmentStatus = next;
+  renderProductionTab();
+  apiWrite('orders','update',id,{fulfillmentStatus: next});
+}
+
+function statusButtonLabel(o) {
+  if (o.fulfillmentStatus === 'pending') return { text: 'Mark Ready', cls: 'btn-outline-secondary' };
+  if (o.fulfillmentStatus === 'ready') return { text: o.fulfillment==='delivery' ? 'Mark Delivered' : 'Mark Picked Up', cls: 'btn-warning' };
+  return { text: o.fulfillment==='delivery' ? '✓ Delivered' : '✓ Picked Up', cls: 'btn-success' };
+}
+
+function renderProductionTab() {
+  const container = document.getElementById('tab-production');
+  const active = orders.filter(o => o.fulfillmentStatus !== 'delivered' && o.fulfillmentStatus !== 'pickedup');
+
+  if (!active.length) { container.innerHTML = '<div class="text-center text-muted py-5">Nothing active right now — all caught up!</div>'; return; }
+
+  // Bake list totals
   const totals = {};
   products.forEach(p => totals[p.id]=0);
   active.forEach(o => (o.items||[]).forEach(i => totals[i.productId]=(totals[i.productId]||0)+i.qty));
+  const bakeProducts = products.filter(p=>totals[p.id]>0);
 
-  container.innerHTML = `
-    <div class="row row-cols-2 row-cols-md-3 g-3 mb-4">
-      ${products.filter(p=>totals[p.id]>0).map(p => `
-        <div class="col"><div class="card border-secondary border-3 border-start h-100"><div class="card-body">
-          <div class="fs-5 fw-bold">${esc(p.name)}</div>
-          <div class="display-5 fw-bold">${totals[p.id]}</div>
-          <div class="text-muted">${esc((p.unit||'').replace('per ',''))}${totals[p.id]!==1?'s':''} to make</div>
-        </div></div></div>
-      `).join('')}
-    </div>
-    <h6 class="text-uppercase text-muted small">Active Orders (${active.length})</h6>
-    ${active.sort((a,b)=>(a.date||'').localeCompare(b.date||'')).map(o => {
-      const itemStr = (o.items||[]).map(i=>{const p=products.find(p=>p.id===i.productId); return p?`${i.qty}× ${p.name}`:'';}).filter(Boolean).join(', ');
-      return `<div class="card mb-2"><div class="card-body py-2"><div class="d-flex justify-content-between"><span class="fw-bold">${esc(o.firstName)} ${esc(o.lastName)}</span><span class="small text-muted">${o.date||'no date'} · ${o.fulfillment}</span></div><div class="small">${esc(itemStr)}</div></div></div>`;
-    }).join('')}
-  `;
-}
+  // Fulfillment groups
+  const pickups = active.filter(o => o.fulfillment === 'pickup');
+  const deliveries = active.filter(o => o.fulfillment === 'delivery');
+  if (!routeOrder.length || routeOrder.length !== deliveries.length || !deliveries.every(o=>routeOrder.includes(o.id))) {
+    routeOrder = deliveries.map(o=>o.id);
+  }
+  const orderedDeliveries = routeOrder.map(id => deliveries.find(o=>o.id===id)).filter(Boolean);
 
-// ══════════════════════════════════════════
-// DELIVERY ROUTE
-// ══════════════════════════════════════════
-function renderRouteTab() {
-  const deliveries = orders.filter(o => o.fulfillment==='delivery' && o.fulfillmentStatus!=='delivered' && (o.deliveryAddress||o.address));
-  const container = document.getElementById('tab-route');
-  if (!deliveries.length) { container.innerHTML = '<div class="text-center text-muted py-5">No deliveries pending.</div>'; return; }
-  if (!routeOrder.length || routeOrder.length !== deliveries.length) routeOrder = deliveries.map(o=>o.id);
-  const ordered = routeOrder.map(id => deliveries.find(o=>o.id===id)).filter(Boolean);
-
-  container.innerHTML = `
-    ${ordered.map((o,idx) => `
-      <div class="card mb-2"><div class="card-body py-2 d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center gap-2">
-          <span class="fw-bold text-muted">${idx+1}.</span>
-          <div><div class="fw-bold small">${esc(o.firstName)} ${esc(o.lastName)}</div><div class="small text-muted">${esc(o.deliveryAddress||o.address)}</div></div>
+  function orderRow(o, idx, showMoveArrows) {
+    const itemStr = (o.items||[]).map(i=>{const p=products.find(p=>p.id===i.productId); return p?`${i.qty}× ${p.name}`:'';}).filter(Boolean).join(', ');
+    const btn = statusButtonLabel(o);
+    return `<div class="card mb-2"><div class="card-body py-2">
+      <div class="d-flex justify-content-between align-items-start gap-2">
+        <div class="d-flex align-items-start gap-2">
+          ${showMoveArrows ? `<div><button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="moveRoute(${idx},-1)">↑</button> <button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="moveRoute(${idx},1)">↓</button></div>` : ''}
+          <div>
+            <div>${esc(o.firstName)} ${esc(o.lastName)} <span class="small text-muted">${esc(o.phone||'')}</span></div>
+            ${o.fulfillment==='delivery' ? `<div class="small text-muted">${esc(o.deliveryAddress||o.address||'')}</div>` : ''}
+            <div class="small">${esc(itemStr)}</div>
+            ${o.notes ? `<div class="small text-muted fst-italic">"${esc(o.notes)}"</div>` : ''}
+          </div>
         </div>
-        <div><button class="btn btn-outline-secondary btn-sm" onclick="moveRoute(${idx},-1)">↑</button> <button class="btn btn-outline-secondary btn-sm" onclick="moveRoute(${idx},1)">↓</button></div>
-      </div></div>
-    `).join('')}
-    <button class="btn btn-dark mt-2" onclick="openRouteMap()">Open Route in Google Maps</button>
+        <button class="btn btn-sm ${btn.cls}" style="white-space:nowrap;" onclick="cycleFulfillment('${o.id}')">${btn.text}</button>
+      </div>
+    </div></div>`;
+  }
+
+  container.innerHTML = `
+    <h6 class="text-uppercase text-muted small">Bake List</h6>
+    <div class="row row-cols-2 row-cols-md-3 g-3 mb-4">
+      ${bakeProducts.map(p => {
+        const done = bakedProductIds.has(p.id);
+        return `
+        <div class="col"><div class="card ${done ? 'border-success' : 'border-secondary'} border-3 border-start h-100 ${done?'bg-light':''}">
+          <div class="card-body">
+            <div class="fs-5 fw-bold ${done?'text-decoration-line-through text-muted':''}">${esc(p.name)}</div>
+            <div class="display-5 fw-bold ${done?'text-muted':''}">${totals[p.id]}</div>
+            <div class="text-muted mb-2">${esc((p.unit||'').replace('per ',''))}${totals[p.id]!==1?'s':''} to make</div>
+            <button class="btn btn-sm ${done?'btn-success':'btn-outline-secondary'} w-100" onclick="toggleBaked('${p.id}')">${done ? '✓ Baked' : 'Mark Baked'}</button>
+          </div>
+        </div></div>`;
+      }).join('')}
+    </div>
+
+    <h6 class="text-uppercase text-muted small">Pickup Orders (${pickups.length})</h6>
+    ${pickups.length ? pickups.map(o => orderRow(o)).join('') : '<p class="small text-muted">None right now.</p>'}
+
+    <h6 class="text-uppercase text-muted small mt-4">Delivery Orders (${orderedDeliveries.length})</h6>
+    ${orderedDeliveries.length ? `
+      ${orderedDeliveries.map((o,idx) => orderRow(o, idx, true)).join('')}
+      <button class="btn btn-dark mt-2 mb-4" onclick="openRouteMap()">Open Route in Google Maps</button>
+    ` : '<p class="small text-muted">None right now.</p>'}
   `;
 }
+
 function moveRoute(idx, dir) {
   const newIdx = idx+dir; if (newIdx<0 || newIdx>=routeOrder.length) return;
   [routeOrder[idx], routeOrder[newIdx]] = [routeOrder[newIdx], routeOrder[idx]];
-  renderRouteTab();
+  renderProductionTab();
 }
 function openRouteMap() {
   const deliveries = orders.filter(o => o.fulfillment==='delivery' && o.fulfillmentStatus!=='delivered' && (o.deliveryAddress||o.address));
