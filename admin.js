@@ -844,7 +844,7 @@ function renderFulfillmentTab() {
       <div class="card h-100">
         <div class="card-body d-flex flex-column">
           <div class="d-flex justify-content-between align-items-start">
-            <h4 class="fw-bold mb-0">${esc(o.firstName)} ${esc(o.lastName)}</h4>
+            <div class="fs-5 fw-bold">${esc(o.firstName)} ${esc(o.lastName)}</div>
             ${showArrows ? `<div>${idx>0 ? `<button class="btn btn-outline-secondary btn-sm py-0 px-1 me-1" onclick="moveRoute(${idx},-1)">↑</button>` : ''}${idx<total-1 ? `<button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="moveRoute(${idx},1)">↓</button>` : ''}</div>` : ''}
           </div>
           <div class="mt-3 mb-3">
