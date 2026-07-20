@@ -105,6 +105,7 @@ async function submitOrder() {
   const first = document.getElementById('cf-first').value.trim();
   const last = document.getElementById('cf-last').value.trim();
   const phone = document.getElementById('cf-phone').value.trim();
+  const email = document.getElementById('cf-email').value.trim();
   const date = document.getElementById('cf-date').value;
   const address = document.getElementById('cf-address').value.trim();
   const notes = document.getElementById('cf-notes').value.trim();
@@ -147,6 +148,18 @@ async function submitOrder() {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Place Order';
     return;
+  }
+
+  if (email) {
+    try {
+      const key = custKey({firstName:first, lastName:last, phone});
+      const existingRec = customers.find(c => custKey(c) === key);
+      if (existingRec) {
+        if (existingRec.email !== email) { await apiWrite('customers','update',existingRec.id,{email}); }
+      } else {
+        await apiWrite('customers','add',null,{ id:'c'+Date.now(), firstName:first, lastName:last, phone, email });
+      }
+    } catch (err) { console.error('Could not save email', err); }
   }
 
   document.getElementById('confirmMsg').textContent = `Thanks, ${first}! Your order total is $${totals.total.toFixed(2)}.`;

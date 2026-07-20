@@ -126,9 +126,7 @@ function switchTab(tab) {
   document.getElementById('newOrderBtn').classList.toggle('d-none', tab !== 'orders');
   document.getElementById('addCustomerBtn').classList.toggle('d-none', tab !== 'customers');
   document.getElementById('newProductBtn').classList.toggle('d-none', tab !== 'products');
-  document.getElementById('mergeModeToggleWrap').classList.toggle('d-none', tab !== 'customers');
-  document.getElementById('reorderModeToggleWrap').classList.toggle('d-none', tab !== 'products');
-  if (tab !== 'customers') { document.getElementById('mergeBar').classList.add('d-none'); }
+  if (tab !== 'customers') { selectedCustomerKeys.clear(); document.getElementById('mergeBar').classList.add('d-none'); }
 
   if (tab === 'home') refreshAndRenderTab('home', renderHomeTab);
   if (tab === 'orders') refreshAndRenderTab('orders', renderOrdersTab);
@@ -182,13 +180,13 @@ function renderHomeTab() {
   const newCount = orders.filter(o=>o.fulfillmentStatus==='pending').length;
   const uniqueCustomers = getMergedCustomers(products, orders, customers).length;
 
-  const newOrderColor = newCount > 0 ? 'danger' : 'secondary';
+  const newOrderColor = newCount > 0 ? 'success' : 'secondary';
   const unpaidColor = unpaidCount > 0 ? 'warning' : 'secondary';
 
   const cards = [
     ['New Orders', newCount, newOrderColor],
     ['Unpaid Orders', unpaidCount, unpaidColor],
-    ['Total Profit', '$'+totalProfit.toFixed(0), 'success'],
+    ['Total Profit', '$'+totalProfit.toFixed(0), ''],
     ['Average Order', '$'+avgOrder.toFixed(2), ''],
     ['Average Margin', avgMargin.toFixed(0)+'%', ''],
     ['Total Orders', orders.length, ''],
@@ -310,7 +308,7 @@ function renderOrdersList() {
               </select></td>
           <td class="text-end">$${Number(o.total).toFixed(2)}</td>
           <td class="text-end">
-            <button class="btn btn-outline-secondary btn-sm" onclick="openOrderModal('${o.id}')">Edit</button>
+            <button class="btn btn-outline-secondary btn-sm me-2" onclick="openOrderModal('${o.id}')">Edit</button>
             <button class="btn btn-outline-danger btn-sm" onclick="deleteOrder('${o.id}')">Delete</button>
           </td>
         </tr>`;
@@ -514,20 +512,24 @@ function renderCustomersTab() {
     if (typeof av==='string') { av=av.toLowerCase(); bv=(bv||'').toLowerCase(); }
     return av<bv ? (customerSortDir==='asc'?-1:1) : av>bv ? (customerSortDir==='asc'?1:-1) : 0;
   });
-  const cols = [['firstName','First Name',''],['lastName','Last Name',''],['phone','Phone',''],['address','Address',''],['orderCount','Orders','end'],['totalSpent','Total Spent','end']];
+  const cols = [['firstName','First Name',''],['lastName','Last Name',''],['phone','Phone',''],['email','Email',''],['address','Address',''],['orderCount','Orders','end'],['totalSpent','Total Spent','end']];
 
   document.getElementById('tab-customers').innerHTML = `
     <div class="table-responsive"><table class="table table-striped table-bordered bg-white">
       <thead><tr>${mergeModeOn ? '<th></th>' : ''}${cols.map(([k,l,a])=>`<th class="text-${a||'start'}" style="cursor:pointer;" onclick="sortCustomersBy('${k}')">${l}${sortArrow(k)}</th>`).join('')}<th></th></tr></thead>
       <tbody>${list.map(c => `<tr>
         ${mergeModeOn ? `<td><input type="checkbox" ${selectedCustomerKeys.has(c._key)?'checked':''} onchange="toggleCustomerSelect('${c._key}')"></td>` : ''}
-        <td>${esc(c.firstName)}</td><td>${esc(c.lastName)}</td><td>${esc(c.phone||'—')}</td><td>${esc(c.address||'—')}</td>
+        <td>${esc(c.firstName)}</td><td>${esc(c.lastName)}</td><td>${esc(c.phone||'—')}</td><td>${esc(c.email||'—')}</td><td>${esc(c.address||'—')}</td>
         <td class="text-end">${c.orderCount}</td><td class="text-end">$${c.totalSpent.toFixed(2)}</td>
         <td class="text-end"><button class="btn btn-outline-secondary btn-sm" onclick='openCustomerModal(${JSON.stringify(c).replace(/'/g,"&apos;")})'>Edit</button></td>
       </tr>`).join('')}</tbody>
     </table></div>
     ${list.length===0 ? '<div class="text-center text-muted py-5">No customers yet</div>' : ''}
-    ${mergeModeOn ? '<p class="small text-muted mb-5">Check 2 or more customers above to merge them into one.</p>' : ''}
+    ${mergeModeOn ? '<p class="small text-muted mb-2">Check 2 or more customers above to merge them into one.</p>' : ''}
+    <div class="form-check form-switch mt-2 mb-5">
+      <input class="form-check-input" type="checkbox" id="mergeModeToggle" ${mergeModeOn?'checked':''} onchange="setMergeMode(this.checked)">
+      <label class="form-check-label small" for="mergeModeToggle">Merge Mode</label>
+    </div>
   `;
   updateMergeBar();
 }
@@ -569,23 +571,27 @@ async function performMerge() {
   const updates = { firstName: canonical.firstName, lastName: canonical.lastName, phone: canonical.phone };
 
   try {
+    const writePromises = [];
     for (const o of orders) {
       const k = custKey({firstName:o.firstName, lastName:o.lastName, phone:o.phone});
       if (otherKeys.includes(k)) {
         o.firstName = updates.firstName;
         o.lastName = updates.lastName;
         o.phone = updates.phone;
-        await apiWrite('orders','update',o.id,updates);
+        writePromises.push(apiWrite('orders','update',o.id,updates));
       }
     }
+    await Promise.all(writePromises);
 
+    const deletePromises = [];
     for (const key of otherKeys) {
       const rec = list.find(c => c._key === key);
       if (rec && rec.recordId) {
         customers = customers.filter(c => c.id !== rec.recordId);
-        await apiWrite('customers','delete',rec.recordId,null);
+        deletePromises.push(apiWrite('customers','delete',rec.recordId,null));
       }
     }
+    await Promise.all(deletePromises);
 
     // Re-fetch from the actual Sheet rather than trust local state, so the UI reflects true server data
     const fresh = await apiGetAll();
@@ -611,6 +617,7 @@ function openCustomerModal(existing) {
   document.getElementById('cm-first').value = existing ? existing.firstName : '';
   document.getElementById('cm-last').value = existing ? existing.lastName : '';
   document.getElementById('cm-phone').value = existing ? existing.phone : '';
+  document.getElementById('cm-email').value = existing ? (existing.email||'') : '';
   if (!existing) {
     ['cm-street','cm-city','cm-state','cm-zip'].forEach(id => document.getElementById(id).value='');
   } else if (existing.street || existing.city || existing.state || existing.zip) {
@@ -635,6 +642,7 @@ async function saveCustomerFromModal() {
   const data = {
     firstName:first, lastName:last,
     phone: document.getElementById('cm-phone').value.trim(),
+    email: document.getElementById('cm-email').value.trim(),
     street: document.getElementById('cm-street').value.trim(),
     city: document.getElementById('cm-city').value.trim(),
     state: document.getElementById('cm-state').value.trim(),
@@ -721,15 +729,15 @@ function renderProductionTab() {
     }).filter(Boolean).join('');
     const ready = allItemsMade(o);
     return `<div class="card mb-2"><div class="card-body py-2">
-      <div class="row align-items-center g-2">
-        <div class="col-12 col-md-3 d-flex flex-column justify-content-center">
+      <div class="d-grid align-items-center gap-2" style="grid-template-columns: 22% 1fr 140px;">
+        <div>
           <div>${esc(o.firstName)} ${esc(o.lastName)}</div>
           <div class="small text-muted">${esc(o.phone||'')}</div>
           ${o.fulfillment==='delivery' ? `<div class="small text-muted">${esc(o.deliveryAddress||o.address||'')}</div>` : ''}
           ${o.notes ? `<div class="small text-muted fst-italic">"${esc(o.notes)}"</div>` : ''}
         </div>
-        <div class="col-12 col-md-7 d-flex flex-wrap align-items-center">${itemButtons}</div>
-        <div class="col-12 col-md-2 d-flex align-items-center justify-content-md-end">
+        <div class="d-flex flex-wrap align-items-center">${itemButtons}</div>
+        <div class="d-flex align-items-center justify-content-end">
           <button class="btn ${ready ? 'btn-primary' : 'btn-outline-secondary'}" ${ready ? '' : 'disabled'} onclick="markOrderReady('${o.id}')">Mark Ready</button>
         </div>
       </div>
@@ -794,18 +802,17 @@ function renderFulfillmentTab() {
     }).filter(Boolean).join('');
     const label = o.fulfillment === 'delivery' ? 'Mark Delivered' : 'Mark Picked Up';
     return `<div class="card mb-2"><div class="card-body py-2">
-      <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
-        <div class="d-flex align-items-start gap-2">
-          ${showMoveArrows ? `<div><button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="moveRoute(${idx},-1)">↑</button> <button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="moveRoute(${idx},1)">↓</button></div>` : ''}
-          <div>
-            <div>${esc(o.firstName)} ${esc(o.lastName)} <span class="small text-muted">${esc(o.phone||'')}</span></div>
-            ${o.fulfillment==='delivery' ? `<div class="small text-muted">${esc(o.deliveryAddress||o.address||'')}</div>` : ''}
-            <div class="small mt-1">${itemLines}</div>
-          </div>
+      <div class="d-grid align-items-center gap-2" style="grid-template-columns: 22% 1fr 260px;">
+        <div>
+          ${showMoveArrows ? `<div class="mb-1"><button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="moveRoute(${idx},-1)">↑</button> <button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="moveRoute(${idx},1)">↓</button></div>` : ''}
+          <div>${esc(o.firstName)} ${esc(o.lastName)}</div>
+          <div class="small text-muted">${esc(o.phone||'')}</div>
+          ${o.fulfillment==='delivery' ? `<div class="small text-muted">${esc(o.deliveryAddress||o.address||'')}</div>` : ''}
         </div>
-        <div class="text-end">
-          <button class="btn btn-sm btn-success" onclick="completeOrder('${o.id}')">${label}</button>
-          <div class="small mt-1"><a href="#" class="text-muted" onclick="moveBackToProduction('${o.id}'); return false;">Not ready yet</a></div>
+        <div>${itemLines}</div>
+        <div class="d-flex align-items-center justify-content-end gap-2">
+          <button class="btn btn-outline-secondary" onclick="moveBackToProduction('${o.id}')">Not Ready Yet</button>
+          <button class="btn btn-primary" onclick="completeOrder('${o.id}')">${label}</button>
         </div>
       </div>
     </div></div>`;
@@ -846,17 +853,22 @@ function openRouteMap() {
 function renderProductsTab() {
   document.getElementById('tab-products').innerHTML = `
     <div class="table-responsive"><table class="table table-striped table-bordered bg-white">
-      <thead><tr>${reorderModeOn ? '<th></th>' : ''}<th>Name</th><th>Description</th><th class="text-end">Price</th><th class="text-end">Cost</th><th>Unit</th><th>Status</th><th></th></tr></thead>
+      <thead><tr>${reorderModeOn ? '<th></th>' : ''}<th>Name</th><th>Status</th><th>Description</th><th class="text-end">Price</th><th class="text-end">Cost</th><th>Unit</th><th></th></tr></thead>
       <tbody id="productsTableBody">
         ${products.map(p => `<tr ${reorderModeOn ? `draggable="true" data-id="${p.id}" ondragstart="onProductDragStart(event,'${p.id}')" ondragover="onProductDragOver(event,'${p.id}')" ondragleave="onProductDragLeave(event)" ondrop="onProductDrop(event,'${p.id}')"` : ''}>
           ${reorderModeOn ? '<td class="drag-handle text-muted">⠿</td>' : ''}
-          <td>${esc(p.name)}</td><td>${esc(p.desc||'')}</td>
-          <td class="text-end">$${Number(p.price).toFixed(2)}</td><td class="text-end">$${Number(p.cost).toFixed(2)}</td><td>${esc(p.unit||'')}</td>
+          <td>${esc(p.name)}</td>
           <td>${p.active===false ? '<span class="badge bg-secondary">Inactive</span>' : '<span class="badge bg-success">Active</span>'}</td>
-          <td class="text-end"><button class="btn btn-outline-secondary btn-sm" onclick="openProductModal('${p.id}')">Edit</button> <button class="btn btn-outline-danger btn-sm" onclick="deleteProductRow('${p.id}')">Delete</button></td>
+          <td>${esc(p.desc||'')}</td>
+          <td class="text-end">$${Number(p.price).toFixed(2)}</td><td class="text-end">$${Number(p.cost).toFixed(2)}</td><td>${esc(p.unit||'')}</td>
+          <td class="text-end"><button class="btn btn-outline-secondary btn-sm me-2" onclick="openProductModal('${p.id}')">Edit</button><button class="btn btn-outline-danger btn-sm" onclick="deleteProductRow('${p.id}')">Delete</button></td>
         </tr>`).join('')}
       </tbody>
     </table></div>
+    <div class="form-check form-switch mt-2 mb-5">
+      <input class="form-check-input" type="checkbox" id="reorderModeToggle" ${reorderModeOn?'checked':''} onchange="setReorderMode(this.checked)">
+      <label class="form-check-label small" for="reorderModeToggle">Reorder Mode</label>
+    </div>
   `;
 }
 

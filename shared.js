@@ -84,7 +84,7 @@ function getMergedCustomers(products, orders, customers) {
 
   customers.forEach(c => {
     map.set(custKey(c), {
-      recordId: c.id, firstName: c.firstName, lastName: c.lastName, phone: c.phone||'',
+      recordId: c.id, firstName: c.firstName, lastName: c.lastName, phone: c.phone||'', email: c.email||'',
       street: c.street||'', city: c.city||'', state: c.state||'', zip: c.zip||'',
       address: formatAddress(c.street, c.city, c.state, c.zip),
       orderCount: 0, totalSpent: 0
@@ -96,7 +96,7 @@ function getMergedCustomers(products, orders, customers) {
     let entry = map.get(k);
     if (!entry) {
       entry = {
-        recordId: null, firstName:o.firstName, lastName:o.lastName, phone:o.phone||'',
+        recordId: null, firstName:o.firstName, lastName:o.lastName, phone:o.phone||'', email: '',
         street: '', city: '', state: '', zip: '',
         address: o.address||o.deliveryAddress||'',
         orderCount:0, totalSpent:0
