@@ -221,7 +221,7 @@ function renderByProductTable() {
   });
   const arrow = c => byProductSortCol===c ? (byProductSortDir==='asc'?' ▲':' ▼') : '';
   const cols = [['name','Product',''],['qty','Qty','end'],['revenue','Revenue','end'],['margin','Margin','end'],['profit','Profit','end']];
-  const rows = rowsData.map(r => `<tr><td>${esc(r.name)}</td><td class="text-end">${r.qty}</td><td class="text-end">$${r.revenue.toFixed(2)}</td><td class="text-end">${r.margin.toFixed(0)}%</td><td class="text-end fw-bold">$${r.profit.toFixed(2)}</td></tr>`).join('');
+  const rows = rowsData.map(r => `<tr><td>${esc(r.name)}</td><td class="text-end">${r.qty}</td><td class="text-end">$${r.revenue.toFixed(2)}</td><td class="text-end">${r.margin.toFixed(0)}%</td><td class="text-end">$${r.profit.toFixed(2)}</td></tr>`).join('');
   return `<table class="table table-striped table-bordered mb-0"><thead><tr>${cols.map(([k,l,a])=>`<th class="text-${a||'start'}" style="cursor:pointer;" onclick="sortByProductBy('${k}')">${l}${arrow(k)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
 }
 
@@ -268,7 +268,7 @@ function renderOrdersList() {
         return `<tr title="${esc(itemStr)}">
           <td class="text-muted small">#${String(numberMap.get(o.id)).padStart(3,'0')}</td>
           <td><div class="fw-bold">${esc(o.firstName)} ${esc(o.lastName)}</div><div class="small text-muted">${esc(o.phone||'')}</div></td>
-          <td><span class="badge text-bg-secondary">${o.fulfillment}</span></td>
+          <td><span class="badge text-bg-secondary">${cap(o.fulfillment)}</span></td>
           <td>${cap(o.payment)}</td>
           <td class="small text-muted">${o.date||'—'}</td>
           <td><select class="form-select form-select-sm" onchange="updatePaymentStatus('${o.id}', this.value)">
