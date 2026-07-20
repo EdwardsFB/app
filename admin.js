@@ -29,11 +29,8 @@ function openCustomerDetail(orderId) {
     ['Email', (match && match.email) || '—'],
     ['Address', o.fulfillment==='delivery' ? (o.deliveryAddress||o.address||'—') : '—'],
     ['Fulfillment', cap(o.fulfillment)],
+    ['Total Spent', '$'+Number(o.total).toFixed(2)],
   ];
-  if (match) {
-    rows.push(['Total Orders', match.orderCount]);
-    rows.push(['Total Spent', '$'+match.totalSpent.toFixed(2)]);
-  }
 
   document.getElementById('customerDetailBody').innerHTML = rows.map(([label,val]) =>
     `<div class="row mb-2"><div class="col-5 text-muted">${label}</div><div class="col-7">${esc(String(val))}</div></div>`
@@ -151,7 +148,8 @@ function switchTab(tab) {
   document.getElementById('newOrderBtn').classList.toggle('d-none', tab !== 'orders');
   document.getElementById('addCustomerBtn').classList.toggle('d-none', tab !== 'customers');
   document.getElementById('newProductBtn').classList.toggle('d-none', tab !== 'products');
-  if (tab !== 'customers') { selectedCustomerKeys.clear(); document.getElementById('mergeBar').classList.add('d-none'); }
+  if (tab !== 'customers') { selectedCustomerKeys.clear(); mergeModeOn = false; document.getElementById('mergeBar').classList.add('d-none'); }
+  if (tab !== 'products') { reorderModeOn = false; }
 
   if (tab === 'home') refreshAndRenderTab('home', renderHomeTab);
   if (tab === 'orders') refreshAndRenderTab('orders', renderOrdersTab);
@@ -772,7 +770,7 @@ function renderProductionTab() {
     return `<div class="card mb-2"><div class="card-body py-2">
       <div style="display:grid; grid-template-columns: 22% 1fr 140px; align-items:center; gap:0.5rem;">
         <div style="align-self:center;">
-          <div><a href="#" class="link-dark" onclick="openCustomerDetail('${o.id}'); return false;">${esc(o.firstName)} ${esc(o.lastName)}</a></div>
+          <div>${esc(o.firstName)} ${esc(o.lastName)} <a href="#" class="link-dark" onclick="openCustomerDetail('${o.id}'); return false;" title="Customer details"><i class="bi bi-person-vcard"></i></a></div>
           ${o.notes ? `<div class="small text-muted fst-italic">${esc(o.notes)}</div>` : ''}
         </div>
         <div style="align-self:center; display:flex; flex-wrap:wrap; gap:0.5rem;">${itemButtons}</div>
