@@ -148,7 +148,7 @@ function renderHomeTab() {
   const cards = [
     ['New Orders', newCount, newOrderColor],
     ['Unpaid Orders', unpaidCount, unpaidColor],
-    ['Total Revenue', '$'+totalRevenue.toFixed(0), 'secondary'],
+    ['Total Revenue', '$'+totalRevenue.toFixed(0), ''],
     ['Total Profit', '$'+totalProfit.toFixed(0), 'success'],
     ['Average Order', '$'+avgOrder.toFixed(2), ''],
     ['Average Margin', avgMargin.toFixed(0)+'%', ''],
@@ -172,7 +172,7 @@ function renderHomeTab() {
           <div class="card ${borderClass(color)} h-100">
             <div class="card-body">
               <div class="small text-muted text-uppercase">${label}</div>
-              <div class="fs-4 fw-bold ${color==='success'?'text-success':''}">${val}</div>
+              <div class="fs-4 fw-bold">${val}</div>
             </div>
           </div>
         </div>
@@ -209,8 +209,8 @@ function renderByProductTable() {
   });
   const arrow = c => byProductSortCol===c ? (byProductSortDir==='asc'?' ▲':' ▼') : '';
   const cols = [['name','Product',''],['qty','Qty','end'],['revenue','Revenue','end'],['margin','Margin','end'],['profit','Profit','end']];
-  const rows = rowsData.map(r => `<tr><td>${esc(r.name)}</td><td class="text-end">${r.qty}</td><td class="text-end">$${r.revenue.toFixed(2)}</td><td class="text-end">${r.margin.toFixed(0)}%</td><td class="text-end text-success fw-bold">$${r.profit.toFixed(2)}</td></tr>`).join('');
-  return `<table class="table table-striped mb-0"><thead><tr>${cols.map(([k,l,a])=>`<th class="text-${a||'start'}" style="cursor:pointer;" onclick="sortByProductBy('${k}')">${l}${arrow(k)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
+  const rows = rowsData.map(r => `<tr><td>${esc(r.name)}</td><td class="text-end">${r.qty}</td><td class="text-end">$${r.revenue.toFixed(2)}</td><td class="text-end">${r.margin.toFixed(0)}%</td><td class="text-end fw-bold">$${r.profit.toFixed(2)}</td></tr>`).join('');
+  return `<table class="table table-striped table-bordered mb-0"><thead><tr>${cols.map(([k,l,a])=>`<th class="text-${a||'start'}" style="cursor:pointer;" onclick="sortByProductBy('${k}')">${l}${arrow(k)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 // ══════════════════════════════════════════
@@ -248,7 +248,7 @@ function renderOrdersList() {
   if (!list.length) { el.innerHTML = '<div class="text-center text-muted py-5">No orders here.</div>'; return; }
   const numberMap = getOrderNumberMap();
 
-  el.innerHTML = `<div class="table-responsive"><table class="table table-striped align-middle bg-white">
+  el.innerHTML = `<div class="table-responsive"><table class="table table-striped table-bordered align-middle bg-white">
     <thead><tr><th>#</th><th>Customer</th><th>Type</th><th>Payment</th><th>Date</th><th>Payment Status</th><th>Fulfillment</th><th class="text-end">Total</th><th></th></tr></thead>
     <tbody>
       ${list.map(o => {
@@ -352,7 +352,7 @@ function openOrderModal(id) {
   products.forEach(p => omQty[p.id] = order ? ((order.items||[]).find(i=>i.productId===p.id)?.qty || 0) : 0);
   const fulfillment = order ? order.fulfillment : 'pickup';
 
-  document.getElementById('orderModalTitle').textContent = order ? 'Edit Order' : 'Add Manual Order';
+  document.getElementById('orderModalTitle').textContent = order ? 'Edit Order' : 'New Order';
   document.getElementById('om-first').value = order ? order.firstName : '';
   document.getElementById('om-last').value = order ? order.lastName : '';
   document.getElementById('om-phone').value = order ? order.phone : '';
@@ -455,7 +455,7 @@ function renderCustomersTab() {
   const cols = [['firstName','First Name',''],['lastName','Last Name',''],['phone','Phone',''],['address','Address',''],['orderCount','Orders','end'],['totalSpent','Total Spent','end']];
 
   document.getElementById('tab-customers').innerHTML = `
-    <div class="table-responsive"><table class="table table-striped bg-white">
+    <div class="table-responsive"><table class="table table-striped table-bordered bg-white">
       <thead><tr>${cols.map(([k,l,a])=>`<th class="text-${a||'start'}" style="cursor:pointer;" onclick="sortCustomersBy('${k}')">${l}${sortArrow(k)}</th>`).join('')}<th></th></tr></thead>
       <tbody>${list.map(c => `<tr>
         <td>${esc(c.firstName)}</td><td>${esc(c.lastName)}</td><td>${esc(c.phone||'—')}</td><td>${esc(c.address||'—')}</td>
@@ -601,7 +601,7 @@ function openRouteMap() {
 // ══════════════════════════════════════════
 function renderProductsTab() {
   document.getElementById('tab-products').innerHTML = `
-    <div class="table-responsive"><table class="table table-striped bg-white">
+    <div class="table-responsive"><table class="table table-striped table-bordered bg-white">
       <thead><tr><th></th><th>Name</th><th>Description</th><th class="text-end">Price</th><th class="text-end">Cost</th><th>Unit</th><th></th></tr></thead>
       <tbody id="productsTableBody">
         ${products.map(p => `<tr draggable="true" data-id="${p.id}"

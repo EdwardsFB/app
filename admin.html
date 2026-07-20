@@ -39,9 +39,9 @@
 <div id="app" class="d-none d-flex">
 
   <div class="sidebar bg-dark text-white d-flex flex-column">
-    <div class="p-3 border-bottom border-secondary text-center">
+    <div class="py-5 px-3 border-bottom border-secondary text-center">
       <a href="#" onclick="switchTab('home'); return false;" class="text-decoration-none text-white">
-        <img id="logoImg" class="d-none mb-1" style="max-height:60px;" alt="Edwards Family Bakery"/>
+        <img id="logoImg" class="d-none mt-2 mb-4" style="max-height:60px;" alt="Edwards Family Bakery"/>
         <div id="brandText" class="fw-bold">Edwards Family Bakery</div>
         <div class="small text-white-50">Bakery Admin</div>
       </a>
@@ -56,7 +56,7 @@
     </div>
     <div class="p-3 border-top border-secondary text-center">
       <img id="qrImg" style="width:100px;height:100px;background:white;padding:4px;border-radius:4px;" alt="QR code to order page"/>
-      <div class="mt-3"><a href="#" class="small text-white-50" onclick="copyPublicLink(); return false;">Copy URL</a></div>
+      <div class="mt-3"><a href="#" class="small text-white-50 text-decoration-none" onclick="copyPublicLink(); return false;">Copy URL</a></div>
     </div>
   </div>
 
@@ -84,7 +84,7 @@
   <div class="modal-dialog modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="orderModalTitle">Add Manual Order</h5>
+        <h5 class="modal-title" id="orderModalTitle">New Order</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
@@ -155,7 +155,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button class="btn btn-dark" onclick="saveOrderFromModal()">Save</button>
+        <button class="btn btn-success" onclick="saveOrderFromModal()">Save</button>
       </div>
     </div>
   </div>
@@ -178,12 +178,10 @@
         </div>
         <div class="mb-0"><label class="form-label small">Unit (e.g. "per loaf")</label><input id="pm-unit" class="form-control" type="text"/></div>
       </div>
-      <div class="modal-footer justify-content-between">
-        <button class="btn btn-danger d-none" id="pm-delete-btn" onclick="confirmDeleteProduct()">Delete Product</button>
-        <div>
-          <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button class="btn btn-success" onclick="saveProductFromModal()">Save</button>
-        </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger d-none me-auto" id="pm-delete-btn" onclick="confirmDeleteProduct()">Delete Product</button>
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-success" onclick="saveProductFromModal()">Save</button>
       </div>
     </div>
   </div>
