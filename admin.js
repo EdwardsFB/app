@@ -805,11 +805,30 @@ function renderProductionTab() {
 // ══════════════════════════════════════════
 // FULFILLMENT — final handoff step for orders already marked Ready
 // ══════════════════════════════════════════
+function showToast(message) {
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast align-items-center text-white bg-success border-0';
+  el.setAttribute('role', 'alert');
+  el.innerHTML = `
+    <div class="d-flex">
+      <div class="toast-body">${esc(message)}</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  `;
+  container.appendChild(el);
+  const toast = new bootstrap.Toast(el, { delay: 4000 });
+  el.addEventListener('hidden.bs.toast', () => el.remove());
+  toast.show();
+}
+
 async function completeOrder(id) {
   const o = orders.find(o=>o.id===id); if (!o) return;
   const finalStatus = o.fulfillment === 'delivery' ? 'delivered' : 'pickedup';
+  const finalLabel = finalStatus === 'delivered' ? 'Delivered' : 'Picked Up';
   o.fulfillmentStatus = finalStatus;
   renderFulfillmentTab();
+  showToast(`Order marked as ${finalLabel} on Orders screen!`);
   await apiWrite('orders','update',id,{fulfillmentStatus: finalStatus});
 }
 async function moveBackToProduction(id) {
@@ -845,7 +864,7 @@ function renderFulfillmentTab() {
         <div class="card-body d-flex flex-column">
           <div class="d-flex justify-content-between align-items-start">
             <div class="fs-5 fw-bold">${esc(o.firstName)} ${esc(o.lastName)}</div>
-            ${showArrows ? `<div>${idx>0 ? `<button class="btn btn-outline-secondary btn-sm py-0 px-1 me-1" onclick="moveRoute(${idx},-1)">↑</button>` : ''}${idx<total-1 ? `<button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="moveRoute(${idx},1)">↓</button>` : ''}</div>` : ''}
+            <a href="#" class="text-secondary" onclick="moveBackToProduction('${o.id}'); return false;" title="Send back to Production"><i class="bi bi-reply"></i></a>
           </div>
           <div class="mt-3 mb-3">
             <div class="mb-2">${esc(o.phone||'')}</div>
@@ -853,8 +872,8 @@ function renderFulfillmentTab() {
             ${o.notes ? `<div class="fst-italic mb-2">${esc(o.notes)}</div>` : ''}
           </div>
           <ul class="list-group mb-3">${itemListItems}</ul>
-          <div class="mt-auto">
-            <button class="btn btn-outline-secondary me-2" onclick="moveBackToProduction('${o.id}')" title="Send back to Production"><i class="bi bi-reply"></i></button>
+          <div class="mt-auto d-flex justify-content-between align-items-center">
+            <div>${showArrows ? `${idx>0 ? `<button class="btn btn-outline-secondary me-2" onclick="moveRoute(${idx},-1)">↑</button>` : ''}${idx<total-1 ? `<button class="btn btn-outline-secondary" onclick="moveRoute(${idx},1)">↓</button>` : ''}` : ''}</div>
             <button class="btn btn-primary text-nowrap" onclick="completeOrder('${o.id}')">${label}</button>
           </div>
         </div>
