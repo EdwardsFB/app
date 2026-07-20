@@ -24,16 +24,21 @@ function openCustomerDetail(orderId) {
   const merged = getMergedCustomers(products, orders, customers);
   const match = merged.find(c => custKey(c) === custKey({firstName:o.firstName, lastName:o.lastName, phone:o.phone}));
 
+  const addr = o.fulfillment==='delivery' ? parseAddress(o.deliveryAddress||o.address||'') : null;
+  const addressHtml = addr
+    ? `${esc(addr.street)}<br>${esc([addr.city, [addr.state, addr.zip].filter(Boolean).join(' ')].filter(Boolean).join(', '))}`
+    : '—';
+
   const rows = [
-    ['Phone', o.phone || '—'],
-    ['Email', (match && match.email) || '—'],
-    ['Address', o.fulfillment==='delivery' ? (o.deliveryAddress||o.address||'—') : '—'],
-    ['Fulfillment', cap(o.fulfillment)],
-    ['Total Spent', '$'+Number(o.total).toFixed(2)],
+    ['Phone', esc(o.phone || '—')],
+    ['Email', esc((match && match.email) || '—')],
+    ['Address', addressHtml],
+    ['Fulfillment', esc(cap(o.fulfillment))],
+    ['Total Spent', esc('$'+Number(o.total).toFixed(2))],
   ];
 
   document.getElementById('customerDetailBody').innerHTML = rows.map(([label,val]) =>
-    `<div class="row mb-2"><div class="col-5 text-muted">${label}</div><div class="col-7">${esc(String(val))}</div></div>`
+    `<div class="row mb-2"><div class="col-5 text-muted">${label}</div><div class="col-7">${val}</div></div>`
   ).join('');
   customerDetailModal.show();
 }
@@ -736,7 +741,7 @@ async function markOrderReady(id) {
   const o = orders.find(o=>o.id===id); if (!o) return;
   o.fulfillmentStatus = 'ready';
   renderProductionTab();
-  showToast('Order marked as Ready on Fulfillment screen!');
+  showToast('Success! Moved to Fulfillment.');
   await apiWrite('orders','update',id,{fulfillmentStatus:'ready'});
 }
 
@@ -826,10 +831,9 @@ function showToast(message, bgClass) {
 async function completeOrder(id) {
   const o = orders.find(o=>o.id===id); if (!o) return;
   const finalStatus = o.fulfillment === 'delivery' ? 'delivered' : 'pickedup';
-  const finalLabel = finalStatus === 'delivered' ? 'Delivered' : 'Picked Up';
   o.fulfillmentStatus = finalStatus;
   renderFulfillmentTab();
-  showToast(`Order marked as ${finalLabel} on Orders screen!`);
+  showToast(`Success! Moved to Orders.`);
   await apiWrite('orders','update',id,{fulfillmentStatus: finalStatus});
 }
 async function moveBackToProduction(id) {
