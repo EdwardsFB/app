@@ -784,7 +784,7 @@ function renderProductionTab() {
   }
 
   container.innerHTML = `
-    <h6 class="text-uppercase text-muted small">Bake List</h6>
+    <h5 class="text-uppercase text-muted">Bake List</h5>
     <div class="row row-cols-2 row-cols-md-3 g-3 mb-4">
       ${bakeProducts.map(p => {
         const done = totals[p.id] === 0;
@@ -796,10 +796,10 @@ function renderProductionTab() {
       `;}).join('')}
     </div>
 
-    <h6 class="text-uppercase text-muted small d-flex align-items-center gap-2">Pickup Orders <span class="badge text-bg-secondary">${pickups.length}</span></h6>
+    <h5 class="text-uppercase text-muted d-flex align-items-center gap-2">Pickup Orders <span class="badge text-bg-secondary">${pickups.length}</span></h5>
     ${pickups.length ? pickups.map(o => orderCard(o)).join('') : '<p class="small text-muted">None right now.</p>'}
 
-    <h6 class="text-uppercase text-muted small mt-4 d-flex align-items-center gap-2">Delivery Orders <span class="badge text-bg-secondary">${deliveries.length}</span></h6>
+    <h5 class="text-uppercase text-muted mt-4 d-flex align-items-center gap-2">Delivery Orders <span class="badge text-bg-secondary">${deliveries.length}</span></h5>
     ${deliveries.length ? deliveries.map(o => orderCard(o)).join('') : '<p class="small text-muted">None right now.</p>'}
   `;
 }
@@ -857,10 +857,10 @@ function renderFulfillmentTab() {
   }
 
   container.innerHTML = `
-    <h6 class="text-uppercase text-muted small d-flex align-items-center gap-2">Pickup <span class="badge text-bg-secondary">${pickups.length}</span></h6>
+    <h5 class="text-uppercase text-muted d-flex align-items-center gap-2">Pickup <span class="badge text-bg-secondary">${pickups.length}</span></h5>
     ${pickups.length ? pickups.map(o => orderRow(o)).join('') : '<p class="small text-muted">None right now.</p>'}
 
-    <h6 class="text-uppercase text-muted small mt-4 d-flex align-items-center gap-2">Delivery <span class="badge text-bg-secondary">${orderedDeliveries.length}</span></h6>
+    <h5 class="text-uppercase text-muted mt-4 d-flex align-items-center gap-2">Delivery <span class="badge text-bg-secondary">${orderedDeliveries.length}</span></h5>
     ${orderedDeliveries.length ? `
       ${orderedDeliveries.map((o,idx) => orderRow(o, idx, true)).join('')}
       <button class="btn btn-dark mt-2 mb-4" onclick="openRouteMap()">Open Route in Google Maps</button>
