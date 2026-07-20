@@ -420,7 +420,9 @@ function updateOMTotal() {
 async function saveOrderFromModal() {
   const first = document.getElementById('om-first').value.trim();
   const last = document.getElementById('om-last').value.trim();
+  const phone = document.getElementById('om-phone').value.trim();
   if (!first || !last) { alert('Please enter a customer name.'); return; }
+  if (!phone) { alert('Please enter a phone number — this keeps orders correctly matched to the right customer.'); return; }
   const items = products.filter(p => (omQty[p.id]||0) > 0).map(p => ({ productId:p.id, qty:omQty[p.id] }));
   if (!items.length) { alert('Please add at least one item.'); return; }
 
