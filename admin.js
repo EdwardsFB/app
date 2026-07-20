@@ -165,7 +165,7 @@ function renderHomeTab() {
     ['Average Margin', avgMargin.toFixed(0)+'%', ''],
     ['Total Orders', orders.length, ''],
     ['Unique Customers', uniqueCustomers, ''],
-    ['Total Products', products.length, ''],
+    ['Active Products', products.filter(p => p.active !== false).length, ''],
   ];
 
   const paymentStats = { venmo:0, cash:0 };
