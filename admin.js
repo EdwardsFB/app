@@ -1,6 +1,8 @@
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
+if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
+
 let products = [], orders = [], customers = [];
 let currentAdminTab = 'home';
 let currentOrderFilter = 'new';
@@ -69,6 +71,7 @@ async function loadAndShowApp() {
   const validTabs = ['home','orders','customers','bake','route','products'];
   const hashTab = location.hash.replace('#','');
   switchTab(validTabs.includes(hashTab) ? hashTab : 'home');
+  setTimeout(() => window.scrollTo(0, 0), 50);
 }
 
 async function refreshData() {
@@ -91,6 +94,7 @@ function applyLogo() {
 function switchTab(tab) {
   currentAdminTab = tab;
   location.hash = tab;
+  window.scrollTo(0, 0);
   document.querySelectorAll('#sidebarNav .nav-link').forEach(el => {
     el.classList.toggle('active', el.dataset.tab === tab);
     el.classList.toggle('text-white', el.dataset.tab === tab);
