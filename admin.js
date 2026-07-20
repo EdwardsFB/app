@@ -864,7 +864,7 @@ function renderFulfillmentTab() {
         <div class="card-body d-flex flex-column">
           <div class="d-flex justify-content-between align-items-start">
             <div class="fs-5 fw-bold">${esc(o.firstName)} ${esc(o.lastName)}</div>
-            <a href="#" class="text-secondary" onclick="moveBackToProduction('${o.id}'); return false;" title="Send back to Production"><i class="bi bi-reply"></i></a>
+            <a href="#" class="text-secondary fs-4" onclick="moveBackToProduction('${o.id}'); return false;" title="Send back to Production"><i class="bi bi-reply"></i></a>
           </div>
           <div class="mt-3 mb-3">
             <div class="mb-2">${esc(o.phone||'')}</div>
