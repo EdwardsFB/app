@@ -770,7 +770,7 @@ function renderProductionTab() {
     return `<div class="card mb-2"><div class="card-body py-2">
       <div style="display:grid; grid-template-columns: 22% 1fr 140px; align-items:center; gap:0.5rem;">
         <div style="align-self:center;">
-          <div>${esc(o.firstName)} ${esc(o.lastName)} <a href="#" class="link-dark" onclick="openCustomerDetail('${o.id}'); return false;" title="Customer details"><i class="bi bi-person-vcard"></i></a></div>
+          <div>${esc(o.firstName)} ${esc(o.lastName)} <a href="#" class="text-secondary ms-2" onclick="openCustomerDetail('${o.id}'); return false;" title="Customer details"><i class="bi bi-person-vcard"></i></a></div>
           ${o.notes ? `<div class="small text-muted fst-italic">${esc(o.notes)}</div>` : ''}
         </div>
         <div style="align-self:center; display:flex; flex-wrap:wrap; gap:0.5rem;">${itemButtons}</div>
