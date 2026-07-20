@@ -30,9 +30,10 @@ function applyLogo() {
 }
 
 function renderProducts() {
+  const visibleProducts = products.filter(p => p.active !== false);
   cQty = {};
-  products.forEach(p => cQty[p.id] = 0);
-  document.getElementById('productsList').innerHTML = products.map(p => `
+  visibleProducts.forEach(p => cQty[p.id] = 0);
+  document.getElementById('productsList').innerHTML = visibleProducts.map(p => `
     <div class="card mb-2">
       <div class="card-body d-flex justify-content-between align-items-center py-2">
         <div>

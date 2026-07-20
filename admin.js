@@ -681,7 +681,7 @@ function openRouteMap() {
 function renderProductsTab() {
   document.getElementById('tab-products').innerHTML = `
     <div class="table-responsive"><table class="table table-striped table-bordered bg-white">
-      <thead><tr><th></th><th>Name</th><th>Description</th><th class="text-end">Price</th><th class="text-end">Cost</th><th>Unit</th><th></th></tr></thead>
+      <thead><tr><th></th><th>Name</th><th>Description</th><th class="text-end">Price</th><th class="text-end">Cost</th><th>Unit</th><th>Status</th><th></th></tr></thead>
       <tbody id="productsTableBody">
         ${products.map(p => `<tr draggable="true" data-id="${p.id}"
             ondragstart="onProductDragStart(event,'${p.id}')" ondragover="onProductDragOver(event,'${p.id}')"
@@ -689,6 +689,7 @@ function renderProductsTab() {
           <td class="drag-handle text-muted">⠿</td>
           <td>${esc(p.name)}</td><td>${esc(p.desc||'')}</td>
           <td class="text-end">$${Number(p.price).toFixed(2)}</td><td class="text-end">$${Number(p.cost).toFixed(2)}</td><td>${esc(p.unit||'')}</td>
+          <td>${p.active===false ? '<span class="badge bg-secondary">Inactive</span>' : '<span class="badge bg-success">Active</span>'}</td>
           <td class="text-end"><button class="btn btn-outline-secondary btn-sm" onclick="openProductModal('${p.id}')">Edit</button> <button class="btn btn-outline-danger btn-sm" onclick="deleteProductRow('${p.id}')">Delete</button></td>
         </tr>`).join('')}
       </tbody>
@@ -721,6 +722,7 @@ function openProductModal(id) {
   document.getElementById('pm-price').value = p ? p.price : '';
   document.getElementById('pm-cost').value = p ? p.cost : '';
   document.getElementById('pm-unit').value = p ? (p.unit||'') : '';
+  document.getElementById('pm-active').checked = p ? (p.active !== false) : true;
   productModal.show();
 }
 function deleteProductRow(id) {
@@ -738,7 +740,8 @@ async function saveProductFromModal() {
     name, desc: document.getElementById('pm-desc').value.trim(),
     price: parseFloat(document.getElementById('pm-price').value)||0,
     cost: parseFloat(document.getElementById('pm-cost').value)||0,
-    unit: document.getElementById('pm-unit').value.trim()
+    unit: document.getElementById('pm-unit').value.trim(),
+    active: document.getElementById('pm-active').checked
   };
   if (editingProductId) {
     const p = products.find(p=>p.id===editingProductId);
