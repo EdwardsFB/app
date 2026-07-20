@@ -708,14 +708,17 @@ function renderProductionTab() {
     }).filter(Boolean).join('');
     const ready = allItemsMade(o);
     return `<div class="card mb-2"><div class="card-body py-2">
-      <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
-        <div>
-          <div>${esc(o.firstName)} ${esc(o.lastName)} <span class="small text-muted">${esc(o.phone||'')}</span></div>
+      <div class="row align-items-center g-2">
+        <div class="col-12 col-md-3">
+          <div>${esc(o.firstName)} ${esc(o.lastName)}</div>
+          <div class="small text-muted">${esc(o.phone||'')}</div>
           ${o.fulfillment==='delivery' ? `<div class="small text-muted">${esc(o.deliveryAddress||o.address||'')}</div>` : ''}
-          <div class="mt-2 d-flex flex-wrap">${itemButtons}</div>
-          ${o.notes ? `<div class="small text-muted fst-italic mt-1">"${esc(o.notes)}"</div>` : ''}
+          ${o.notes ? `<div class="small text-muted fst-italic">"${esc(o.notes)}"</div>` : ''}
         </div>
-        <button class="btn btn-sm ${ready ? 'btn-success' : 'btn-outline-secondary'}" ${ready ? '' : 'disabled'} onclick="markOrderReady('${o.id}')">Mark Ready</button>
+        <div class="col-12 col-md-7 d-flex flex-wrap">${itemButtons}</div>
+        <div class="col-12 col-md-2 text-md-end">
+          <button class="btn ${ready ? 'btn-primary' : 'btn-outline-secondary'}" ${ready ? '' : 'disabled'} onclick="markOrderReady('${o.id}')">Mark Ready</button>
+        </div>
       </div>
     </div></div>`;
   }
@@ -733,10 +736,10 @@ function renderProductionTab() {
       `;}).join('')}
     </div>
 
-    <h6 class="text-uppercase text-muted small">Pickup Orders <span class="badge text-bg-secondary">${pickups.length}</span></h6>
+    <h6 class="text-uppercase text-muted small d-flex align-items-center gap-2">Pickup Orders <span class="badge text-bg-secondary">${pickups.length}</span></h6>
     ${pickups.length ? pickups.map(o => orderCard(o)).join('') : '<p class="small text-muted">None right now.</p>'}
 
-    <h6 class="text-uppercase text-muted small mt-4">Delivery Orders <span class="badge text-bg-secondary">${deliveries.length}</span></h6>
+    <h6 class="text-uppercase text-muted small mt-4 d-flex align-items-center gap-2">Delivery Orders <span class="badge text-bg-secondary">${deliveries.length}</span></h6>
     ${deliveries.length ? deliveries.map(o => orderCard(o)).join('') : '<p class="small text-muted">None right now.</p>'}
   `;
 }
@@ -762,7 +765,7 @@ function renderFulfillmentTab() {
   const container = document.getElementById('tab-fulfillment');
   const ready = orders.filter(o => o.fulfillmentStatus === 'ready');
 
-  if (!ready.length) { container.innerHTML = '<div class="alert alert-light text-center" role="alert">Zero orders ready for pickup or delivery</div>'; return; }
+  if (!ready.length) { container.innerHTML = '<div class="text-center"><div class="alert alert-light d-inline-block" role="alert">Zero orders ready for pickup or delivery</div></div>'; return; }
 
   const pickups = ready.filter(o => o.fulfillment === 'pickup');
   const deliveries = ready.filter(o => o.fulfillment === 'delivery');
@@ -796,10 +799,10 @@ function renderFulfillmentTab() {
   }
 
   container.innerHTML = `
-    <h6 class="text-uppercase text-muted small">Pickup <span class="badge text-bg-secondary">${pickups.length}</span></h6>
+    <h6 class="text-uppercase text-muted small d-flex align-items-center gap-2">Pickup <span class="badge text-bg-secondary">${pickups.length}</span></h6>
     ${pickups.length ? pickups.map(o => orderRow(o)).join('') : '<p class="small text-muted">None right now.</p>'}
 
-    <h6 class="text-uppercase text-muted small mt-4">Delivery <span class="badge text-bg-secondary">${orderedDeliveries.length}</span></h6>
+    <h6 class="text-uppercase text-muted small mt-4 d-flex align-items-center gap-2">Delivery <span class="badge text-bg-secondary">${orderedDeliveries.length}</span></h6>
     ${orderedDeliveries.length ? `
       ${orderedDeliveries.map((o,idx) => orderRow(o, idx, true)).join('')}
       <button class="btn btn-dark mt-2 mb-4" onclick="openRouteMap()">Open Route in Google Maps</button>
