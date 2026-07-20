@@ -662,21 +662,27 @@ function toggleBaked(productId) {
   renderProductionTab();
 }
 
-function cycleFulfillment(id) {
+function setFulfillmentStatus(id, status) {
   const o = orders.find(o=>o.id===id); if (!o) return;
-  const finalStatus = o.fulfillment === 'delivery' ? 'delivered' : 'pickedup';
-  const next = o.fulfillmentStatus === 'pending' ? 'ready'
-             : o.fulfillmentStatus === 'ready' ? finalStatus
-             : 'pending'; // clicking a finished order resets it (undo)
-  o.fulfillmentStatus = next;
+  o.fulfillmentStatus = status;
   renderProductionTab();
-  apiWrite('orders','update',id,{fulfillmentStatus: next});
+  apiWrite('orders','update',id,{fulfillmentStatus: status});
 }
 
-function statusButtonLabel(o) {
-  if (o.fulfillmentStatus === 'pending') return { text: 'Mark Ready', cls: 'btn-outline-secondary' };
-  if (o.fulfillmentStatus === 'ready') return { text: o.fulfillment==='delivery' ? 'Mark Delivered' : 'Mark Picked Up', cls: 'btn-warning' };
-  return { text: o.fulfillment==='delivery' ? '✓ Delivered' : '✓ Picked Up', cls: 'btn-success' };
+function statusButtonGroup(o) {
+  const finalStatus = o.fulfillment === 'delivery' ? 'delivered' : 'pickedup';
+  const finalLabel = o.fulfillment === 'delivery' ? 'Delivered' : 'Picked Up';
+  const steps = [
+    { status: 'pending', label: 'New' },
+    { status: 'ready', label: 'Ready' },
+    { status: finalStatus, label: finalLabel }
+  ];
+  return `<div class="btn-group" role="group">
+    ${steps.map(s => {
+      const active = o.fulfillmentStatus === s.status;
+      return `<button type="button" class="btn btn-sm ${active ? 'btn-dark' : 'btn-outline-secondary'}" onclick="setFulfillmentStatus('${o.id}','${s.status}')">${s.label}</button>`;
+    }).join('')}
+  </div>`;
 }
 
 function renderProductionTab() {
@@ -704,9 +710,8 @@ function renderProductionTab() {
       const p = products.find(p=>p.id===i.productId);
       return p ? `<div><span class="badge text-bg-secondary">${i.qty}</span> ${esc(p.name)}</div>` : '';
     }).filter(Boolean).join('');
-    const btn = statusButtonLabel(o);
     return `<div class="card mb-2"><div class="card-body py-2">
-      <div class="d-flex justify-content-between align-items-start gap-2">
+      <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
         <div class="d-flex align-items-start gap-2">
           ${showMoveArrows ? `<div><button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="moveRoute(${idx},-1)">↑</button> <button class="btn btn-outline-secondary btn-sm py-0 px-1" onclick="moveRoute(${idx},1)">↓</button></div>` : ''}
           <div>
@@ -716,7 +721,7 @@ function renderProductionTab() {
             ${o.notes ? `<div class="small text-muted fst-italic">"${esc(o.notes)}"</div>` : ''}
           </div>
         </div>
-        <button class="btn btn-sm ${btn.cls}" style="white-space:nowrap;" onclick="cycleFulfillment('${o.id}')">${btn.text}</button>
+        ${statusButtonGroup(o)}
       </div>
     </div></div>`;
   }
@@ -727,12 +732,11 @@ function renderProductionTab() {
       ${bakeProducts.map(p => {
         const done = bakedProductIds.has(p.id);
         return `
-        <div class="col"><div class="card ${done ? 'border-success' : 'border-secondary'} border-3 border-start h-100 ${done?'bg-light':''}">
+        <div class="col"><div class="card h-100 ${done?'bg-light':''}">
           <div class="card-body">
             <div class="fs-5 fw-bold ${done?'text-decoration-line-through text-muted':''}">${esc(p.name)}</div>
-            <div class="display-5 fw-bold ${done?'text-muted':''}">${totals[p.id]}</div>
-            <div class="text-muted mb-2">${esc((p.unit||'').replace('per ',''))}${totals[p.id]!==1?'s':''} to make</div>
-            <button class="btn btn-sm ${done?'btn-success':'btn-outline-secondary'} w-100" onclick="toggleBaked('${p.id}')">${done ? '✓ Baked' : 'Mark Baked'}</button>
+            <div class="display-5 fw-bold mb-2 ${done?'text-muted':''}">${totals[p.id]}</div>
+            <button class="btn btn-sm ${done?'btn-success':'btn-outline-secondary'} w-100" onclick="toggleBaked('${p.id}')">${done ? '✓ Done' : 'Mark Done'}</button>
           </div>
         </div></div>`;
       }).join('')}
