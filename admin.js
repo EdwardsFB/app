@@ -720,13 +720,22 @@ async function saveCustomerFromModal() {
 // ══════════════════════════════════════════
 // PRODUCTION — mark individual items made, per order, live-decrementing totals
 // ══════════════════════════════════════════
-async function toggleUnit(orderId, productId, unitIdx) {
+const madeItemsWriteTimers = {};
+
+function toggleUnit(orderId, productId, unitIdx) {
   const o = orders.find(o=>o.id===orderId); if (!o) return;
   o.madeItems = o.madeItems || {};
   o.madeItems[productId] = o.madeItems[productId] || [];
   o.madeItems[productId][unitIdx] = !o.madeItems[productId][unitIdx];
   renderProductionTab();
-  await apiWrite('orders','update',orderId,{madeItems: o.madeItems});
+
+  // Debounce the save per order — rapid clicks collapse into a single request with the
+  // final state, instead of firing overlapping requests that can arrive out of order
+  // and silently overwrite a later click with an earlier, incomplete one.
+  clearTimeout(madeItemsWriteTimers[orderId]);
+  madeItemsWriteTimers[orderId] = setTimeout(() => {
+    apiWrite('orders','update',orderId,{madeItems: o.madeItems});
+  }, 500);
 }
 
 function unitsDoneCount(o, productId) {
