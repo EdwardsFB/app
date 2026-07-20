@@ -208,8 +208,8 @@ function renderHomeTab() {
   const newCount = orders.filter(o=>o.fulfillmentStatus==='pending').length;
   const uniqueCustomers = getMergedCustomers(products, orders, customers).length;
 
-  const newOrderColor = newCount > 0 ? 'success' : 'secondary';
-  const unpaidColor = unpaidCount > 0 ? 'warning' : 'secondary';
+  const newOrderColor = newCount > 0 ? 'success' : '';
+  const unpaidColor = unpaidCount > 0 ? 'warning' : '';
 
   const cards = [
     ['New Orders', newCount, newOrderColor],
