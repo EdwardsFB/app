@@ -36,6 +36,16 @@
   .form-control.bg-light, .form-select.bg-light { border: 1px solid #ced4da !important; }
   input[type="date"] { color: #adb5bd; }
   input[type="date"].has-value { color: #212529; }
+  input[type="date"]::-webkit-datetime-edit-text,
+  input[type="date"]::-webkit-datetime-edit-month-field,
+  input[type="date"]::-webkit-datetime-edit-day-field,
+  input[type="date"]::-webkit-datetime-edit-year-field { color: #adb5bd; }
+  input[type="date"].has-value::-webkit-datetime-edit-text,
+  input[type="date"].has-value::-webkit-datetime-edit-month-field,
+  input[type="date"].has-value::-webkit-datetime-edit-day-field,
+  input[type="date"].has-value::-webkit-datetime-edit-year-field { color: #212529; }
+  input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type="number"] { -moz-appearance: textfield; }
   @media (max-width: 767.98px) {
     .mobile-map-link { text-decoration: underline; pointer-events: auto; cursor: pointer; }
   }

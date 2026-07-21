@@ -434,22 +434,32 @@ function setOmFieldsReadOnly(readOnly) {
     el.style.backgroundColor = readOnly ? '#f8f9fa' : '';
     el.style.border = readOnly ? '1px solid #ced4da' : '';
     el.style.color = readOnly ? '#495057' : '';
+    el.style.webkitAppearance = readOnly ? 'none' : '';
+    el.style.appearance = readOnly ? 'none' : '';
+    el.style.borderRadius = readOnly ? '0.375rem' : '';
     const label = document.querySelector(`label[for="${id}"]`);
     if (label) label.style.backgroundColor = readOnly ? '#f8f9fa' : '';
   });
 }
 
+function clearOmCustomerFields() {
+  document.getElementById('om-first').value='';
+  document.getElementById('om-last').value='';
+  document.getElementById('om-phone').value='';
+  ['om-street','om-city','om-state','om-zip'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('om-fulfillment').value = 'pickup';
+  document.getElementById('om-addressField').classList.add('d-none');
+}
+
 function setOmCustomerMode(mode) {
   omCustomerMode = mode;
   document.getElementById('omExistingSelectField').classList.toggle('d-none', mode!=='existing');
+  clearOmCustomerFields();
   if (mode === 'existing') {
+    document.getElementById('om-existing-select').value = '';
     populateOmExistingSelect();
     setOmFieldsReadOnly(true);
   } else {
-    document.getElementById('om-first').value='';
-    document.getElementById('om-last').value='';
-    document.getElementById('om-phone').value='';
-    ['om-street','om-city','om-state','om-zip'].forEach(id => document.getElementById(id).value='');
     setOmFieldsReadOnly(false);
   }
 }
@@ -517,8 +527,8 @@ function openOrderModal(id) {
   setOmDiscount(order && order.discountSocial ? 'social' : (order && order.discountFamily ? 'family' : 'none'));
   resetOmModeUI();
 
-  document.getElementById('om-products').innerHTML = products.map(p => `
-    <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+  document.getElementById('om-products').innerHTML = `<ul class="list-group">` + products.map(p => `
+    <li class="list-group-item d-flex justify-content-between align-items-center">
       <div><div class="fw-bold">${esc(p.name)}</div><div class="small text-muted">$${Number(p.price).toFixed(2)} ${esc(p.unit||'')}</div></div>
       <div class="input-group" style="width:130px;">
         <button class="btn btn-outline-secondary" type="button" style="border-color:#ced4da;" onclick="adjustOmQty('${p.id}',-1)"><i class="bi bi-dash-lg"></i></button>
@@ -526,8 +536,8 @@ function openOrderModal(id) {
           oninput="omQty['${p.id}']=parseInt(this.value)||0; updateOMTotal();"/>
         <button class="btn btn-outline-secondary" type="button" style="border-color:#ced4da;" onclick="adjustOmQty('${p.id}',1)"><i class="bi bi-plus-lg"></i></button>
       </div>
-    </div>
-  `).join('');
+    </li>
+  `).join('') + `</ul>`;
 
   updateOMTotal();
   orderModal.show();
@@ -882,22 +892,25 @@ function renderProductionTab() {
       const doneArr = (o.madeItems && o.madeItems[i.productId]) || [];
       return Array.from({length: i.qty}).map((_, idx) => {
         const done = !!doneArr[idx];
-        return `<button class="btn ${done ? 'btn-success' : 'btn-outline-secondary'} d-flex justify-content-between align-items-center" style="min-width:160px;" onclick="toggleUnit('${o.id}','${i.productId}',${idx})"><span>${esc(p.name)}</span><span class="ms-2" style="visibility:${done?'visible':'hidden'};">✓</span></button>`;
+        return `<button class="btn ${done ? 'btn-success' : 'btn-outline-secondary'} mb-2 me-2 d-flex justify-content-between align-items-center" style="min-width:160px;" onclick="toggleUnit('${o.id}','${i.productId}',${idx})"><span>${esc(p.name)}</span><span class="ms-2" style="visibility:${done?'visible':'hidden'};">✓</span></button>`;
       }).join('');
     }).filter(Boolean).join('');
     const ready = allItemsMade(o);
-    return `<div class="card mb-3"><div class="card-body py-2">
-      <div class="row g-3 align-items-center">
-        <div class="col-12 col-md-3">
-          <div class="fs-5 fw-bold">${esc(o.firstName)} ${esc(o.lastName)} <a href="#" class="text-secondary ms-2" onclick="openCustomerDetail('${o.id}'); return false;" title="Customer details"><i class="bi bi-person-vcard"></i></a></div>
-          ${o.notes ? `<div class="small text-muted fst-italic">${esc(o.notes)}</div>` : ''}
-        </div>
-        <div class="col-12 col-md-6 d-flex flex-wrap gap-3">${itemButtons}</div>
-        <div class="col-12 col-md-3 d-grid d-md-flex justify-content-md-end">
-          <button class="btn ${ready ? 'btn-primary' : 'btn-outline-secondary'}" ${ready ? '' : 'disabled'} onclick="markOrderReady('${o.id}')">Mark as Ready</button>
+    return `<div class="col">
+      <div class="card h-100">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="fs-5 fw-bold">${esc(o.firstName)} ${esc(o.lastName)}</div>
+            <a href="#" class="text-secondary fs-4" onclick="openCustomerDetail('${o.id}'); return false;" title="Customer details"><i class="bi bi-person-vcard"></i></a>
+          </div>
+          ${o.notes ? `<div class="small text-muted fst-italic mt-3 mb-2">${esc(o.notes)}</div>` : ''}
+          <div class="d-flex flex-wrap mt-3 mb-3">${itemButtons}</div>
+          <div class="mt-auto d-flex justify-content-end">
+            <button class="btn ${ready ? 'btn-primary' : 'btn-outline-secondary'}" ${ready ? '' : 'disabled'} onclick="markOrderReady('${o.id}')">Mark as Ready</button>
+          </div>
         </div>
       </div>
-    </div></div>`;
+    </div>`;
   }
 
   container.innerHTML = `
@@ -914,10 +927,10 @@ function renderProductionTab() {
     </div>
 
     <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-3">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
-    ${pickups.length ? pickups.map(o => orderCard(o)).join('') : ''}
+    ${pickups.length ? `<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-3">${pickups.map(o => orderCard(o)).join('')}</div>` : ''}
 
     <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-3">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${deliveries.length}</span></h4>
-    ${deliveries.length ? deliveries.map(o => orderCard(o)).join('') : ''}
+    ${deliveries.length ? `<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-3">${deliveries.map(o => orderCard(o)).join('')}</div>` : ''}
   `;
 }
 
