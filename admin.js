@@ -420,6 +420,12 @@ function deleteOrder(id) {
 // ══════════════════════════════════════════
 // ORDER MODAL
 // ══════════════════════════════════════════
+function unlockOmContactFields() {
+  setOmFieldsReadOnly(false);
+  setOmAddressReadOnly(false);
+  document.getElementById('om-edit-contact-btn').classList.add('d-none');
+}
+
 function resetOmModeUI() {
   omCustomerMode = 'new';
   document.getElementById('om-customer-mode').value = 'new';
@@ -427,9 +433,10 @@ function resetOmModeUI() {
   setOmFieldsReadOnly(false);
 }
 const OM_CUSTOMER_FIELD_IDS = ['om-first','om-last','om-phone'];
-function setOmFieldsReadOnly(readOnly) {
-  OM_CUSTOMER_FIELD_IDS.forEach(id => {
+function applyOmReadOnlyStyling(ids, readOnly) {
+  ids.forEach(id => {
     const el = document.getElementById(id);
+    if (!el) return;
     el.readOnly = readOnly;
     el.style.backgroundColor = readOnly ? '#f8f9fa' : '';
     el.style.border = readOnly ? '1px solid #ced4da' : '';
@@ -440,6 +447,12 @@ function setOmFieldsReadOnly(readOnly) {
     const wrapper = el.closest('.form-floating');
     if (wrapper) wrapper.style.setProperty('--bs-body-bg', readOnly ? '#f8f9fa' : null);
   });
+}
+function setOmFieldsReadOnly(readOnly) {
+  applyOmReadOnlyStyling(OM_CUSTOMER_FIELD_IDS, readOnly);
+}
+function setOmAddressReadOnly(readOnly) {
+  applyOmReadOnlyStyling(['om-street','om-city','om-state','om-zip'], readOnly);
 }
 
 function clearOmCustomerFields() {
@@ -526,6 +539,15 @@ function openOrderModal(id) {
   document.getElementById('omCustomerTypeField').classList.toggle('d-none', !!order);
   setOmDiscount(order && order.discountSocial ? 'social' : (order && order.discountFamily ? 'family' : 'none'));
   resetOmModeUI();
+
+  const editBtn = document.getElementById('om-edit-contact-btn');
+  if (order) {
+    setOmFieldsReadOnly(true);
+    setOmAddressReadOnly(true);
+    editBtn.classList.remove('d-none');
+  } else {
+    editBtn.classList.add('d-none');
+  }
 
   document.getElementById('om-products').innerHTML = `<ul class="list-group">` + products.map(p => `
     <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -649,9 +671,12 @@ function renderCustomersTab() {
   const cols = [['lastName','Last Name',''],['firstName','First Name',''],['phone','Phone',''],['email','Email',''],['address','Address',''],['orderCount','Orders','end'],['totalSpent','Total Spent','end']];
 
   document.getElementById('tab-customers').innerHTML = `
-    <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 mb-3" onclick="setMergeMode(!mergeModeOn)">
-      Merge ${mergeModeOn ? 'On' : 'Off'}
-    </button>
+    <label class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 mb-3" for="mergeModeToggle">
+      Merge
+      <div class="form-check form-switch mb-0">
+        <input class="form-check-input switch-grey" type="checkbox" id="mergeModeToggle" ${mergeModeOn?'checked':''} onchange="setMergeMode(this.checked)" style="cursor:pointer;">
+      </div>
+    </label>
     <div class="table-responsive"><table class="table table-striped table-bordered bg-white">
       <thead><tr>${mergeModeOn ? '<th></th>' : ''}${cols.map(([k,l,a])=>`<th class="text-${a||'start'}" style="cursor:pointer;" onclick="sortCustomersBy('${k}')">${l}${sortArrow(k)}</th>`).join('')}<th></th></tr></thead>
       <tbody>${list.map(c => `<tr>
@@ -893,7 +918,9 @@ function renderProductionTab() {
         const done = !!doneArr[idx];
         return `<li class="list-group-item d-flex justify-content-between align-items-center" style="cursor:pointer;" onclick="toggleUnit('${o.id}','${i.productId}',${idx})">
           <span class="${done ? 'text-success' : ''}">${esc(p.name)}</span>
-          <i class="bi ${done ? 'bi-toggle-on text-success' : 'bi-toggle-off text-secondary'} fs-5"></i>
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input switch-green" type="checkbox" ${done?'checked':''} style="pointer-events:none;" tabindex="-1">
+          </div>
         </li>`;
       }).join('');
     }).filter(Boolean).join('');
@@ -908,7 +935,7 @@ function renderProductionTab() {
           ${o.notes ? `<div class="small text-muted fst-italic mt-3 mb-2">${esc(o.notes)}</div>` : ''}
           <ul class="list-group mt-3 mb-3">${itemListItems}</ul>
           <div class="mt-auto">
-            <button class="btn ${ready ? 'btn-primary' : 'btn-outline-secondary'}" ${ready ? '' : 'disabled'} onclick="markOrderReady('${o.id}')">Mark as Ready</button>
+            ${ready ? `<button class="btn btn-primary" onclick="markOrderReady('${o.id}')">Mark as Ready</button>` : ''}
           </div>
         </div>
       </div>
@@ -1047,9 +1074,12 @@ function openRouteMap() {
 // ══════════════════════════════════════════
 function renderProductsTab() {
   document.getElementById('tab-products').innerHTML = `
-    <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 mb-3" onclick="setReorderMode(!reorderModeOn)">
-      Reorder ${reorderModeOn ? 'On' : 'Off'}
-    </button>
+    <label class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 mb-3" for="reorderModeToggle">
+      Reorder
+      <div class="form-check form-switch mb-0">
+        <input class="form-check-input switch-grey" type="checkbox" id="reorderModeToggle" ${reorderModeOn?'checked':''} onchange="setReorderMode(this.checked)" style="cursor:pointer;">
+      </div>
+    </label>
     <div class="table-responsive"><table class="table table-striped table-bordered bg-white">
       <thead><tr>${reorderModeOn ? '<th></th>' : ''}<th>Name</th><th>Status</th><th>Description</th><th class="text-end">Price</th><th class="text-end">Cost</th><th>Unit</th><th></th></tr></thead>
       <tbody id="productsTableBody">
