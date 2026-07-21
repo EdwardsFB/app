@@ -186,7 +186,15 @@ async function refreshAndRenderTab(tab, renderFn) {
   try {
     const fresh = await apiGetAll();
     products = fresh.products || products;
-    orders = fresh.orders || orders;
+    // Merge fresh orders, but keep the LOCAL version of any order that still has an
+    // unsaved debounced write in flight — otherwise a refetch landing mid-typing/clicking
+    // can silently revert changes that haven't reached the server yet.
+    if (fresh.orders) {
+      const freshById = new Map(fresh.orders.map(o => [o.id, o]));
+      const pendingIds = new Set(Object.keys(madeItemsWriteTimers || {}));
+      orders = orders.filter(o => pendingIds.has(o.id) && freshById.has(o.id))
+        .concat(fresh.orders.filter(o => !pendingIds.has(o.id)));
+    }
     customers = fresh.customers || customers;
   } catch (err) {
     console.error('Could not refresh data for ' + tab, err);
@@ -242,7 +250,8 @@ function renderHomeTab() {
   const paymentStats = { venmo:0, cash:0 };
   orders.forEach(o => { paymentStats[o.payment] = (paymentStats[o.payment]||0) + Number(o.total); });
   cards.push(['Total Revenue', '$'+totalRevenue.toFixed(0), '']);
-  cards.push(['Venmo / Cash', `$${(paymentStats.venmo||0).toFixed(0)} / $${(paymentStats.cash||0).toFixed(0)}`, '']);
+  cards.push(['Venmo', '$'+(paymentStats.venmo||0).toFixed(0), '']);
+  cards.push(['Cash', '$'+(paymentStats.cash||0).toFixed(0), '']);
 
   function borderClass(c) {
     return c==='success' ? 'border-success' : c==='warning' ? 'border-warning' : c==='danger' ? 'border-danger' : c==='secondary' ? 'border-secondary' : '';
@@ -319,9 +328,30 @@ function getOrderNumberMap() {
   return map;
 }
 
+let orderSortCol = 'createdAt', orderSortDir = 'desc';
+function sortOrdersBy(col) {
+  if (orderSortCol===col) orderSortDir = orderSortDir==='asc'?'desc':'asc';
+  else { orderSortCol=col; orderSortDir='asc'; }
+  renderOrdersList();
+}
+function orderSortArrow(col) { return orderSortCol===col ? (orderSortDir==='asc'?' ▲':' ▼') : ''; }
+function getOrderSortValue(o, col, numberMap) {
+  switch(col) {
+    case 'number': return numberMap.get(o.id);
+    case 'customer': return ((o.lastName||'')+' '+(o.firstName||'')).toLowerCase();
+    case 'type': return o.fulfillment||'';
+    case 'payment': return o.payment||'';
+    case 'date': return o.date||'';
+    case 'paymentStatus': return o.paymentStatus||'';
+    case 'fulfillmentStatus': return o.fulfillmentStatus||'';
+    case 'total': return Number(o.total)||0;
+    default: return o.createdAt||0;
+  }
+}
+
 function renderOrdersList() {
   document.querySelectorAll('#orderFilterTabs button').forEach(b => b.classList.toggle('active', b.dataset.f===currentOrderFilter));
-  let list = [...orders].sort((a,b) => (b.createdAt||0)-(a.createdAt||0));
+  let list = [...orders];
   if (currentOrderFilter==='new') list = list.filter(o=>o.fulfillmentStatus==='pending');
   if (currentOrderFilter==='delivered') list = list.filter(o=>o.fulfillmentStatus==='delivered'||o.fulfillmentStatus==='pickedup');
   if (currentOrderFilter==='unpaid') list = list.filter(o=>o.paymentStatus==='unpaid');
@@ -330,15 +360,22 @@ function renderOrdersList() {
   if (!list.length) { el.innerHTML = '<div class="text-center text-muted py-5">No orders here.</div>'; return; }
   const numberMap = getOrderNumberMap();
 
+  list.sort((a,b) => {
+    const av = getOrderSortValue(a, orderSortCol, numberMap), bv = getOrderSortValue(b, orderSortCol, numberMap);
+    return av<bv ? (orderSortDir==='asc'?-1:1) : av>bv ? (orderSortDir==='asc'?1:-1) : 0;
+  });
+
+  const cols = [['number','#'],['customer','Customer'],['type','Type'],['payment','Payment'],['date','Date'],['paymentStatus','Payment Status'],['fulfillmentStatus','Fulfillment'],['total','Total']];
+
   el.innerHTML = `<div class="table-responsive"><table class="table table-striped table-bordered align-middle bg-white">
-    <thead><tr><th>#</th><th>Customer</th><th>Type</th><th>Payment</th><th>Date</th><th>Payment Status</th><th>Fulfillment</th><th class="text-end">Total</th><th></th></tr></thead>
+    <thead><tr>${cols.map(([k,l]) => `<th class="${k==='total'?'text-end':''}" style="cursor:pointer;" onclick="sortOrdersBy('${k}')">${l}${orderSortArrow(k)}</th>`).join('')}<th></th></tr></thead>
     <tbody>
       ${list.map(o => {
         const itemStr = (o.items||[]).map(i => { const p = products.find(p=>p.id===i.productId); return p ? `${i.qty}× ${p.name}` : ''; }).filter(Boolean).join(', ');
         return `<tr title="${esc(itemStr)}">
           <td class="text-muted small">#${String(numberMap.get(o.id)).padStart(3,'0')}</td>
           <td><div>${esc(o.firstName)} ${esc(o.lastName)}</div><div class="small text-muted">${esc(o.phone||'')}</div></td>
-          <td><span class="badge text-bg-secondary">${cap(o.fulfillment)}</span></td>
+          <td><i class="bi ${o.fulfillment==='delivery' ? 'bi-truck' : 'bi-bag'} me-1" title="${cap(o.fulfillment)}"></i> ${cap(o.fulfillment)}</td>
           <td>${cap(o.payment)}</td>
           <td class="small text-muted">${o.date||'—'}</td>
           <td><select class="form-select form-select-sm" onchange="updatePaymentStatus('${o.id}', this.value)">
@@ -440,7 +477,8 @@ function onOmExistingSelect() {
 
 function setOmDiscount(type) {
   omDiscountType = type;
-  ['none','social','family'].forEach(t => document.getElementById('om-disc-'+t).classList.toggle('active', t===type));
+  const id = type === 'social' ? 'om-disc-social' : type === 'family' ? 'om-disc-family' : 'om-disc-none';
+  document.getElementById(id).checked = true;
   updateOMTotal();
 }
 function omDiscountPct() { return omDiscountType==='social'?50 : omDiscountType==='family'?25 : 0; }
@@ -478,14 +516,24 @@ function openOrderModal(id) {
 
   document.getElementById('om-products').innerHTML = products.map(p => `
     <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-      <div><div class="fw-bold small">${esc(p.name)}</div><div class="small text-muted">$${Number(p.price).toFixed(2)} ${esc(p.unit||'')}</div></div>
-      <input type="number" min="0" class="form-control form-control-sm" style="width:70px;" value="${omQty[p.id]}"
-        oninput="omQty['${p.id}']=parseInt(this.value)||0; updateOMTotal();"/>
+      <div><div class="fw-bold">${esc(p.name)}</div><div class="small text-muted">$${Number(p.price).toFixed(2)} ${esc(p.unit||'')}</div></div>
+      <div class="input-group" style="width:130px;">
+        <button class="btn btn-outline-secondary" type="button" onclick="adjustOmQty('${p.id}',-1)"><i class="bi bi-dash-lg"></i></button>
+        <input type="number" min="0" class="form-control text-center px-0" id="om-qty-${p.id}" value="${omQty[p.id]}"
+          oninput="omQty['${p.id}']=parseInt(this.value)||0; updateOMTotal();"/>
+        <button class="btn btn-outline-secondary" type="button" onclick="adjustOmQty('${p.id}',1)"><i class="bi bi-plus-lg"></i></button>
+      </div>
     </div>
   `).join('');
 
   updateOMTotal();
   orderModal.show();
+}
+
+function adjustOmQty(productId, delta) {
+  omQty[productId] = Math.max(0, (omQty[productId]||0) + delta);
+  document.getElementById('om-qty-'+productId).value = omQty[productId];
+  updateOMTotal();
 }
 
 function updateOMTotal() {
@@ -495,6 +543,7 @@ function updateOMTotal() {
   const discountAmt = subtotal * (pct/100);
   document.getElementById('om-subtotal').textContent = '$'+subtotal.toFixed(2);
   document.getElementById('om-discountRow').classList.toggle('d-none', pct===0);
+  document.getElementById('om-discountLabel').textContent = pct+'% Discount';
   document.getElementById('om-discountAmt').textContent = '-$'+discountAmt.toFixed(2);
   document.getElementById('om-total').textContent = '$'+(subtotal-discountAmt).toFixed(2);
 }
@@ -507,8 +556,11 @@ async function saveOrderFromModal() {
   if (!phone) { alert('Please enter a phone number — this keeps orders correctly matched to the right customer.'); return; }
   const items = products.filter(p => (omQty[p.id]||0) > 0).map(p => ({ productId:p.id, qty:omQty[p.id] }));
   if (!items.length) { alert('Please add at least one item.'); return; }
-  if (document.getElementById('om-fulfillment').value === 'delivery' && !document.getElementById('om-street').value.trim()) {
-    alert('Please enter a delivery street address.'); return;
+  if (document.getElementById('om-fulfillment').value === 'delivery') {
+    if (!document.getElementById('om-street').value.trim()) { alert('Please enter a delivery street address.'); return; }
+    if (!document.getElementById('om-city').value.trim()) { alert('Please enter a delivery city.'); return; }
+    if (!document.getElementById('om-state').value.trim()) { alert('Please enter a delivery state.'); return; }
+    if (!document.getElementById('om-zip').value.trim()) { alert('Please enter a delivery ZIP code.'); return; }
   }
 
   const discountPct = omDiscountPct();
@@ -591,14 +643,14 @@ function renderCustomersTab() {
     if (typeof av==='string') { av=av.toLowerCase(); bv=(bv||'').toLowerCase(); }
     return av<bv ? (customerSortDir==='asc'?-1:1) : av>bv ? (customerSortDir==='asc'?1:-1) : 0;
   });
-  const cols = [['firstName','First Name',''],['lastName','Last Name',''],['phone','Phone',''],['email','Email',''],['address','Address',''],['orderCount','Orders','end'],['totalSpent','Total Spent','end']];
+  const cols = [['lastName','Last Name',''],['firstName','First Name',''],['phone','Phone',''],['email','Email',''],['address','Address',''],['orderCount','Orders','end'],['totalSpent','Total Spent','end']];
 
   document.getElementById('tab-customers').innerHTML = `
     <div class="table-responsive"><table class="table table-striped table-bordered bg-white">
       <thead><tr>${mergeModeOn ? '<th></th>' : ''}${cols.map(([k,l,a])=>`<th class="text-${a||'start'}" style="cursor:pointer;" onclick="sortCustomersBy('${k}')">${l}${sortArrow(k)}</th>`).join('')}<th></th></tr></thead>
       <tbody>${list.map(c => `<tr>
         ${mergeModeOn ? `<td><input type="checkbox" ${selectedCustomerKeys.has(c._key)?'checked':''} onchange="toggleCustomerSelect('${c._key}')"></td>` : ''}
-        <td>${esc(c.firstName)}</td><td>${esc(c.lastName)}</td><td>${c.phone ? esc(c.phone) : '<span class="badge bg-warning text-dark">No Phone</span>'}</td><td>${esc(c.email||'—')}</td><td>${esc(c.address||'—')}</td>
+        <td>${esc(c.lastName)}</td><td>${esc(c.firstName)}</td><td>${c.phone ? esc(c.phone) : '<span class="badge bg-warning text-dark">No Phone</span>'}</td><td>${esc(c.email||'—')}</td><td>${esc(c.address||'—')}</td>
         <td class="text-end">${c.orderCount}</td><td class="text-end">$${c.totalSpent.toFixed(2)}</td>
         <td class="text-end"><button class="btn btn-outline-secondary btn-sm me-2 mb-2" onclick='openCustomerModal(${JSON.stringify(c).replace(/'/g,"&apos;")})'>Edit</button><button class="btn btn-outline-danger btn-sm mb-2" ${c.recordId ? `onclick="deleteCustomerRow('${c.recordId}')"` : 'disabled title="This customer only exists from order history — nothing to delete unless you edit and save them first."'}>Delete</button></td>
       </tr>`).join('')}</tbody>
@@ -791,8 +843,9 @@ function toggleUnit(orderId, productId, unitIdx) {
   // final state, instead of firing overlapping requests that can arrive out of order
   // and silently overwrite a later click with an earlier, incomplete one.
   clearTimeout(madeItemsWriteTimers[orderId]);
-  madeItemsWriteTimers[orderId] = setTimeout(() => {
-    apiWrite('orders','update',orderId,{madeItems: o.madeItems});
+  madeItemsWriteTimers[orderId] = setTimeout(async () => {
+    await apiWrite('orders','update',orderId,{madeItems: o.madeItems});
+    delete madeItemsWriteTimers[orderId];
   }, 500);
 }
 
@@ -848,7 +901,7 @@ function renderProductionTab() {
         </div>
         <div class="col-12 col-md-6 d-flex flex-wrap gap-3">${itemButtons}</div>
         <div class="col-12 col-md-3 d-grid d-md-flex justify-content-md-end">
-          <button class="btn ${ready ? 'btn-primary' : 'btn-outline-secondary'}" ${ready ? '' : 'disabled'} onclick="markOrderReady('${o.id}')">Mark Ready</button>
+          <button class="btn ${ready ? 'btn-primary' : 'btn-outline-secondary'}" ${ready ? '' : 'disabled'} onclick="markOrderReady('${o.id}')">Mark as Ready</button>
         </div>
       </div>
     </div></div>`;
@@ -867,10 +920,10 @@ function renderProductionTab() {
       `;}).join('')}
     </div>
 
-    <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-5">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
+    <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-3">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
     ${pickups.length ? pickups.map(o => orderCard(o)).join('') : ''}
 
-    <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-5">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${deliveries.length}</span></h4>
+    <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-3">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${deliveries.length}</span></h4>
     ${deliveries.length ? deliveries.map(o => orderCard(o)).join('') : ''}
   `;
 }
@@ -929,7 +982,7 @@ function renderFulfillmentTab() {
       const p = products.find(p=>p.id===i.productId);
       return p ? `<li class="list-group-item d-flex justify-content-between align-items-center">${esc(p.name)}<span class="badge text-bg-secondary">${i.qty}</span></li>` : '';
     }).filter(Boolean).join('');
-    const label = o.fulfillment === 'delivery' ? 'Mark Delivered' : 'Mark Picked Up';
+    const label = o.fulfillment === 'delivery' ? 'Mark as Delivered' : 'Mark as Picked Up';
     const showArrows = total !== undefined;
     const addr = o.fulfillment==='delivery' ? parseAddress(o.deliveryAddress||o.address||'') : null;
     return `<div class="col">
@@ -942,7 +995,7 @@ function renderFulfillmentTab() {
           <div class="mt-3 mb-3">
             <div class="mb-2">${esc(o.phone||'')}</div>
             ${addr ? `<div class="mb-2"><a href="https://maps.apple.com/?daddr=${encodeURIComponent(addr.street + ', ' + addr.city + ', ' + addr.state + ' ' + addr.zip)}" class="mobile-map-link">${esc(addr.street)}<br>${esc([addr.city, [addr.state, addr.zip].filter(Boolean).join(' ')].filter(Boolean).join(', '))}</a></div>` : ''}
-            ${o.notes ? `<div class="fst-italic mb-2">${esc(o.notes)}</div>` : ''}
+            ${o.notes ? `<div class="small text-muted fst-italic mb-2">${esc(o.notes)}</div>` : ''}
           </div>
           <ul class="list-group mb-3">${itemListItems}</ul>
           <div class="mt-auto d-flex justify-content-between align-items-center">
@@ -958,7 +1011,7 @@ function renderFulfillmentTab() {
     <h4 class="text-muted d-flex align-items-center gap-2 mb-3">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
     ${pickups.length ? `<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-4">${pickups.map(o => orderRow(o)).join('')}</div>` : ''}
 
-    <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-5">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${orderedDeliveries.length}</span></h4>
+    <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-3">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${orderedDeliveries.length}</span></h4>
     ${orderedDeliveries.length ? `
       <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-3">${orderedDeliveries.map((o,idx) => orderRow(o, idx, orderedDeliveries.length)).join('')}</div>
       <button class="btn btn-dark mt-2 mb-4" onclick="openRouteMap()">Open Route in Google Maps</button>
@@ -994,7 +1047,7 @@ function renderProductsTab() {
         ${products.map(p => `<tr ${reorderModeOn ? `draggable="true" data-id="${p.id}" ondragstart="onProductDragStart(event,'${p.id}')" ondragover="onProductDragOver(event,'${p.id}')" ondragleave="onProductDragLeave(event)" ondrop="onProductDrop(event,'${p.id}')"` : ''}>
           ${reorderModeOn ? '<td class="drag-handle text-muted">⠿</td>' : ''}
           <td>${esc(p.name)}</td>
-          <td>${p.active===false ? '<span class="badge bg-secondary">Inactive</span>' : '<span class="badge bg-success">Active</span>'}</td>
+          <td>${p.active===false ? '<i class="bi bi-x-circle-fill text-danger fs-5" title="Inactive"></i>' : '<i class="bi bi-check-circle-fill text-success fs-5" title="Active"></i>'}</td>
           <td>${esc(p.desc||'')}</td>
           <td class="text-end">$${Number(p.price).toFixed(2)}</td><td class="text-end">$${Number(p.cost).toFixed(2)}</td><td>${esc(p.unit||'')}</td>
           <td class="text-end"><button class="btn btn-outline-secondary btn-sm me-2 mb-2" onclick="openProductModal('${p.id}')">Edit</button><button class="btn btn-outline-danger btn-sm mb-2" onclick="deleteProductRow('${p.id}')">Delete</button></td>

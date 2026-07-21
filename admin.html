@@ -33,6 +33,7 @@
   table.table-bordered, .table-responsive > table { border: 1px solid rgba(0,0,0,0.175); }
   .badge { vertical-align: middle; }
   .mobile-map-link { color: inherit; text-decoration: none; pointer-events: none; cursor: default; }
+  .form-control.bg-light, .form-select.bg-light { border: 1px solid #ced4da !important; }
   @media (max-width: 767.98px) {
     .mobile-map-link { text-decoration: underline; pointer-events: auto; cursor: pointer; }
   }
@@ -126,7 +127,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <h5 class="text-muted">Customer</h5>
+        <h5 class="text-muted mb-3">Customer</h5>
         <div id="omCustomerTypeField" class="form-floating mb-2">
           <select id="om-customer-mode" class="form-select" onchange="setOmCustomerMode(this.value)">
             <option value="new">New Customer</option>
@@ -142,58 +143,68 @@
           <div class="col form-floating"><input id="om-first" class="form-control" type="text" autocomplete="off" placeholder="First Name"/><label for="om-first">First Name <span class="text-danger">*</span></label></div>
           <div class="col form-floating"><input id="om-last" class="form-control" type="text" autocomplete="off" placeholder="Last Name"/><label for="om-last">Last Name <span class="text-danger">*</span></label></div>
         </div>
-        <div class="row g-2 mb-3">
-          <div class="col form-floating"><input id="om-phone" class="form-control" type="tel" autocomplete="off" oninput="formatPhoneInput(this)" placeholder="Phone"/><label for="om-phone">Phone <span class="text-danger">*</span></label></div>
-          <div class="col form-floating"><input id="om-date" class="form-control" type="date" placeholder="Date"/><label for="om-date">Date</label></div>
-        </div>
+        <div class="mb-4 form-floating"><input id="om-phone" class="form-control" type="tel" autocomplete="off" oninput="formatPhoneInput(this)" placeholder="Phone"/><label for="om-phone">Phone <span class="text-danger">*</span></label></div>
 
-        <h5 class="text-muted">Products</h5>
-        <div id="om-products" class="mb-3"></div>
+        <h5 class="text-muted mb-3">Products</h5>
+        <div id="om-products" class="mb-4"></div>
 
-        <h5 class="text-muted">Discounts</h5>
-        <div class="list-group mb-3">
-          <a href="#" class="list-group-item list-group-item-action active" id="om-disc-none" onclick="setOmDiscount('none'); return false;">No Discount</a>
-          <a href="#" class="list-group-item list-group-item-action" id="om-disc-social" onclick="setOmDiscount('social'); return false;">50% off — Social Media Post</a>
-          <a href="#" class="list-group-item list-group-item-action" id="om-disc-family" onclick="setOmDiscount('family'); return false;">25% off — Family</a>
-        </div>
-
-        <h5 class="text-muted">Fulfillment & Payment</h5>
+        <h5 class="text-muted mb-3">Fulfillment</h5>
         <div class="row g-2 mb-2">
+          <div class="col form-floating">
+            <select id="om-fulfillmentStatus" class="form-select"><option value="pending">Pending</option><option value="ready">Ready</option><option value="delivered">Delivered</option><option value="pickedup">Picked Up</option></select>
+            <label for="om-fulfillmentStatus">Status</label>
+          </div>
           <div class="col form-floating">
             <select id="om-fulfillment" class="form-select" onchange="document.getElementById('om-addressField').classList.toggle('d-none', this.value!=='delivery')">
               <option value="pickup">Pickup</option><option value="delivery">Delivery</option>
             </select>
-            <label for="om-fulfillment">Fulfillment</label>
-          </div>
-          <div class="col form-floating">
-            <select id="om-payment" class="form-select"><option value="venmo">Venmo</option><option value="cash">Cash</option></select>
-            <label for="om-payment">Payment Method</label>
+            <label for="om-fulfillment">Type</label>
           </div>
         </div>
         <div class="mb-2 d-none" id="om-addressField">
           <div class="form-floating mb-2"><input id="om-street" class="form-control" type="text" placeholder="Street Address"/><label for="om-street">Street Address <span class="text-danger">*</span></label></div>
           <div class="row g-2">
-            <div class="col-6 form-floating"><input id="om-city" class="form-control" type="text" placeholder="City"/><label for="om-city">City</label></div>
-            <div class="col-3 form-floating"><input id="om-state" class="form-control" type="text" maxlength="2" placeholder="State"/><label for="om-state">State</label></div>
-            <div class="col-3 form-floating"><input id="om-zip" class="form-control" type="text" placeholder="ZIP"/><label for="om-zip">ZIP</label></div>
+            <div class="col-6 form-floating"><input id="om-city" class="form-control" type="text" placeholder="City"/><label for="om-city">City <span class="text-danger">*</span></label></div>
+            <div class="col-3 form-floating"><input id="om-state" class="form-control" type="text" maxlength="2" placeholder="State"/><label for="om-state">State <span class="text-danger">*</span></label></div>
+            <div class="col-3 form-floating"><input id="om-zip" class="form-control" type="text" placeholder="ZIP"/><label for="om-zip">ZIP <span class="text-danger">*</span></label></div>
           </div>
         </div>
-        <div class="row g-2 mb-2">
+        <div class="mb-4 form-floating"><input id="om-date" class="form-control" type="date" placeholder="Date"/><label for="om-date">Date</label></div>
+
+        <h5 class="text-muted mb-3">Payment</h5>
+        <div class="row g-2 mb-4">
           <div class="col form-floating">
             <select id="om-paymentStatus" class="form-select"><option value="unpaid">Unpaid</option><option value="paid">Paid</option></select>
-            <label for="om-paymentStatus">Payment Status</label>
+            <label for="om-paymentStatus">Status</label>
           </div>
           <div class="col form-floating">
-            <select id="om-fulfillmentStatus" class="form-select"><option value="pending">Pending</option><option value="ready">Ready</option><option value="delivered">Delivered</option><option value="pickedup">Picked Up</option></select>
-            <label for="om-fulfillmentStatus">Fulfillment Status</label>
+            <select id="om-payment" class="form-select"><option value="venmo">Venmo</option><option value="cash">Cash</option></select>
+            <label for="om-payment">Method</label>
           </div>
         </div>
+
+        <h5 class="text-muted mb-3">Discounts</h5>
+        <div class="mb-4">
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="om-discount-radio" id="om-disc-none" checked onchange="setOmDiscount('none')">
+            <label class="form-check-label" for="om-disc-none">No Discount</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="om-discount-radio" id="om-disc-family" onchange="setOmDiscount('family')">
+            <label class="form-check-label" for="om-disc-family">25%</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="om-discount-radio" id="om-disc-social" onchange="setOmDiscount('social')">
+            <label class="form-check-label" for="om-disc-social">50%</label>
+          </div>
+        </div>
+
         <div class="form-floating mb-3"><textarea id="om-notes" class="form-control" style="height:80px;" placeholder="Notes"></textarea><label for="om-notes">Notes</label></div>
 
         <div class="card bg-dark text-white">
           <div class="card-body py-2">
             <div class="d-flex justify-content-between small"><span>Subtotal</span><span id="om-subtotal">$0.00</span></div>
-            <div class="d-flex justify-content-between small d-none" id="om-discountRow"><span>Discount</span><span id="om-discountAmt">-$0.00</span></div>
+            <div class="d-flex justify-content-between small d-none" id="om-discountRow"><span id="om-discountLabel">Discount</span><span id="om-discountAmt">-$0.00</span></div>
             <div class="d-flex justify-content-between fw-bold fs-5"><span>Total</span><span id="om-total">$0.00</span></div>
           </div>
         </div>
