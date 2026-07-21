@@ -853,7 +853,7 @@ function renderProductionTab() {
   }
 
   container.innerHTML = `
-    <h5 class="text-muted">Bake List</h5>
+    <h4 class="text-muted">Bake List</h4>
     <div class="row row-cols-2 row-cols-md-3 g-3 mb-4">
       ${bakeProducts.map(p => {
         const done = totals[p.id] === 0;
@@ -865,10 +865,14 @@ function renderProductionTab() {
       `;}).join('')}
     </div>
 
-    <h5 class="text-muted d-flex align-items-center gap-2">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h5>
+    <hr class="my-4">
+
+    <h4 class="text-muted d-flex align-items-center gap-2">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
     ${pickups.length ? pickups.map(o => orderCard(o)).join('') : ''}
 
-    <h5 class="text-muted mt-4 d-flex align-items-center gap-2">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${deliveries.length}</span></h5>
+    <hr class="my-4">
+
+    <h4 class="text-muted d-flex align-items-center gap-2">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${deliveries.length}</span></h4>
     ${deliveries.length ? deliveries.map(o => orderCard(o)).join('') : ''}
   `;
 }
@@ -939,7 +943,7 @@ function renderFulfillmentTab() {
           </div>
           <div class="mt-3 mb-3">
             <div class="mb-2">${esc(o.phone||'')}</div>
-            ${addr ? `<div class="mb-2">${esc(addr.street)}<br>${esc([addr.city, [addr.state, addr.zip].filter(Boolean).join(' ')].filter(Boolean).join(', '))}</div>` : ''}
+            ${addr ? `<div class="mb-2"><a href="https://maps.apple.com/?daddr=${encodeURIComponent(addr.street + ', ' + addr.city + ', ' + addr.state + ' ' + addr.zip)}" class="mobile-map-link">${esc(addr.street)}<br>${esc([addr.city, [addr.state, addr.zip].filter(Boolean).join(' ')].filter(Boolean).join(', '))}</a></div>` : ''}
             ${o.notes ? `<div class="fst-italic mb-2">${esc(o.notes)}</div>` : ''}
           </div>
           <ul class="list-group mb-3">${itemListItems}</ul>
@@ -953,10 +957,12 @@ function renderFulfillmentTab() {
   }
 
   container.innerHTML = `
-    <h5 class="text-muted d-flex align-items-center gap-2">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h5>
+    <h4 class="text-muted d-flex align-items-center gap-2">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
     ${pickups.length ? `<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-4">${pickups.map(o => orderRow(o)).join('')}</div>` : ''}
 
-    <h5 class="text-muted mt-4 d-flex align-items-center gap-2">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${orderedDeliveries.length}</span></h5>
+    <hr class="my-4">
+
+    <h4 class="text-muted d-flex align-items-center gap-2">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${orderedDeliveries.length}</span></h4>
     ${orderedDeliveries.length ? `
       <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-3">${orderedDeliveries.map((o,idx) => orderRow(o, idx, orderedDeliveries.length)).join('')}</div>
       <button class="btn btn-dark mt-2 mb-4" onclick="openRouteMap()">Open Route in Google Maps</button>

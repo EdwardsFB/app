@@ -32,6 +32,10 @@
   table th { font-weight: normal !important; text-transform: uppercase; font-size: 0.85em; }
   table.table-bordered, .table-responsive > table { border: 1px solid rgba(0,0,0,0.175); }
   .badge { vertical-align: middle; }
+  .mobile-map-link { color: inherit; text-decoration: none; pointer-events: none; cursor: default; }
+  @media (max-width: 767.98px) {
+    .mobile-map-link { text-decoration: underline; pointer-events: auto; cursor: pointer; }
+  }
   .btn:disabled, .btn.disabled { background-color: #e9ecef !important; border-color: #dee2e6 !important; color: #adb5bd !important; opacity: 1 !important; }
 </style>
 </head>
@@ -91,7 +95,7 @@
 
   <div class="flex-grow-1 p-4 main-content">
     <div class="d-flex justify-content-between align-items-center mb-3 page-header">
-      <h1 class="h4 mb-0" id="pageTitle">Home</h1>
+      <h1 class="h2 mb-0" id="pageTitle">Home</h1>
       <div class="d-flex align-items-center gap-2">
         <button class="btn btn-dark d-none" id="newOrderBtn" onclick="openOrderModal()">Add Order</button>
         <button class="btn btn-dark d-none" id="addCustomerBtn" onclick="openCustomerModal()">Add Customer</button>
