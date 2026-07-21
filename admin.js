@@ -112,6 +112,7 @@ async function loadAndShowApp() {
   applyLogo();
   document.getElementById('loading').classList.add('d-none');
   document.getElementById('app').classList.remove('d-none');
+  document.getElementById('mobileTopbar').classList.remove('d-none');
 
   const validTabs = ['home','orders','production','fulfillment','customers','products'];
   const hashTab = location.hash.replace('#','');
@@ -131,6 +132,21 @@ function applyLogo() {
   document.getElementById('logoImg').src = LOGO_DATA_URI;
   document.getElementById('logoImg').classList.remove('d-none');
   document.getElementById('brandText').classList.add('d-none');
+  document.getElementById('mobileLogoImg').src = LOGO_DATA_URI;
+  document.getElementById('mobileLogoImg').classList.remove('d-none');
+  document.getElementById('mobileBrandText').classList.add('d-none');
+}
+
+function toggleMobileSidebar() {
+  const isOpen = document.querySelector('.sidebar').classList.toggle('mobile-open');
+  document.getElementById('sidebarBackdrop').classList.toggle('show', isOpen);
+  document.querySelector('#mobileTopbar .hamburger-btn i').className = isOpen ? 'bi bi-x-lg' : 'bi bi-list';
+}
+function closeMobileSidebar() {
+  document.querySelector('.sidebar').classList.remove('mobile-open');
+  document.getElementById('sidebarBackdrop').classList.remove('show');
+  const icon = document.querySelector('#mobileTopbar .hamburger-btn i');
+  if (icon) icon.className = 'bi bi-list';
 }
 
 // ══════════════════════════════════════════
@@ -140,6 +156,7 @@ function switchTab(tab) {
   currentAdminTab = tab;
   location.hash = tab;
   window.scrollTo(0, 0);
+  closeMobileSidebar();
   document.querySelectorAll('#sidebarNav .nav-link').forEach(el => {
     el.classList.toggle('active', el.dataset.tab === tab);
     el.classList.toggle('text-white', el.dataset.tab === tab);

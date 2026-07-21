@@ -11,12 +11,22 @@
   html { overflow-y: scroll; scrollbar-gutter: stable; }
   body.modal-open { padding-right: 0 !important; }
   /* Minimal layout-only CSS — everything else is plain Bootstrap for now */
-  .sidebar { width: 230px; min-width: 230px; flex-shrink: 0; position: fixed; top: 0; left: 0; height: 100vh; height: 100dvh; overflow-y: auto; z-index: 30; }
-  @media (max-width: 900px) { .sidebar { position: relative; height: auto; width: 100%; min-width: 0; } .main-content { margin-left: 0 !important; } }
+  .sidebar { width: 230px; min-width: 230px; flex-shrink: 0; position: fixed; top: 0; left: 0; height: 100vh; height: 100dvh; overflow-y: auto; z-index: 1045; }
   .main-content { min-width: 0; margin-left: 230px; }
+  .mobile-topbar { display: none; }
+  .sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1040; }
+  @media (max-width: 767.98px) {
+    .sidebar { width: 260px; min-width: 260px; transform: translateX(-100%); transition: transform 0.25s ease-in-out; }
+    .sidebar.mobile-open { transform: translateX(0); }
+    .main-content { margin-left: 0 !important; }
+    .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #1c1a17; padding: 10px 16px; position: sticky; top: 0; z-index: 1035; }
+    .mobile-topbar img { max-height: 32px; }
+    .mobile-topbar .hamburger-btn { background: none; border: none; color: #fff; font-size: 1.6rem; padding: 0; line-height: 1; }
+    .sidebar-backdrop.show { display: block; }
+  }
   .page-header { min-height: 40px; }
   .merge-bar { position: fixed; bottom: 0; left: 230px; right: 0; padding: 14px 24px; box-shadow: 0 -2px 12px rgba(0,0,0,0.2); z-index: 40; display: flex; justify-content: center; align-items: center; gap: 0.5rem; }
-  @media (max-width: 900px) { .merge-bar { left: 0; } }
+  @media (max-width: 767.98px) { .merge-bar { left: 0; } }
   .drag-handle { cursor: grab; }
   table td, table th { vertical-align: middle !important; }
   table th { font-weight: normal !important; text-transform: uppercase; font-size: 0.85em; }
@@ -43,6 +53,14 @@
 
 <!-- ADMIN APP -->
 <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1080;" id="toastContainer"></div>
+
+<div class="mobile-topbar d-none" id="mobileTopbar">
+  <button class="hamburger-btn" onclick="toggleMobileSidebar()" aria-label="Menu"><i class="bi bi-list"></i></button>
+  <img id="mobileLogoImg" class="d-none" style="max-height:32px;" alt="Edwards Family Bakery"/>
+  <span id="mobileBrandText" class="text-white fw-bold">Edwards Family Bakery</span>
+  <span style="width:26px;"></span>
+</div>
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeMobileSidebar()"></div>
 
 <div id="app" class="d-none d-flex">
 
