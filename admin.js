@@ -420,10 +420,13 @@ function deleteOrder(id) {
 // ══════════════════════════════════════════
 // ORDER MODAL
 // ══════════════════════════════════════════
-function unlockOmContactFields() {
-  setOmFieldsReadOnly(false);
-  setOmAddressReadOnly(false);
-  document.getElementById('om-edit-contact-btn').classList.add('d-none');
+function setOrderModalReadOnly(readOnly) {
+  applyOmReadOnlyStyling([...OM_CUSTOMER_FIELD_IDS, 'om-street','om-city','om-state','om-zip','om-date','om-notes','om-payment','om-fulfillment'], readOnly);
+  document.querySelectorAll('#om-products input, #om-products button').forEach(el => { el.disabled = readOnly; });
+  document.querySelectorAll('#om-disc-none, #om-disc-social, #om-disc-family').forEach(el => {
+    el.style.pointerEvents = readOnly ? 'none' : '';
+    el.style.opacity = readOnly ? '0.6' : '';
+  });
 }
 
 function resetOmModeUI() {
@@ -450,9 +453,6 @@ function applyOmReadOnlyStyling(ids, readOnly) {
 }
 function setOmFieldsReadOnly(readOnly) {
   applyOmReadOnlyStyling(OM_CUSTOMER_FIELD_IDS, readOnly);
-}
-function setOmAddressReadOnly(readOnly) {
-  applyOmReadOnlyStyling(['om-street','om-city','om-state','om-zip'], readOnly);
 }
 
 function clearOmCustomerFields() {
@@ -540,15 +540,9 @@ function openOrderModal(id) {
   setOmDiscount(order && order.discountSocial ? 'social' : (order && order.discountFamily ? 'family' : 'none'));
   resetOmModeUI();
 
-  const editBtn = document.getElementById('om-edit-contact-btn');
-  if (order) {
-    setOmFieldsReadOnly(true);
-    setOmAddressReadOnly(true);
-    editBtn.classList.remove('d-none');
-  } else {
-    editBtn.classList.add('d-none');
-  }
-
+  const isCompleted = order && (order.fulfillmentStatus === 'delivered' || order.fulfillmentStatus === 'pickedup');
+  setOrderModalReadOnly(isCompleted);
+  document.getElementById('om-locked-banner').classList.toggle('d-none', !isCompleted);
   document.getElementById('om-products').innerHTML = `<ul class="list-group">` + products.map(p => `
     <li class="list-group-item d-flex justify-content-between align-items-center">
       <div><div class="fw-bold">${esc(p.name)}</div><div class="small text-muted">$${Number(p.price).toFixed(2)} ${esc(p.unit||'')}</div></div>
