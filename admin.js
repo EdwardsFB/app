@@ -370,16 +370,29 @@ function resetOmModeUI() {
   omCustomerMode = 'new';
   document.getElementById('om-customer-mode').value = 'new';
   document.getElementById('omExistingSelectField').classList.add('d-none');
+  setOmFieldsReadOnly(false);
 }
+const OM_CUSTOMER_FIELD_IDS = ['om-first','om-last','om-phone','om-street','om-city','om-state','om-zip'];
+function setOmFieldsReadOnly(readOnly) {
+  OM_CUSTOMER_FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    el.readOnly = readOnly;
+    el.classList.toggle('bg-light', readOnly);
+  });
+}
+
 function setOmCustomerMode(mode) {
   omCustomerMode = mode;
   document.getElementById('omExistingSelectField').classList.toggle('d-none', mode!=='existing');
-  if (mode === 'existing') populateOmExistingSelect();
-  else {
+  if (mode === 'existing') {
+    populateOmExistingSelect();
+    setOmFieldsReadOnly(true);
+  } else {
     document.getElementById('om-first').value='';
     document.getElementById('om-last').value='';
     document.getElementById('om-phone').value='';
     ['om-street','om-city','om-state','om-zip'].forEach(id => document.getElementById(id).value='');
+    setOmFieldsReadOnly(false);
   }
 }
 function populateOmExistingSelect() {
@@ -403,6 +416,7 @@ function onOmExistingSelect() {
     document.getElementById('om-fulfillment').value = 'delivery';
     document.getElementById('om-addressField').classList.remove('d-none');
   }
+  setOmFieldsReadOnly(true);
 }
 
 function setOmDiscount(type) {
