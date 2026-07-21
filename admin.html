@@ -56,8 +56,10 @@
 
 <div class="mobile-topbar d-none" id="mobileTopbar">
   <button class="hamburger-btn" onclick="toggleMobileSidebar()" aria-label="Menu"><i class="bi bi-list"></i></button>
-  <img id="mobileLogoImg" class="d-none" style="max-height:32px;" alt="Edwards Family Bakery"/>
-  <span id="mobileBrandText" class="text-white fw-bold">Edwards Family Bakery</span>
+  <a href="#" class="text-decoration-none d-flex align-items-center gap-2" onclick="switchTab('home'); return false;">
+    <img id="mobileLogoImg" class="d-none" style="max-height:32px;" alt="Edwards Family Bakery"/>
+    <span id="mobileBrandText" class="text-white fw-bold">Edwards Family Bakery</span>
+  </a>
   <span style="width:26px;"></span>
 </div>
 <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeMobileSidebar()"></div>
