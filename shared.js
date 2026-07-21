@@ -79,6 +79,45 @@ function parseAddress(raw) {
 }
 
 // ── Merge customers (explicit records + order history), deduped by phone ──
+// Creates or updates a real customer record to reflect this order's info.
+// Name and phone always take the order's values. Address only updates if this
+// order actually has one (a pickup order won't wipe out a known delivery address).
+// Only acts on orders with a real phone number — no record for phone-less orders.
+async function upsertCustomerFromOrder(customers, order, email) {
+  if (!order.phone) return null;
+  const key = custKey({firstName: order.firstName, lastName: order.lastName, phone: order.phone});
+  const existingRec = customers.find(c => custKey(c) === key);
+  const rawAddr = order.deliveryAddress || order.address || '';
+  const addrParts = rawAddr ? parseAddress(rawAddr) : null;
+
+  const data = {
+    firstName: order.firstName,
+    lastName: order.lastName,
+    phone: order.phone,
+  };
+  if (addrParts) {
+    data.street = addrParts.street; data.city = addrParts.city; data.state = addrParts.state; data.zip = addrParts.zip;
+  } else if (existingRec) {
+    data.street = existingRec.street||''; data.city = existingRec.city||''; data.state = existingRec.state||''; data.zip = existingRec.zip||'';
+  } else {
+    data.street=''; data.city=''; data.state=''; data.zip='';
+  }
+  if (email) data.email = email;
+  else if (existingRec) data.email = existingRec.email || '';
+  else data.email = '';
+
+  if (existingRec) {
+    Object.assign(existingRec, data);
+    await apiWrite('customers','update',existingRec.id,data);
+    return existingRec;
+  } else {
+    const newRec = { id:'c'+Date.now()+Math.floor(Math.random()*1000), ...data };
+    customers.push(newRec);
+    await apiWrite('customers','add',null,newRec);
+    return newRec;
+  }
+}
+
 function getMergedCustomers(products, orders, customers) {
   const map = new Map();
 

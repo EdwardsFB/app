@@ -531,6 +531,7 @@ async function saveOrderFromModal() {
     orderModal.hide();
     renderOrdersTab();
     await apiWrite('orders','add',null,newOrder);
+    try { await upsertCustomerFromOrder(customers, newOrder); } catch (err) { console.error('Could not sync customer record', err); }
   }
 }
 
@@ -580,7 +581,7 @@ function renderCustomersTab() {
         ${mergeModeOn ? `<td><input type="checkbox" ${selectedCustomerKeys.has(c._key)?'checked':''} onchange="toggleCustomerSelect('${c._key}')"></td>` : ''}
         <td>${esc(c.firstName)}</td><td>${esc(c.lastName)}</td><td>${c.phone ? esc(c.phone) : '<span class="badge bg-warning text-dark">No Phone</span>'}</td><td>${esc(c.email||'—')}</td><td>${esc(c.address||'—')}</td>
         <td class="text-end">${c.orderCount}</td><td class="text-end">$${c.totalSpent.toFixed(2)}</td>
-        <td class="text-end"><button class="btn btn-outline-secondary btn-sm me-2" onclick='openCustomerModal(${JSON.stringify(c).replace(/'/g,"&apos;")})'>Edit</button>${c.recordId ? `<button class="btn btn-outline-danger btn-sm" onclick="deleteCustomerRow('${c.recordId}')">Delete</button>` : ''}</td>
+        <td class="text-end"><button class="btn btn-outline-secondary btn-sm me-2" onclick='openCustomerModal(${JSON.stringify(c).replace(/'/g,"&apos;")})'>Edit</button><button class="btn btn-outline-danger btn-sm" ${c.recordId ? `onclick="deleteCustomerRow('${c.recordId}')"` : 'disabled title="This customer only exists from order history — nothing to delete unless you edit and save them first."'}>Delete</button></td>
       </tr>`).join('')}</tbody>
     </table></div>
     ${list.length===0 ? '<div class="text-center text-muted py-5">No customers yet</div>' : ''}
@@ -696,7 +697,8 @@ function openCustomerModal(existing) {
 function deleteCustomerRow(id) {
   const rec = customers.find(c => c.id === id);
   if (!rec) return;
-  openConfirm(`Delete this customer record for "${rec.firstName} ${rec.lastName}"? This won't affect any past orders — it only removes the standalone contact card.`, async () => {
+  const fullName = `${rec.firstName} ${rec.lastName}`.trim();
+  openConfirm(`Delete this customer record for "${fullName}"? This won't affect any past orders — it only removes the standalone contact card.`, async () => {
     customers = customers.filter(c => c.id !== id);
     renderCustomersTab();
     await apiWrite('customers','delete',id,null);

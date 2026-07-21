@@ -160,17 +160,9 @@ async function submitOrder() {
     return;
   }
 
-  if (email) {
-    try {
-      const key = custKey({firstName:first, lastName:last, phone});
-      const existingRec = customers.find(c => custKey(c) === key);
-      if (existingRec) {
-        if (existingRec.email !== email) { await apiWrite('customers','update',existingRec.id,{email}); }
-      } else {
-        await apiWrite('customers','add',null,{ id:'c'+Date.now(), firstName:first, lastName:last, phone, email });
-      }
-    } catch (err) { console.error('Could not save email', err); }
-  }
+  try {
+    await upsertCustomerFromOrder(customers, order, email);
+  } catch (err) { console.error('Could not sync customer record', err); }
 
   document.getElementById('confirmMsg').textContent = `Thanks, ${first}! Your order total is $${totals.total.toFixed(2)}.`;
   const note = encodeURIComponent(`Edwards Family Bakery order - ${first} ${last}`);
