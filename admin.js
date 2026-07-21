@@ -448,7 +448,11 @@ function applyOmReadOnlyStyling(ids, readOnly) {
     el.style.appearance = readOnly ? 'none' : '';
     el.style.borderRadius = readOnly ? '0.375rem' : '';
     const wrapper = el.closest('.form-floating');
-    if (wrapper) wrapper.style.setProperty('--bs-body-bg', readOnly ? '#f8f9fa' : null);
+    if (wrapper) {
+      ['--bs-body-bg', '--bs-tertiary-bg', '--bs-secondary-bg', '--bs-form-control-bg'].forEach(varName => {
+        wrapper.style.setProperty(varName, readOnly ? '#f8f9fa' : null);
+      });
+    }
   });
 }
 function setOmFieldsReadOnly(readOnly) {
