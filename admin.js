@@ -375,7 +375,7 @@ function renderOrdersList() {
         return `<tr title="${esc(itemStr)}">
           <td class="text-muted small">#${String(numberMap.get(o.id)).padStart(3,'0')}</td>
           <td><div>${esc(o.firstName)} ${esc(o.lastName)}</div><div class="small text-muted">${esc(o.phone||'')}</div></td>
-          <td><i class="bi ${o.fulfillment==='delivery' ? 'bi-truck' : 'bi-bag'} me-1" title="${cap(o.fulfillment)}"></i> ${cap(o.fulfillment)}</td>
+          <td><i class="bi ${o.fulfillment==='delivery' ? 'bi-truck' : 'bi-bag'}" title="${cap(o.fulfillment)}"></i></td>
           <td>${cap(o.payment)}</td>
           <td class="small text-muted">${o.date||'—'}</td>
           <td><select class="form-select form-select-sm" onchange="updatePaymentStatus('${o.id}', this.value)">
@@ -431,9 +431,11 @@ function setOmFieldsReadOnly(readOnly) {
   OM_CUSTOMER_FIELD_IDS.forEach(id => {
     const el = document.getElementById(id);
     el.readOnly = readOnly;
-    el.classList.toggle('bg-light', readOnly);
+    el.style.backgroundColor = readOnly ? '#f8f9fa' : '';
+    el.style.border = readOnly ? '1px solid #ced4da' : '';
+    el.style.color = readOnly ? '#495057' : '';
     const label = document.querySelector(`label[for="${id}"]`);
-    if (label) label.classList.toggle('bg-light', readOnly);
+    if (label) label.style.backgroundColor = readOnly ? '#f8f9fa' : '';
   });
 }
 
@@ -495,6 +497,7 @@ function openOrderModal(id) {
   document.getElementById('om-last').value = order ? order.lastName : '';
   document.getElementById('om-phone').value = order ? order.phone : '';
   document.getElementById('om-date').value = order ? order.date : '';
+  document.getElementById('om-date').classList.toggle('has-value', !!(order && order.date));
   document.getElementById('om-fulfillment').value = fulfillment;
   document.getElementById('om-payment').value = order ? order.payment : 'venmo';
   if (order) {
@@ -518,10 +521,10 @@ function openOrderModal(id) {
     <div class="d-flex justify-content-between align-items-center border-bottom py-2">
       <div><div class="fw-bold">${esc(p.name)}</div><div class="small text-muted">$${Number(p.price).toFixed(2)} ${esc(p.unit||'')}</div></div>
       <div class="input-group" style="width:130px;">
-        <button class="btn btn-outline-secondary" type="button" onclick="adjustOmQty('${p.id}',-1)"><i class="bi bi-dash-lg"></i></button>
+        <button class="btn btn-outline-secondary" type="button" style="border-color:#ced4da;" onclick="adjustOmQty('${p.id}',-1)"><i class="bi bi-dash-lg"></i></button>
         <input type="number" min="0" class="form-control text-center px-0" id="om-qty-${p.id}" value="${omQty[p.id]}"
           oninput="omQty['${p.id}']=parseInt(this.value)||0; updateOMTotal();"/>
-        <button class="btn btn-outline-secondary" type="button" onclick="adjustOmQty('${p.id}',1)"><i class="bi bi-plus-lg"></i></button>
+        <button class="btn btn-outline-secondary" type="button" style="border-color:#ced4da;" onclick="adjustOmQty('${p.id}',1)"><i class="bi bi-plus-lg"></i></button>
       </div>
     </div>
   `).join('');
@@ -552,57 +555,47 @@ async function saveOrderFromModal() {
   const first = document.getElementById('om-first').value.trim();
   const last = document.getElementById('om-last').value.trim();
   const phone = document.getElementById('om-phone').value.trim();
-  if (!first || !last) { alert('Please enter a customer name.'); return; }
-  if (!phone) { alert('Please enter a phone number — this keeps orders correctly matched to the right customer.'); return; }
   const items = products.filter(p => (omQty[p.id]||0) > 0).map(p => ({ productId:p.id, qty:omQty[p.id] }));
-  if (!items.length) { alert('Please add at least one item.'); return; }
-  if (document.getElementById('om-fulfillment').value === 'delivery') {
-    if (!document.getElementById('om-street').value.trim()) { alert('Please enter a delivery street address.'); return; }
-    if (!document.getElementById('om-city').value.trim()) { alert('Please enter a delivery city.'); return; }
-    if (!document.getElementById('om-state').value.trim()) { alert('Please enter a delivery state.'); return; }
-    if (!document.getElementById('om-zip').value.trim()) { alert('Please enter a delivery ZIP code.'); return; }
-  }
-
-  const discountPct = omDiscountPct();
-  const totals = computeOrderTotals(products, items, discountPct);
   const fulfillment = document.getElementById('om-fulfillment').value;
-  const address = formatAddress(
-    document.getElementById('om-street').value.trim(),
-    document.getElementById('om-city').value.trim(),
-    document.getElementById('om-state').value.trim(),
-    document.getElementById('om-zip').value.trim()
-  );
 
-  const orderData = {
-    firstName:first, lastName:last,
-    phone: document.getElementById('om-phone').value.trim(),
-    items,
-    discountSocial: omDiscountType==='social',
-    discountFamily: omDiscountType==='family',
-    discountPct,
-    subtotal: totals.subtotal, total: totals.total, profit: totals.profit, costTotal: totals.costTotal,
-    fulfillment,
+  const { orderData, error } = buildOrderData({
+    first, last, phone, items, fulfillment,
+    street: document.getElementById('om-street').value.trim(),
+    city: document.getElementById('om-city').value.trim(),
+    state: document.getElementById('om-state').value.trim(),
+    zip: document.getElementById('om-zip').value.trim(),
     date: document.getElementById('om-date').value,
-    deliveryAddress: fulfillment==='delivery' ? address : '',
-    payment: document.getElementById('om-payment').value,
     notes: document.getElementById('om-notes').value.trim(),
+    payment: document.getElementById('om-payment').value,
     paymentStatus: document.getElementById('om-paymentStatus').value,
     fulfillmentStatus: document.getElementById('om-fulfillmentStatus').value,
-  };
+    discountSocial: omDiscountType==='social',
+    discountFamily: omDiscountType==='family',
+    discountPct: omDiscountPct(),
+    products
+  });
+  if (error) { alert(error); return; }
 
   if (editingOrderId) {
     const idx = orders.findIndex(o=>o.id===editingOrderId);
     orders[idx] = { ...orders[idx], ...orderData };
     orderModal.hide();
     renderOrdersTab();
-    await apiWrite('orders','update',editingOrderId,orderData);
+    try {
+      await apiWrite('orders','update',editingOrderId,orderData);
+    } catch (err) {
+      alert('Save failed: ' + err.message + '\n\nYour changes were NOT saved. Please try again.');
+    }
   } else {
     const newOrder = { id:'o'+Date.now(), createdAt:Date.now(), source:'admin-manual', ...orderData };
     orders.push(newOrder);
     orderModal.hide();
     renderOrdersTab();
-    await apiWrite('orders','add',null,newOrder);
-    try { await upsertCustomerFromOrder(customers, newOrder); } catch (err) { console.error('Could not sync customer record', err); }
+    try {
+      await persistNewOrder(newOrder, customers);
+    } catch (err) {
+      alert('Save failed: ' + err.message + '\n\nYour changes were NOT saved. Please try again.');
+    }
   }
 }
 
@@ -1047,7 +1040,7 @@ function renderProductsTab() {
         ${products.map(p => `<tr ${reorderModeOn ? `draggable="true" data-id="${p.id}" ondragstart="onProductDragStart(event,'${p.id}')" ondragover="onProductDragOver(event,'${p.id}')" ondragleave="onProductDragLeave(event)" ondrop="onProductDrop(event,'${p.id}')"` : ''}>
           ${reorderModeOn ? '<td class="drag-handle text-muted">⠿</td>' : ''}
           <td>${esc(p.name)}</td>
-          <td>${p.active===false ? '<i class="bi bi-x-circle-fill text-danger fs-5" title="Inactive"></i>' : '<i class="bi bi-check-circle-fill text-success fs-5" title="Active"></i>'}</td>
+          <td>${p.active===false ? '<i class="bi bi-x-lg text-danger" title="Inactive"></i>' : '<i class="bi bi-check-lg text-success" title="Active"></i>'}</td>
           <td>${esc(p.desc||'')}</td>
           <td class="text-end">$${Number(p.price).toFixed(2)}</td><td class="text-end">$${Number(p.cost).toFixed(2)}</td><td>${esc(p.unit||'')}</td>
           <td class="text-end"><button class="btn btn-outline-secondary btn-sm me-2 mb-2" onclick="openProductModal('${p.id}')">Edit</button><button class="btn btn-outline-danger btn-sm mb-2" onclick="deleteProductRow('${p.id}')">Delete</button></td>

@@ -79,6 +79,45 @@ function parseAddress(raw) {
 }
 
 // ── Merge customers (explicit records + order history), deduped by phone ──
+// Validates raw form field values and computes a complete order data object.
+// Returns { orderData } on success or { error } on validation failure.
+// This is the single source of truth for "what makes a valid order" — used by
+// both the customer-facing form and the admin manual-entry modal.
+function buildOrderData({ first, last, phone, items, fulfillment, street, city, state, zip, date, notes, payment, paymentStatus, fulfillmentStatus, discountSocial, discountFamily, discountPct, products }) {
+  first = (first||'').trim(); last = (last||'').trim(); phone = (phone||'').trim();
+  if (!first || !last) return { error: 'Please enter a customer name.' };
+  if (!phone) return { error: 'Please enter a phone number — this keeps orders correctly matched to the right customer.' };
+  if (!items || !items.length) return { error: 'Please add at least one item.' };
+  street = (street||'').trim(); city = (city||'').trim(); state = (state||'').trim(); zip = (zip||'').trim();
+  if (fulfillment === 'delivery') {
+    if (!street) return { error: 'Please enter a delivery street address.' };
+    if (!city) return { error: 'Please enter a delivery city.' };
+    if (!state) return { error: 'Please enter a delivery state.' };
+    if (!zip) return { error: 'Please enter a delivery ZIP code.' };
+  }
+  const totals = computeOrderTotals(products, items, discountPct || 0);
+  const address = formatAddress(street, city, state, zip);
+  return {
+    orderData: {
+      firstName: first, lastName: last, phone, items,
+      discountSocial: !!discountSocial, discountFamily: !!discountFamily, discountPct: discountPct || 0,
+      subtotal: totals.subtotal, total: totals.total, profit: totals.profit, costTotal: totals.costTotal,
+      fulfillment, date: date || '',
+      deliveryAddress: fulfillment === 'delivery' ? address : '',
+      payment: payment || 'venmo', notes: notes || '',
+      paymentStatus: paymentStatus || 'unpaid',
+      fulfillmentStatus: fulfillmentStatus || 'pending',
+    }
+  };
+}
+
+// Persists a brand-new order to the server and keeps the customer record in sync.
+// Caller owns local array mutation + UI update timing (optimistic vs wait-then-show).
+async function persistNewOrder(newOrder, customers, email) {
+  await apiWrite('orders', 'add', null, newOrder);
+  try { await upsertCustomerFromOrder(customers, newOrder, email); } catch (err) { console.error('Could not sync customer record', err); }
+}
+
 // Creates or updates a real customer record to reflect this order's info.
 // Name and phone always take the order's values. Address only updates if this
 // order actually has one (a pickup order won't wipe out a known delivery address).

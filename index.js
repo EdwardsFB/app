@@ -117,42 +117,27 @@ async function submitOrder() {
   const city = document.getElementById('cf-city').value.trim();
   const state = document.getElementById('cf-state').value.trim();
   const zip = document.getElementById('cf-zip').value.trim();
-  const address = formatAddress(street, city, state, zip);
   const notes = document.getElementById('cf-notes').value.trim();
   const errEl = document.getElementById('formError');
-
   const items = products.filter(p => (cQty[p.id]||0) > 0).map(p => ({ productId: p.id, qty: cQty[p.id] }));
 
-  if (!first || !last) { errEl.textContent = 'Please enter your first and last name.'; return; }
-  if (!phone) { errEl.textContent = 'Please enter a phone number.'; return; }
-  if (!items.length) { errEl.textContent = 'Please select at least one item.'; return; }
-  if (currentFulfillment === 'delivery' && !street) { errEl.textContent = 'Please enter a delivery street address.'; return; }
+  const { orderData, error } = buildOrderData({
+    first, last, phone, items, fulfillment: currentFulfillment,
+    street, city, state, zip, date, notes,
+    payment: 'venmo', paymentStatus: 'unpaid', fulfillmentStatus: 'pending',
+    products
+  });
+  if (error) { errEl.textContent = error; return; }
   errEl.textContent = '';
 
-  const totals = computeOrderTotals(products, items, 0);
   const submitBtn = document.querySelector('#orderFormScreen button.btn-dark');
   submitBtn.disabled = true;
   submitBtn.textContent = 'Placing order...';
 
-  const order = {
-    id: 'o' + Date.now(),
-    createdAt: Date.now(),
-    firstName: first, lastName: last, phone,
-    items: items,
-    discountSocial: false, discountFamily: false, discountPct: 0,
-    subtotal: totals.subtotal, total: totals.total, profit: totals.profit, costTotal: totals.costTotal,
-    fulfillment: currentFulfillment,
-    date: date || '',
-    deliveryAddress: currentFulfillment === 'delivery' ? address : '',
-    payment: 'venmo',
-    notes,
-    paymentStatus: 'unpaid',
-    fulfillmentStatus: 'pending',
-    source: 'customer'
-  };
+  const newOrder = { id: 'o' + Date.now(), createdAt: Date.now(), source: 'customer', ...orderData };
 
   try {
-    await apiWrite('orders', 'add', null, order);
+    await persistNewOrder(newOrder, customers, email);
   } catch (err) {
     errEl.textContent = 'Something went wrong submitting your order: ' + err.message;
     submitBtn.disabled = false;
@@ -160,13 +145,9 @@ async function submitOrder() {
     return;
   }
 
-  try {
-    await upsertCustomerFromOrder(customers, order, email);
-  } catch (err) { console.error('Could not sync customer record', err); }
-
-  document.getElementById('confirmMsg').textContent = `Thanks, ${first}! Your order total is $${totals.total.toFixed(2)}.`;
+  document.getElementById('confirmMsg').textContent = `Thanks, ${first}! Your order total is $${newOrder.total.toFixed(2)}.`;
   const note = encodeURIComponent(`Edwards Family Bakery order - ${first} ${last}`);
-  document.getElementById('venmoLink').href = `https://venmo.com/${VENMO_HANDLE}?txn=pay&amount=${totals.total.toFixed(2)}&note=${note}`;
+  document.getElementById('venmoLink').href = `https://venmo.com/${VENMO_HANDLE}?txn=pay&amount=${newOrder.total.toFixed(2)}&note=${note}`;
   document.getElementById('orderFormScreen').classList.add('d-none');
   document.getElementById('confirmScreen').classList.remove('d-none');
   window.scrollTo(0,0);
