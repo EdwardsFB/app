@@ -313,8 +313,8 @@ function setOrderFilter(f) { currentOrderFilter = f; renderOrdersList(); }
 function renderOrdersTab() {
   document.getElementById('tab-orders').innerHTML = `
     <div class="btn-group mb-3" id="orderFilterTabs">
-      <button class="btn btn-outline-dark" data-f="all" onclick="setOrderFilter('all')">All</button>
-      <button class="btn btn-outline-dark" data-f="unpaid" onclick="setOrderFilter('unpaid')">Unpaid</button>
+      <button class="btn btn-outline-secondary" data-f="all" onclick="setOrderFilter('all')">All</button>
+      <button class="btn btn-outline-secondary" data-f="unpaid" onclick="setOrderFilter('unpaid')">Unpaid</button>
     </div>
     <div id="ordersList"></div>
   `;
@@ -437,8 +437,6 @@ function setOmFieldsReadOnly(readOnly) {
     el.style.webkitAppearance = readOnly ? 'none' : '';
     el.style.appearance = readOnly ? 'none' : '';
     el.style.borderRadius = readOnly ? '0.375rem' : '';
-    const label = document.querySelector(`label[for="${id}"]`);
-    if (label) label.style.backgroundColor = readOnly ? '#f8f9fa' : '';
   });
 }
 
@@ -649,6 +647,10 @@ function renderCustomersTab() {
   const cols = [['lastName','Last Name',''],['firstName','First Name',''],['phone','Phone',''],['email','Email',''],['address','Address',''],['orderCount','Orders','end'],['totalSpent','Total Spent','end']];
 
   document.getElementById('tab-customers').innerHTML = `
+    <label class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 mb-3" for="mergeModeToggle">
+      <input class="form-check-input mt-0" type="checkbox" id="mergeModeToggle" ${mergeModeOn?'checked':''} onchange="setMergeMode(this.checked)">
+      Merge Customers
+    </label>
     <div class="table-responsive"><table class="table table-striped table-bordered bg-white">
       <thead><tr>${mergeModeOn ? '<th></th>' : ''}${cols.map(([k,l,a])=>`<th class="text-${a||'start'}" style="cursor:pointer;" onclick="sortCustomersBy('${k}')">${l}${sortArrow(k)}</th>`).join('')}<th></th></tr></thead>
       <tbody>${list.map(c => `<tr>
@@ -659,10 +661,6 @@ function renderCustomersTab() {
       </tr>`).join('')}</tbody>
     </table></div>
     ${list.length===0 ? '<div class="text-center text-muted py-5">No customers yet</div>' : ''}
-    <div class="form-check form-switch mt-2 mb-5">
-      <input class="form-check-input" type="checkbox" id="mergeModeToggle" ${mergeModeOn?'checked':''} onchange="setMergeMode(this.checked)">
-      <label class="form-check-label small" for="mergeModeToggle">Merge Customers</label>
-    </div>
   `;
   updateMergeBar();
 }
@@ -927,10 +925,10 @@ function renderProductionTab() {
     </div>
 
     <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-3">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
-    ${pickups.length ? `<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-3">${pickups.map(o => orderCard(o)).join('')}</div>` : ''}
+    ${pickups.length ? `<div class="card mb-3"><div class="card-body"><div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">${pickups.map(o => orderCard(o)).join('')}</div></div></div>` : ''}
 
     <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-3">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${deliveries.length}</span></h4>
-    ${deliveries.length ? `<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-3">${deliveries.map(o => orderCard(o)).join('')}</div>` : ''}
+    ${deliveries.length ? `<div class="card mb-3"><div class="card-body"><div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">${deliveries.map(o => orderCard(o)).join('')}</div></div></div>` : ''}
   `;
 }
 
@@ -1015,11 +1013,11 @@ function renderFulfillmentTab() {
 
   container.innerHTML = `
     <h4 class="text-muted d-flex align-items-center gap-2 mb-3">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
-    ${pickups.length ? `<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-4">${pickups.map(o => orderRow(o)).join('')}</div>` : ''}
+    ${pickups.length ? `<div class="card mb-4"><div class="card-body"><div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">${pickups.map(o => orderRow(o)).join('')}</div></div></div>` : ''}
 
     <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-3">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${orderedDeliveries.length}</span></h4>
     ${orderedDeliveries.length ? `
-      <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-3">${orderedDeliveries.map((o,idx) => orderRow(o, idx, orderedDeliveries.length)).join('')}</div>
+      <div class="card mb-3"><div class="card-body"><div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">${orderedDeliveries.map((o,idx) => orderRow(o, idx, orderedDeliveries.length)).join('')}</div></div></div>
       <button class="btn btn-dark mt-2 mb-4" onclick="openRouteMap()">Open Route in Google Maps</button>
     ` : ''}
   `;
@@ -1047,6 +1045,10 @@ function openRouteMap() {
 // ══════════════════════════════════════════
 function renderProductsTab() {
   document.getElementById('tab-products').innerHTML = `
+    <label class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 mb-3" for="reorderModeToggle">
+      <input class="form-check-input mt-0" type="checkbox" id="reorderModeToggle" ${reorderModeOn?'checked':''} onchange="setReorderMode(this.checked)">
+      Reorder Products
+    </label>
     <div class="table-responsive"><table class="table table-striped table-bordered bg-white">
       <thead><tr>${reorderModeOn ? '<th></th>' : ''}<th>Name</th><th>Status</th><th>Description</th><th class="text-end">Price</th><th class="text-end">Cost</th><th>Unit</th><th></th></tr></thead>
       <tbody id="productsTableBody">
@@ -1060,10 +1062,6 @@ function renderProductsTab() {
         </tr>`).join('')}
       </tbody>
     </table></div>
-    <div class="form-check form-switch mt-2 mb-5">
-      <input class="form-check-input" type="checkbox" id="reorderModeToggle" ${reorderModeOn?'checked':''} onchange="setReorderMode(this.checked)">
-      <label class="form-check-label small" for="reorderModeToggle">Reorder Products</label>
-    </div>
   `;
 }
 
