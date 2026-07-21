@@ -564,7 +564,7 @@ function renderCustomersTab() {
       <thead><tr>${mergeModeOn ? '<th></th>' : ''}${cols.map(([k,l,a])=>`<th class="text-${a||'start'}" style="cursor:pointer;" onclick="sortCustomersBy('${k}')">${l}${sortArrow(k)}</th>`).join('')}<th></th></tr></thead>
       <tbody>${list.map(c => `<tr>
         ${mergeModeOn ? `<td><input type="checkbox" ${selectedCustomerKeys.has(c._key)?'checked':''} onchange="toggleCustomerSelect('${c._key}')"></td>` : ''}
-        <td>${esc(c.firstName)}</td><td>${esc(c.lastName)}</td><td>${esc(c.phone||'—')}</td><td>${esc(c.email||'—')}</td><td>${esc(c.address||'—')}</td>
+        <td>${esc(c.firstName)}</td><td>${esc(c.lastName)}</td><td>${c.phone ? esc(c.phone) : '<span class="badge bg-warning text-dark">No Phone</span>'}</td><td>${esc(c.email||'—')}</td><td>${esc(c.address||'—')}</td>
         <td class="text-end">${c.orderCount}</td><td class="text-end">$${c.totalSpent.toFixed(2)}</td>
         <td class="text-end"><button class="btn btn-outline-secondary btn-sm" onclick='openCustomerModal(${JSON.stringify(c).replace(/'/g,"&apos;")})'>Edit</button></td>
       </tr>`).join('')}</tbody>
