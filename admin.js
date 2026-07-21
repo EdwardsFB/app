@@ -838,8 +838,8 @@ function renderProductionTab() {
       }).join('');
     }).filter(Boolean).join('');
     const ready = allItemsMade(o);
-    return `<div class="card mb-2"><div class="card-body py-2">
-      <div class="row g-2 align-items-center">
+    return `<div class="card mb-3"><div class="card-body py-2">
+      <div class="row g-3 align-items-center">
         <div class="col-12 col-md-3">
           <div class="fs-5 fw-bold">${esc(o.firstName)} ${esc(o.lastName)} <a href="#" class="text-secondary ms-2" onclick="openCustomerDetail('${o.id}'); return false;" title="Customer details"><i class="bi bi-person-vcard"></i></a></div>
           ${o.notes ? `<div class="small text-muted fst-italic">${esc(o.notes)}</div>` : ''}
@@ -866,10 +866,10 @@ function renderProductionTab() {
     </div>
 
     <h5 class="text-muted d-flex align-items-center gap-2">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h5>
-    ${pickups.length ? pickups.map(o => orderCard(o)).join('') : '<p class="small text-muted">None right now.</p>'}
+    ${pickups.length ? pickups.map(o => orderCard(o)).join('') : ''}
 
     <h5 class="text-muted mt-4 d-flex align-items-center gap-2">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${deliveries.length}</span></h5>
-    ${deliveries.length ? deliveries.map(o => orderCard(o)).join('') : '<p class="small text-muted">None right now.</p>'}
+    ${deliveries.length ? deliveries.map(o => orderCard(o)).join('') : ''}
   `;
 }
 
@@ -954,13 +954,13 @@ function renderFulfillmentTab() {
 
   container.innerHTML = `
     <h5 class="text-muted d-flex align-items-center gap-2">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h5>
-    ${pickups.length ? `<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-4">${pickups.map(o => orderRow(o)).join('')}</div>` : '<p class="small text-muted">None right now.</p>'}
+    ${pickups.length ? `<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-4">${pickups.map(o => orderRow(o)).join('')}</div>` : ''}
 
     <h5 class="text-muted mt-4 d-flex align-items-center gap-2">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${orderedDeliveries.length}</span></h5>
     ${orderedDeliveries.length ? `
       <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-3">${orderedDeliveries.map((o,idx) => orderRow(o, idx, orderedDeliveries.length)).join('')}</div>
       <button class="btn btn-dark mt-2 mb-4" onclick="openRouteMap()">Open Route in Google Maps</button>
-    ` : '<p class="small text-muted">None right now.</p>'}
+    ` : ''}
   `;
 }
 
