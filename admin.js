@@ -696,23 +696,36 @@ async function saveCustomerFromModal() {
   if (editingCustomerRecordId) {
     const rec = customers.find(c=>c.id===editingCustomerRecordId);
     Object.assign(rec, data);
-    customerModal.hide();
-    renderCustomersTab();
-    await apiWrite('customers','update',editingCustomerRecordId,data);
+    try {
+      await apiWrite('customers','update',editingCustomerRecordId,data);
+      customerModal.hide();
+      renderCustomersTab();
+    } catch (err) {
+      alert('Save failed: ' + err.message + '\n\nYour changes were NOT saved. Please try again.');
+    }
   } else {
     const key = custKey(data);
     const existingRec = customers.find(c => custKey(c)===key);
     if (existingRec) {
       Object.assign(existingRec, data);
-      customerModal.hide();
-      renderCustomersTab();
-      await apiWrite('customers','update',existingRec.id,data);
+      try {
+        await apiWrite('customers','update',existingRec.id,data);
+        customerModal.hide();
+        renderCustomersTab();
+      } catch (err) {
+        alert('Save failed: ' + err.message + '\n\nYour changes were NOT saved. Please try again.');
+      }
     } else {
       const newCust = { id:'c'+Date.now(), ...data };
       customers.push(newCust);
-      customerModal.hide();
-      renderCustomersTab();
-      await apiWrite('customers','add',null,newCust);
+      try {
+        await apiWrite('customers','add',null,newCust);
+        customerModal.hide();
+        renderCustomersTab();
+      } catch (err) {
+        customers = customers.filter(c => c.id !== newCust.id); // roll back local state since it never actually saved
+        alert('Save failed: ' + err.message + '\n\nYour changes were NOT saved. Please try again.');
+      }
     }
   }
 }
