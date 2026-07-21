@@ -312,7 +312,7 @@ function setOrderFilter(f) { currentOrderFilter = f; renderOrdersList(); }
 
 function renderOrdersTab() {
   document.getElementById('tab-orders').innerHTML = `
-    <div class="btn-group mb-3" id="orderFilterTabs">
+    <div class="btn-group mb-3" id="orderFilterTabs" role="group" aria-label="Filter orders">
       <button class="btn btn-outline-secondary" data-f="all" onclick="setOrderFilter('all')">All</button>
       <button class="btn btn-outline-secondary" data-f="unpaid" onclick="setOrderFilter('unpaid')">Unpaid</button>
     </div>
@@ -371,7 +371,7 @@ function renderOrdersList() {
     <thead><tr>${cols.map(([k,l]) => `<th class="${k==='total'?'text-end':''}" style="cursor:pointer;" onclick="sortOrdersBy('${k}')">${l}${orderSortArrow(k)}</th>`).join('')}<th></th></tr></thead>
     <tbody>
       ${list.map(o => {
-        const itemStr = (o.items||[]).map(i => { const p = products.find(p=>p.id===i.productId); return p ? `${i.qty}× ${p.name}` : ''; }).filter(Boolean).join(', ');
+        const itemStr = (o.items||[]).map(i => { const name = i.name || (products.find(p=>p.id===i.productId)||{}).name; return name ? `${i.qty}× ${name}` : ''; }).filter(Boolean).join(', ');
         return `<tr title="${esc(itemStr)}">
           <td class="text-muted small">#${String(numberMap.get(o.id)).padStart(3,'0')}</td>
           <td><div>${esc(o.firstName)} ${esc(o.lastName)}</div><div class="small text-muted">${esc(o.phone||'')}</div></td>
@@ -546,7 +546,14 @@ function openOrderModal(id) {
   // fix a customer's real info via the Customers table instead, so it stays correct everywhere.
   applyOmReadOnlyStyling([...OM_CUSTOMER_FIELD_IDS, 'om-street','om-city','om-state','om-zip'], !!order);
   document.getElementById('om-locked-banner').classList.toggle('d-none', !isCompleted);
-  document.getElementById('om-products').innerHTML = `<ul class="list-group">` + products.map(p => {
+  const orphanedOrderItems = order ? (order.items||[]).filter(i => !products.find(p=>p.id===i.productId)) : [];
+  const orphanedHtml = orphanedOrderItems.map(i => `
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <div><div class="fw-bold">${esc(i.name || 'Deleted item')}</div><div class="small text-muted">$${Number(i.price||0).toFixed(2)} — no longer in your product list</div></div>
+      <div class="fw-bold text-end" style="width:130px;">${i.qty}</div>
+    </li>
+  `).join('');
+  document.getElementById('om-products').innerHTML = `<ul class="list-group">` + orphanedHtml + products.map(p => {
     const existingItem = order ? (order.items||[]).find(i=>i.productId===p.id) : null;
     const displayPrice = (existingItem && existingItem.price !== undefined) ? existingItem.price : p.price;
     const qty = omQty[p.id] || 0;
@@ -590,7 +597,12 @@ async function saveOrderFromModal() {
   const first = document.getElementById('om-first').value.trim();
   const last = document.getElementById('om-last').value.trim();
   const phone = document.getElementById('om-phone').value.trim();
-  const items = products.filter(p => (omQty[p.id]||0) > 0).map(p => ({ productId:p.id, qty:omQty[p.id] }));
+  const currentItems = products.filter(p => (omQty[p.id]||0) > 0).map(p => ({ productId:p.id, qty:omQty[p.id] }));
+  // If this order has an existing line item for a product that's since been deleted from the
+  // catalog, carry it forward unchanged rather than silently dropping it on save.
+  const existingOrderForSave = editingOrderId ? orders.find(o=>o.id===editingOrderId) : null;
+  const orphanedItems = existingOrderForSave ? (existingOrderForSave.items||[]).filter(i => !products.find(p=>p.id===i.productId)) : [];
+  const items = [...currentItems, ...orphanedItems];
   const fulfillment = document.getElementById('om-fulfillment').value;
 
   const { orderData, error } = buildOrderData({
@@ -903,11 +915,16 @@ function renderProductionTab() {
 
   // Bake totals — cards stay visible even at 0 remaining, showing a green checkmark instead
   const totals = {};
+  const nameById = {};
   active.forEach(o => (o.items||[]).forEach(i => {
     const remaining = Math.max(0, i.qty - unitsDoneCount(o, i.productId));
     totals[i.productId] = (totals[i.productId]||0) + remaining;
+    if (!nameById[i.productId]) {
+      const p = products.find(p=>p.id===i.productId);
+      nameById[i.productId] = i.name || (p && p.name) || 'Unknown item';
+    }
   }));
-  const bakeProducts = products.filter(p => totals[p.id] !== undefined);
+  const bakeProducts = Object.keys(totals).map(id => ({ id, name: nameById[id] }));
 
   const pickups = active.filter(o => o.fulfillment === 'pickup');
   const deliveries = active.filter(o => o.fulfillment === 'delivery');
@@ -915,12 +932,13 @@ function renderProductionTab() {
   function orderCard(o) {
     const itemListItems = (o.items||[]).map(i => {
       const p = products.find(p=>p.id===i.productId);
-      if (!p) return '';
+      const name = i.name || (p && p.name);
+      if (!name) return '';
       const doneArr = (o.madeItems && o.madeItems[i.productId]) || [];
       return Array.from({length: i.qty}).map((_, idx) => {
         const done = !!doneArr[idx];
         return `<li class="list-group-item d-flex justify-content-between align-items-center" style="cursor:pointer;" onclick="toggleUnit('${o.id}','${i.productId}',${idx})">
-          <span class="${done ? 'text-success' : ''}">${esc(p.name)}</span>
+          <span class="${done ? 'text-success' : ''}">${esc(name)}</span>
           <div class="form-check form-switch mb-0">
             <input class="form-check-input switch-green" type="checkbox" ${done?'checked':''} style="pointer-events:none;" tabindex="-1">
           </div>
@@ -1018,7 +1036,8 @@ function renderFulfillmentTab() {
   function orderRow(o, idx, total) {
     const itemListItems = (o.items||[]).map(i=>{
       const p = products.find(p=>p.id===i.productId);
-      return p ? `<li class="list-group-item d-flex justify-content-between align-items-center">${esc(p.name)}<span class="badge rounded-pill text-bg-secondary">${i.qty}</span></li>` : '';
+      const name = i.name || (p && p.name);
+      return name ? `<li class="list-group-item d-flex justify-content-between align-items-center">${esc(name)}<span class="badge rounded-pill text-bg-secondary">${i.qty}</span></li>` : '';
     }).filter(Boolean).join('');
     const label = o.fulfillment === 'delivery' ? 'Mark as Delivered' : 'Mark as Picked Up';
     const addr = o.fulfillment==='delivery' ? parseAddress(o.deliveryAddress||o.address||'') : null;

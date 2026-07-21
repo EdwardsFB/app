@@ -55,7 +55,7 @@ function parseAddress(raw) {
   if (parts.length === 1) {
     const m = raw.match(/^(.*?)[,]?\s+([A-Za-z]{2})\s+(\d{5}(-\d{4})?)\s*$/);
     if (m) return { street: m[1].trim(), city: '', state: m[2].toUpperCase(), zip: m[3] };
-    return { street: raw.trim(), city: '', state: '', zip: '' };
+    return { street: parts[0] || raw.trim(), city: '', state: '', zip: '' };
   }
   const street = parts.length >= 3 ? parts.slice(0, parts.length-2).join(', ') : parts[0];
   const cityPart = parts.length >= 3 ? parts[parts.length-2] : '';
@@ -206,4 +206,10 @@ function computeOrderTotals(products, items, discountPct) {
   const costTotal = enrichedItems.reduce((s,i) => s + i.cost*i.qty, 0);
   const total = subtotal * (1 - (discountPct||0)/100);
   return { subtotal, costTotal, total, profit: total - costTotal, items: enrichedItems };
+}
+
+// Node-only export for the automated test suite (tests/shared.test.js).
+// This block never executes in a browser — typeof module is undefined there.
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { esc, cap, normPhone, custKey, formatAddress, parseAddress, buildOrderData, getMergedCustomers, computeOrderTotals };
 }

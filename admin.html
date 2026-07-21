@@ -136,12 +136,12 @@
 </div>
 
 <!-- ORDER MODAL -->
-<div class="modal fade" id="orderModal" tabindex="-1">
+<div class="modal fade" id="orderModal" tabindex="-1" aria-labelledby="orderModalTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="orderModalTitle">New Order</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <h1 class="modal-title fs-5" id="orderModalTitle">New Order</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="alert alert-secondary small d-none" id="om-locked-banner">This order is complete, so it's locked to prevent accidental changes. You can still update Payment Status or Fulfillment Status below if needed.</div>
@@ -242,12 +242,12 @@
 </div>
 
 <!-- PRODUCT MODAL -->
-<div class="modal fade" id="productModal" tabindex="-1">
+<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalTitle" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="productModalTitle">New Product</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <h1 class="modal-title fs-5" id="productModalTitle">New Product</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="row g-2 mb-2"><div class="col form-floating"><input id="pm-name" class="form-control" type="text" placeholder="Name"/><label for="pm-name">Name</label></div></div>
@@ -277,12 +277,12 @@
 </div>
 
 <!-- CUSTOMER MODAL -->
-<div class="modal fade" id="customerModal" tabindex="-1">
+<div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalTitle" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="customerModalTitle">Add Customer</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <h1 class="modal-title fs-5" id="customerModalTitle">Add Customer</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="row g-2 mb-2">
@@ -307,12 +307,12 @@
 </div>
 
 <!-- MERGE MODAL -->
-<div class="modal fade" id="mergeModal" tabindex="-1">
+<div class="modal fade" id="mergeModal" tabindex="-1" aria-labelledby="mergeModalTitle" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Merge Customers</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <h1 class="modal-title fs-5" id="mergeModalTitle">Merge Customers</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <p class="small text-muted">Pick which record's info to keep. Every order from the others will be moved under this one.</p>
@@ -327,12 +327,12 @@
 </div>
 
 <!-- CUSTOMER DETAIL MODAL -->
-<div class="modal fade" id="customerDetailModal" tabindex="-1">
+<div class="modal fade" id="customerDetailModal" tabindex="-1" aria-labelledby="customerDetailTitle" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="customerDetailTitle">Customer</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <h1 class="modal-title fs-5" id="customerDetailTitle">Customer</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" id="customerDetailBody"></div>
       <div class="modal-footer">
@@ -343,11 +343,11 @@
 </div>
 
 <!-- CONFIRM MODAL -->
-<div class="modal fade" id="confirmModal" tabindex="-1">
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalTitle" aria-hidden="true">
   <div class="modal-dialog modal-sm">
     <div class="modal-content">
       <div class="modal-body text-center py-4">
-        <h5>Are you sure?</h5>
+        <h1 class="modal-title fs-5" id="confirmModalTitle">Are you sure?</h1>
         <p id="confirmModalMsg" class="small text-muted"></p>
         <div class="d-flex gap-2">
           <button class="btn btn-outline-secondary flex-fill" data-bs-dismiss="modal">Cancel</button>
