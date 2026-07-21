@@ -853,7 +853,7 @@ function renderProductionTab() {
   }
 
   container.innerHTML = `
-    <h4 class="text-muted">Bake List</h4>
+    <h4 class="text-muted mb-3">Bake List</h4>
     <div class="row row-cols-2 row-cols-md-3 g-3 mb-4">
       ${bakeProducts.map(p => {
         const done = totals[p.id] === 0;
@@ -865,14 +865,14 @@ function renderProductionTab() {
       `;}).join('')}
     </div>
 
-    <hr class="my-4">
+    <hr class="my-5" style="border-color: rgba(0,0,0,0.175); opacity:1;">
 
-    <h4 class="text-muted d-flex align-items-center gap-2">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
+    <h4 class="text-muted d-flex align-items-center gap-2 mb-3">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
     ${pickups.length ? pickups.map(o => orderCard(o)).join('') : ''}
 
-    <hr class="my-4">
+    <hr class="my-5" style="border-color: rgba(0,0,0,0.175); opacity:1;">
 
-    <h4 class="text-muted d-flex align-items-center gap-2">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${deliveries.length}</span></h4>
+    <h4 class="text-muted d-flex align-items-center gap-2 mb-3">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${deliveries.length}</span></h4>
     ${deliveries.length ? deliveries.map(o => orderCard(o)).join('') : ''}
   `;
 }
@@ -957,12 +957,12 @@ function renderFulfillmentTab() {
   }
 
   container.innerHTML = `
-    <h4 class="text-muted d-flex align-items-center gap-2">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
+    <h4 class="text-muted d-flex align-items-center gap-2 mb-3">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
     ${pickups.length ? `<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-4">${pickups.map(o => orderRow(o)).join('')}</div>` : ''}
 
-    <hr class="my-4">
+    <hr class="my-5" style="border-color: rgba(0,0,0,0.175); opacity:1;">
 
-    <h4 class="text-muted d-flex align-items-center gap-2">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${orderedDeliveries.length}</span></h4>
+    <h4 class="text-muted d-flex align-items-center gap-2 mb-3">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${orderedDeliveries.length}</span></h4>
     ${orderedDeliveries.length ? `
       <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-3">${orderedDeliveries.map((o,idx) => orderRow(o, idx, orderedDeliveries.length)).join('')}</div>
       <button class="btn btn-dark mt-2 mb-4" onclick="openRouteMap()">Open Route in Google Maps</button>

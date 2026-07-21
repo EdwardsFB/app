@@ -31,7 +31,10 @@
         <div class="card-body">
           <h2 class="h6">Ordered With Us Before?</h2>
           <div class="input-group">
-            <input id="lookupPhone" type="tel" class="form-control" placeholder="Enter your phone number" oninput="formatPhoneInput(this)"/>
+            <div class="form-floating">
+              <input id="lookupPhone" type="tel" class="form-control" oninput="formatPhoneInput(this)" placeholder="Phone Number"/>
+              <label for="lookupPhone">Enter your phone number</label>
+            </div>
             <button class="btn btn-outline-secondary" onclick="lookupReturningCustomer()">Find My Info</button>
           </div>
           <div id="lookupMsg" class="small mt-2"></div>
@@ -45,15 +48,15 @@
         <div class="card-body">
           <h2 class="h6 mb-3">Your Info</h2>
           <div class="row g-2 mb-2">
-            <div class="col"><label class="form-label small">First Name <span class="text-danger">*</span></label><input id="cf-first" class="form-control" type="text"/></div>
-            <div class="col"><label class="form-label small">Last Name <span class="text-danger">*</span></label><input id="cf-last" class="form-control" type="text"/></div>
+            <div class="col form-floating"><input id="cf-first" class="form-control" type="text" placeholder="First Name"/><label for="cf-first">First Name <span class="text-danger">*</span></label></div>
+            <div class="col form-floating"><input id="cf-last" class="form-control" type="text" placeholder="Last Name"/><label for="cf-last">Last Name <span class="text-danger">*</span></label></div>
           </div>
           <div class="row g-2 mb-2">
-            <div class="col"><label class="form-label small">Phone <span class="text-danger">*</span></label><input id="cf-phone" class="form-control" type="tel" oninput="formatPhoneInput(this)"/></div>
-            <div class="col"><label class="form-label small">Email</label><input id="cf-email" class="form-control" type="email"/></div>
+            <div class="col form-floating"><input id="cf-phone" class="form-control" type="tel" oninput="formatPhoneInput(this)" placeholder="Phone"/><label for="cf-phone">Phone <span class="text-danger">*</span></label></div>
+            <div class="col form-floating"><input id="cf-email" class="form-control" type="email" placeholder="Email"/><label for="cf-email">Email</label></div>
           </div>
           <div class="row g-2 mb-2">
-            <div class="col"><label class="form-label small">Preferred Day</label><input id="cf-date" class="form-control" type="date"/></div>
+            <div class="col form-floating"><input id="cf-date" class="form-control" type="date" placeholder="Preferred Day"/><label for="cf-date">Preferred Day</label></div>
             <div class="col"></div>
           </div>
           <div class="mb-2">
@@ -66,17 +69,16 @@
             </div>
           </div>
           <div class="mb-2 d-none" id="addressField">
-            <label class="form-label small">Street Address <span class="text-danger">*</span></label>
-            <input id="cf-street" class="form-control mb-2" type="text" placeholder="123 Main St"/>
+            <div class="form-floating mb-2"><input id="cf-street" class="form-control" type="text" placeholder="Street Address"/><label for="cf-street">Street Address <span class="text-danger">*</span></label></div>
             <div class="row g-2">
-              <div class="col-6"><label class="form-label small">City</label><input id="cf-city" class="form-control" type="text"/></div>
-              <div class="col-3"><label class="form-label small">State</label><input id="cf-state" class="form-control" type="text" maxlength="2"/></div>
-              <div class="col-3"><label class="form-label small">ZIP</label><input id="cf-zip" class="form-control" type="text"/></div>
+              <div class="col-6 form-floating"><input id="cf-city" class="form-control" type="text" placeholder="City"/><label for="cf-city">City</label></div>
+              <div class="col-3 form-floating"><input id="cf-state" class="form-control" type="text" maxlength="2" placeholder="State"/><label for="cf-state">State</label></div>
+              <div class="col-3 form-floating"><input id="cf-zip" class="form-control" type="text" placeholder="ZIP"/><label for="cf-zip">ZIP</label></div>
             </div>
           </div>
-          <div class="mb-0">
-            <label class="form-label small">Notes</label>
-            <textarea id="cf-notes" class="form-control" rows="2" placeholder="Sliced, gate code, allergies, etc."></textarea>
+          <div class="form-floating mb-0">
+            <textarea id="cf-notes" class="form-control" style="height:80px;" placeholder="Notes"></textarea>
+            <label for="cf-notes">Notes</label>
           </div>
         </div>
       </div>
