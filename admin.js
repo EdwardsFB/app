@@ -389,12 +389,14 @@ function resetOmModeUI() {
   document.getElementById('omExistingSelectField').classList.add('d-none');
   setOmFieldsReadOnly(false);
 }
-const OM_CUSTOMER_FIELD_IDS = ['om-first','om-last','om-phone','om-street','om-city','om-state','om-zip'];
+const OM_CUSTOMER_FIELD_IDS = ['om-first','om-last','om-phone'];
 function setOmFieldsReadOnly(readOnly) {
   OM_CUSTOMER_FIELD_IDS.forEach(id => {
     const el = document.getElementById(id);
     el.readOnly = readOnly;
     el.classList.toggle('bg-light', readOnly);
+    const label = document.querySelector(`label[for="${id}"]`);
+    if (label) label.classList.toggle('bg-light', readOnly);
   });
 }
 
@@ -865,14 +867,10 @@ function renderProductionTab() {
       `;}).join('')}
     </div>
 
-    <hr class="my-5" style="border-color: rgba(0,0,0,0.175); opacity:1;">
-
-    <h4 class="text-muted d-flex align-items-center gap-2 mb-3">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
+    <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-5">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
     ${pickups.length ? pickups.map(o => orderCard(o)).join('') : ''}
 
-    <hr class="my-5" style="border-color: rgba(0,0,0,0.175); opacity:1;">
-
-    <h4 class="text-muted d-flex align-items-center gap-2 mb-3">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${deliveries.length}</span></h4>
+    <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-5">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${deliveries.length}</span></h4>
     ${deliveries.length ? deliveries.map(o => orderCard(o)).join('') : ''}
   `;
 }
@@ -960,9 +958,7 @@ function renderFulfillmentTab() {
     <h4 class="text-muted d-flex align-items-center gap-2 mb-3">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
     ${pickups.length ? `<div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-4">${pickups.map(o => orderRow(o)).join('')}</div>` : ''}
 
-    <hr class="my-5" style="border-color: rgba(0,0,0,0.175); opacity:1;">
-
-    <h4 class="text-muted d-flex align-items-center gap-2 mb-3">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${orderedDeliveries.length}</span></h4>
+    <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-5">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${orderedDeliveries.length}</span></h4>
     ${orderedDeliveries.length ? `
       <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3 mb-3">${orderedDeliveries.map((o,idx) => orderRow(o, idx, orderedDeliveries.length)).join('')}</div>
       <button class="btn btn-dark mt-2 mb-4" onclick="openRouteMap()">Open Route in Google Maps</button>
