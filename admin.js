@@ -375,7 +375,7 @@ function renderOrdersList() {
         return `<tr title="${esc(itemStr)}">
           <td class="text-muted small">#${String(numberMap.get(o.id)).padStart(3,'0')}</td>
           <td><div>${esc(o.firstName)} ${esc(o.lastName)}</div><div class="small text-muted">${esc(o.phone||'')}</div></td>
-          <td><i class="bi ${o.fulfillment==='delivery' ? 'bi-truck' : 'bi-bag'}" title="${cap(o.fulfillment)}"></i></td>
+          <td><i class="bi ${o.fulfillment==='delivery' ? 'bi-truck' : 'bi-cart4'}" title="${cap(o.fulfillment)}"></i></td>
           <td>${cap(o.payment)}</td>
           <td class="small text-muted">${o.date||'—'}</td>
           <td><select class="form-select form-select-sm" onchange="updatePaymentStatus('${o.id}', this.value)">
@@ -437,6 +437,8 @@ function setOmFieldsReadOnly(readOnly) {
     el.style.webkitAppearance = readOnly ? 'none' : '';
     el.style.appearance = readOnly ? 'none' : '';
     el.style.borderRadius = readOnly ? '0.375rem' : '';
+    const wrapper = el.closest('.form-floating');
+    if (wrapper) wrapper.style.setProperty('--bs-body-bg', readOnly ? '#f8f9fa' : null);
   });
 }
 
@@ -647,10 +649,9 @@ function renderCustomersTab() {
   const cols = [['lastName','Last Name',''],['firstName','First Name',''],['phone','Phone',''],['email','Email',''],['address','Address',''],['orderCount','Orders','end'],['totalSpent','Total Spent','end']];
 
   document.getElementById('tab-customers').innerHTML = `
-    <label class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 mb-3" for="mergeModeToggle">
-      <input class="form-check-input mt-0" type="checkbox" id="mergeModeToggle" ${mergeModeOn?'checked':''} onchange="setMergeMode(this.checked)">
-      Merge Customers
-    </label>
+    <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 mb-3" onclick="setMergeMode(!mergeModeOn)">
+      <i class="bi ${mergeModeOn ? 'bi-toggle-on' : 'bi-toggle-off'} fs-5"></i> Merge Customers
+    </button>
     <div class="table-responsive"><table class="table table-striped table-bordered bg-white">
       <thead><tr>${mergeModeOn ? '<th></th>' : ''}${cols.map(([k,l,a])=>`<th class="text-${a||'start'}" style="cursor:pointer;" onclick="sortCustomersBy('${k}')">${l}${sortArrow(k)}</th>`).join('')}<th></th></tr></thead>
       <tbody>${list.map(c => `<tr>
@@ -895,7 +896,7 @@ function renderProductionTab() {
     }).filter(Boolean).join('');
     const ready = allItemsMade(o);
     return `<div class="col">
-      <div class="card h-100">
+      <div class="card h-100 bg-light">
         <div class="card-body d-flex flex-column">
           <div class="d-flex justify-content-between align-items-start">
             <div class="fs-5 fw-bold">${esc(o.firstName)} ${esc(o.lastName)}</div>
@@ -990,7 +991,7 @@ function renderFulfillmentTab() {
     const showArrows = total !== undefined;
     const addr = o.fulfillment==='delivery' ? parseAddress(o.deliveryAddress||o.address||'') : null;
     return `<div class="col">
-      <div class="card h-100">
+      <div class="card h-100 bg-light">
         <div class="card-body d-flex flex-column">
           <div class="d-flex justify-content-between align-items-start">
             <div class="fs-5 fw-bold">${esc(o.firstName)} ${esc(o.lastName)}</div>
@@ -1045,17 +1046,16 @@ function openRouteMap() {
 // ══════════════════════════════════════════
 function renderProductsTab() {
   document.getElementById('tab-products').innerHTML = `
-    <label class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 mb-3" for="reorderModeToggle">
-      <input class="form-check-input mt-0" type="checkbox" id="reorderModeToggle" ${reorderModeOn?'checked':''} onchange="setReorderMode(this.checked)">
-      Reorder Products
-    </label>
+    <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 mb-3" onclick="setReorderMode(!reorderModeOn)">
+      <i class="bi ${reorderModeOn ? 'bi-toggle-on' : 'bi-toggle-off'} fs-5"></i> Reorder Products
+    </button>
     <div class="table-responsive"><table class="table table-striped table-bordered bg-white">
       <thead><tr>${reorderModeOn ? '<th></th>' : ''}<th>Name</th><th>Status</th><th>Description</th><th class="text-end">Price</th><th class="text-end">Cost</th><th>Unit</th><th></th></tr></thead>
       <tbody id="productsTableBody">
         ${products.map(p => `<tr ${reorderModeOn ? `draggable="true" data-id="${p.id}" ondragstart="onProductDragStart(event,'${p.id}')" ondragover="onProductDragOver(event,'${p.id}')" ondragleave="onProductDragLeave(event)" ondrop="onProductDrop(event,'${p.id}')"` : ''}>
           ${reorderModeOn ? '<td class="drag-handle text-muted">⠿</td>' : ''}
           <td>${esc(p.name)}</td>
-          <td>${p.active===false ? '<i class="bi bi-x-lg text-danger" title="Inactive"></i>' : '<i class="bi bi-check-lg text-success" title="Active"></i>'}</td>
+          <td>${p.active===false ? '<i class="bi bi-x-lg" title="Inactive"></i>' : '<i class="bi bi-check2" title="Active"></i>'}</td>
           <td>${esc(p.desc||'')}</td>
           <td class="text-end">$${Number(p.price).toFixed(2)}</td><td class="text-end">$${Number(p.cost).toFixed(2)}</td><td>${esc(p.unit||'')}</td>
           <td class="text-end"><button class="btn btn-outline-secondary btn-sm me-2 mb-2" onclick="openProductModal('${p.id}')">Edit</button><button class="btn btn-outline-danger btn-sm mb-2" onclick="deleteProductRow('${p.id}')">Delete</button></td>
