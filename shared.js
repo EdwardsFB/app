@@ -99,7 +99,7 @@ function buildOrderData({ first, last, phone, items, fulfillment, street, city, 
   const address = formatAddress(street, city, state, zip);
   return {
     orderData: {
-      firstName: first, lastName: last, phone, items,
+      firstName: first, lastName: last, phone, items: totals.items,
       discountSocial: !!discountSocial, discountFamily: !!discountFamily, discountPct: discountPct || 0,
       subtotal: totals.subtotal, total: totals.total, profit: totals.profit, costTotal: totals.costTotal,
       fulfillment, date: date || '',
@@ -193,8 +193,16 @@ function getMergedCustomers(products, orders, customers) {
 }
 
 function computeOrderTotals(products, items, discountPct) {
-  const subtotal = items.reduce((s,i) => { const p = products.find(p=>p.id===i.productId); return s + (p ? p.price*i.qty : 0); }, 0);
-  const costTotal = items.reduce((s,i) => { const p = products.find(p=>p.id===i.productId); return s + (p ? p.cost*i.qty : 0); }, 0);
+  const enrichedItems = items.map(i => {
+    const p = products.find(p=>p.id===i.productId);
+    // Use the item's own snapshotted price/cost if it already has one (an existing order),
+    // otherwise look up the current product price (a brand-new item being added right now).
+    const price = (i.price !== undefined) ? i.price : (p ? p.price : 0);
+    const cost = (i.cost !== undefined) ? i.cost : (p ? p.cost : 0);
+    return { ...i, price, cost };
+  });
+  const subtotal = enrichedItems.reduce((s,i) => s + i.price*i.qty, 0);
+  const costTotal = enrichedItems.reduce((s,i) => s + i.cost*i.qty, 0);
   const total = subtotal * (1 - (discountPct||0)/100);
-  return { subtotal, costTotal, total, profit: total - costTotal };
+  return { subtotal, costTotal, total, profit: total - costTotal, items: enrichedItems };
 }

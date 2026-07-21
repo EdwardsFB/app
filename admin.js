@@ -542,18 +542,27 @@ function openOrderModal(id) {
 
   const isCompleted = order && (order.fulfillmentStatus === 'delivered' || order.fulfillmentStatus === 'pickedup');
   setOrderModalReadOnly(isCompleted);
+  // Customer contact info (name/phone/address) stays locked on ANY existing order, completed or not —
+  // fix a customer's real info via the Customers table instead, so it stays correct everywhere.
+  applyOmReadOnlyStyling([...OM_CUSTOMER_FIELD_IDS, 'om-street','om-city','om-state','om-zip'], !!order);
   document.getElementById('om-locked-banner').classList.toggle('d-none', !isCompleted);
-  document.getElementById('om-products').innerHTML = `<ul class="list-group">` + products.map(p => `
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-      <div><div class="fw-bold">${esc(p.name)}</div><div class="small text-muted">$${Number(p.price).toFixed(2)} ${esc(p.unit||'')}</div></div>
-      <div class="input-group" style="width:130px;">
-        <button class="btn btn-outline-secondary" type="button" style="border-color:#ced4da;" onclick="adjustOmQty('${p.id}',-1)"><i class="bi bi-dash-lg"></i></button>
-        <input type="number" min="0" class="form-control text-center px-0" id="om-qty-${p.id}" value="${omQty[p.id]}"
-          oninput="omQty['${p.id}']=parseInt(this.value)||0; updateOMTotal();"/>
-        <button class="btn btn-outline-secondary" type="button" style="border-color:#ced4da;" onclick="adjustOmQty('${p.id}',1)"><i class="bi bi-plus-lg"></i></button>
-      </div>
-    </li>
-  `).join('') + `</ul>`;
+  document.getElementById('om-products').innerHTML = `<ul class="list-group">` + products.map(p => {
+    const existingItem = order ? (order.items||[]).find(i=>i.productId===p.id) : null;
+    const displayPrice = (existingItem && existingItem.price !== undefined) ? existingItem.price : p.price;
+    const qty = omQty[p.id] || 0;
+    const qtyControl = isCompleted
+      ? `<div class="fw-bold text-center" style="width:130px;">${qty}</div>`
+      : `<div class="input-group" style="width:130px;">
+          <button class="btn btn-outline-secondary" type="button" style="border-color:#ced4da;" onclick="adjustOmQty('${p.id}',-1)"><i class="bi bi-dash-lg"></i></button>
+          <input type="number" min="0" class="form-control text-center px-0" id="om-qty-${p.id}" value="${qty}"
+            oninput="omQty['${p.id}']=parseInt(this.value)||0; updateOMTotal();"/>
+          <button class="btn btn-outline-secondary" type="button" style="border-color:#ced4da;" onclick="adjustOmQty('${p.id}',1)"><i class="bi bi-plus-lg"></i></button>
+        </div>`;
+    return `<li class="list-group-item d-flex justify-content-between align-items-center">
+      <div><div class="fw-bold">${esc(p.name)}</div><div class="small text-muted">$${Number(displayPrice).toFixed(2)} ${esc(p.unit||'')}</div></div>
+      ${qtyControl}
+    </li>`;
+  }).join('') + `</ul>`;
 
   updateOMTotal();
   orderModal.show();
