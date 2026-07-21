@@ -261,7 +261,7 @@ function renderHomeTab() {
     <div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
       ${cards.map(([label,val,color]) => `
         <div class="col">
-          <div class="card ${borderClass(color)} h-100 shadow-sm" ${label==='New Orders' ? `role="button" style="cursor:pointer;" onclick="switchTab('production')"` : ''}>
+          <div class="card ${borderClass(color)} h-100 shadow-sm efb-bg-light" ${label==='New Orders' ? `role="button" style="cursor:pointer;" onclick="switchTab('production')"` : ''}>
             <div class="card-body">
               <div class="small text-muted text-uppercase">${label}</div>
               <div class="fs-4 fw-bold">${val}</div>
@@ -551,7 +551,7 @@ function openOrderModal(id) {
     const displayPrice = (existingItem && existingItem.price !== undefined) ? existingItem.price : p.price;
     const qty = omQty[p.id] || 0;
     const qtyControl = isCompleted
-      ? `<div class="fw-bold text-center" style="width:130px;">${qty}</div>`
+      ? `<div class="fw-bold text-end" style="width:130px;">${qty}</div>`
       : `<div class="input-group" style="width:130px;">
           <button class="btn btn-outline-secondary" type="button" style="border-color:#ced4da;" onclick="adjustOmQty('${p.id}',-1)"><i class="bi bi-dash-lg"></i></button>
           <input type="number" min="0" class="form-control text-center px-0" id="om-qty-${p.id}" value="${qty}"
@@ -929,7 +929,7 @@ function renderProductionTab() {
     }).filter(Boolean).join('');
     const ready = allItemsMade(o);
     return `<div class="col">
-      <div class="card h-100 bg-light">
+      <div class="card h-100 efb-bg-light">
         <div class="card-body d-flex flex-column">
           <div class="d-flex justify-content-between align-items-start">
             <div class="fs-5 fw-bold">${esc(o.firstName)} ${esc(o.lastName)}</div>
@@ -946,12 +946,12 @@ function renderProductionTab() {
   }
 
   container.innerHTML = `
-    <h4 class="text-muted mb-3">Bake List</h4>
+    <h4 class="text-muted mb-3">Prep</h4>
     <div class="row row-cols-2 row-cols-md-3 g-3 mb-4">
       ${bakeProducts.map(p => {
         const done = totals[p.id] === 0;
         return `
-        <div class="col"><div class="card h-100 shadow-sm ${done ? 'border-success' : ''}"><div class="card-body">
+        <div class="col"><div class="card h-100 shadow-sm efb-bg-light ${done ? 'border-success' : ''}"><div class="card-body">
           <div class="fs-5 fw-bold">${esc(p.name)}</div>
           <div class="display-5 fw-bold ${done ? 'text-success' : ''}">${done ? '✓' : totals[p.id]}</div>
         </div></div></div>
@@ -1023,7 +1023,7 @@ function renderFulfillmentTab() {
     const label = o.fulfillment === 'delivery' ? 'Mark as Delivered' : 'Mark as Picked Up';
     const addr = o.fulfillment==='delivery' ? parseAddress(o.deliveryAddress||o.address||'') : null;
     return `<div class="col">
-      <div class="card h-100 bg-light">
+      <div class="card h-100 efb-bg-light">
         <div class="card-body d-flex flex-column">
           <div class="d-flex justify-content-between align-items-start">
             <div class="fs-5 fw-bold">${esc(o.firstName)} ${esc(o.lastName)}</div>
