@@ -195,11 +195,12 @@ function getMergedCustomers(products, orders, customers) {
 function computeOrderTotals(products, items, discountPct) {
   const enrichedItems = items.map(i => {
     const p = products.find(p=>p.id===i.productId);
-    // Use the item's own snapshotted price/cost if it already has one (an existing order),
-    // otherwise look up the current product price (a brand-new item being added right now).
+    // Use the item's own snapshotted values if it already has them (an existing order),
+    // otherwise look up current product data (a brand-new item being added right now).
     const price = (i.price !== undefined) ? i.price : (p ? p.price : 0);
     const cost = (i.cost !== undefined) ? i.cost : (p ? p.cost : 0);
-    return { ...i, price, cost };
+    const name = (i.name !== undefined) ? i.name : (p ? p.name : 'Unknown item');
+    return { ...i, price, cost, name };
   });
   const subtotal = enrichedItems.reduce((s,i) => s + i.price*i.qty, 0);
   const costTotal = enrichedItems.reduce((s,i) => s + i.cost*i.qty, 0);

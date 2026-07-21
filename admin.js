@@ -440,7 +440,7 @@ function applyOmReadOnlyStyling(ids, readOnly) {
   ids.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.readOnly = readOnly;
+    el.disabled = readOnly;
     el.style.backgroundColor = readOnly ? '#f8f9fa' : '';
     el.style.border = readOnly ? '1px solid #ced4da' : '';
     el.style.color = readOnly ? '#495057' : '';
