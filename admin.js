@@ -252,7 +252,7 @@ function renderHomeTab() {
     <div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
       ${cards.map(([label,val,color]) => `
         <div class="col">
-          <div class="card ${borderClass(color)} h-100">
+          <div class="card ${borderClass(color)} h-100" ${label==='New Orders' ? `role="button" style="cursor:pointer;" onclick="switchTab('production')"` : ''}>
             <div class="card-body">
               <div class="small text-muted text-uppercase">${label}</div>
               <div class="fs-4 fw-bold">${val}</div>
@@ -352,7 +352,7 @@ function renderOrdersList() {
                 <option value="pickedup" ${o.fulfillmentStatus==='pickedup'?'selected':''}>Picked Up</option>
               </select></td>
           <td class="text-end">$${Number(o.total).toFixed(2)}</td>
-          <td class="text-end"><button class="btn btn-outline-secondary btn-sm me-2 mb-1" onclick="openOrderModal('${o.id}')">Edit</button><button class="btn btn-outline-danger btn-sm mb-1" onclick="deleteOrder('${o.id}')">Delete</button></td>
+          <td class="text-end"><button class="btn btn-outline-secondary btn-sm me-2 mb-2" onclick="openOrderModal('${o.id}')">Edit</button><button class="btn btn-outline-danger btn-sm mb-2" onclick="deleteOrder('${o.id}')">Delete</button></td>
         </tr>`;
       }).join('')}
     </tbody>
@@ -598,7 +598,7 @@ function renderCustomersTab() {
         ${mergeModeOn ? `<td><input type="checkbox" ${selectedCustomerKeys.has(c._key)?'checked':''} onchange="toggleCustomerSelect('${c._key}')"></td>` : ''}
         <td>${esc(c.firstName)}</td><td>${esc(c.lastName)}</td><td>${c.phone ? esc(c.phone) : '<span class="badge bg-warning text-dark">No Phone</span>'}</td><td>${esc(c.email||'—')}</td><td>${esc(c.address||'—')}</td>
         <td class="text-end">${c.orderCount}</td><td class="text-end">$${c.totalSpent.toFixed(2)}</td>
-        <td class="text-end"><button class="btn btn-outline-secondary btn-sm me-2 mb-1" onclick='openCustomerModal(${JSON.stringify(c).replace(/'/g,"&apos;")})'>Edit</button><button class="btn btn-outline-danger btn-sm mb-1" ${c.recordId ? `onclick="deleteCustomerRow('${c.recordId}')"` : 'disabled title="This customer only exists from order history — nothing to delete unless you edit and save them first."'}>Delete</button></td>
+        <td class="text-end"><button class="btn btn-outline-secondary btn-sm me-2 mb-2" onclick='openCustomerModal(${JSON.stringify(c).replace(/'/g,"&apos;")})'>Edit</button><button class="btn btn-outline-danger btn-sm mb-2" ${c.recordId ? `onclick="deleteCustomerRow('${c.recordId}')"` : 'disabled title="This customer only exists from order history — nothing to delete unless you edit and save them first."'}>Delete</button></td>
       </tr>`).join('')}</tbody>
     </table></div>
     ${list.length===0 ? '<div class="text-center text-muted py-5">No customers yet</div>' : ''}
@@ -841,10 +841,10 @@ function renderProductionTab() {
     return `<div class="card mb-2"><div class="card-body py-2">
       <div class="row g-2 align-items-center">
         <div class="col-12 col-md-3">
-          <div>${esc(o.firstName)} ${esc(o.lastName)} <a href="#" class="text-secondary ms-2" onclick="openCustomerDetail('${o.id}'); return false;" title="Customer details"><i class="bi bi-person-vcard"></i></a></div>
+          <div class="fs-5 fw-bold">${esc(o.firstName)} ${esc(o.lastName)} <a href="#" class="text-secondary ms-2" onclick="openCustomerDetail('${o.id}'); return false;" title="Customer details"><i class="bi bi-person-vcard"></i></a></div>
           ${o.notes ? `<div class="small text-muted fst-italic">${esc(o.notes)}</div>` : ''}
         </div>
-        <div class="col-12 col-md-6 d-flex flex-wrap gap-2">${itemButtons}</div>
+        <div class="col-12 col-md-6 d-flex flex-wrap gap-3">${itemButtons}</div>
         <div class="col-12 col-md-3 d-grid d-md-flex justify-content-md-end">
           <button class="btn ${ready ? 'btn-primary' : 'btn-outline-secondary'}" ${ready ? '' : 'disabled'} onclick="markOrderReady('${o.id}')">Mark Ready</button>
         </div>
@@ -995,7 +995,7 @@ function renderProductsTab() {
           <td>${p.active===false ? '<span class="badge bg-secondary">Inactive</span>' : '<span class="badge bg-success">Active</span>'}</td>
           <td>${esc(p.desc||'')}</td>
           <td class="text-end">$${Number(p.price).toFixed(2)}</td><td class="text-end">$${Number(p.cost).toFixed(2)}</td><td>${esc(p.unit||'')}</td>
-          <td class="text-end"><button class="btn btn-outline-secondary btn-sm me-2 mb-1" onclick="openProductModal('${p.id}')">Edit</button><button class="btn btn-outline-danger btn-sm mb-1" onclick="deleteProductRow('${p.id}')">Delete</button></td>
+          <td class="text-end"><button class="btn btn-outline-secondary btn-sm me-2 mb-2" onclick="openProductModal('${p.id}')">Edit</button><button class="btn btn-outline-danger btn-sm mb-2" onclick="deleteProductRow('${p.id}')">Delete</button></td>
         </tr>`).join('')}
       </tbody>
     </table></div>
