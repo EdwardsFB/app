@@ -261,7 +261,7 @@ function renderHomeTab() {
     <div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
       ${cards.map(([label,val,color]) => `
         <div class="col">
-          <div class="card ${borderClass(color)} h-100" ${label==='New Orders' ? `role="button" style="cursor:pointer;" onclick="switchTab('production')"` : ''}>
+          <div class="card ${borderClass(color)} h-100 shadow-sm" ${label==='New Orders' ? `role="button" style="cursor:pointer;" onclick="switchTab('production')"` : ''}>
             <div class="card-body">
               <div class="small text-muted text-uppercase">${label}</div>
               <div class="fs-4 fw-bold">${val}</div>
@@ -650,13 +650,13 @@ function renderCustomersTab() {
 
   document.getElementById('tab-customers').innerHTML = `
     <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 mb-3" onclick="setMergeMode(!mergeModeOn)">
-      <i class="bi ${mergeModeOn ? 'bi-toggle-on' : 'bi-toggle-off'} fs-5"></i> Merge Customers
+      Merge ${mergeModeOn ? 'On' : 'Off'}
     </button>
     <div class="table-responsive"><table class="table table-striped table-bordered bg-white">
       <thead><tr>${mergeModeOn ? '<th></th>' : ''}${cols.map(([k,l,a])=>`<th class="text-${a||'start'}" style="cursor:pointer;" onclick="sortCustomersBy('${k}')">${l}${sortArrow(k)}</th>`).join('')}<th></th></tr></thead>
       <tbody>${list.map(c => `<tr>
         ${mergeModeOn ? `<td><input type="checkbox" ${selectedCustomerKeys.has(c._key)?'checked':''} onchange="toggleCustomerSelect('${c._key}')"></td>` : ''}
-        <td>${esc(c.lastName)}</td><td>${esc(c.firstName)}</td><td>${c.phone ? esc(c.phone) : '<span class="badge bg-warning text-dark">No Phone</span>'}</td><td>${esc(c.email||'—')}</td><td>${esc(c.address||'—')}</td>
+        <td>${esc(c.lastName)}</td><td>${esc(c.firstName)}</td><td>${c.phone ? esc(c.phone) : '<span class="badge rounded-pill bg-warning text-dark">No Phone</span>'}</td><td>${esc(c.email||'—')}</td><td>${esc(c.address||'—')}</td>
         <td class="text-end">${c.orderCount}</td><td class="text-end">$${c.totalSpent.toFixed(2)}</td>
         <td class="text-end"><button class="btn btn-outline-secondary btn-sm me-2 mb-2" onclick='openCustomerModal(${JSON.stringify(c).replace(/'/g,"&apos;")})'>Edit</button><button class="btn btn-outline-danger btn-sm mb-2" ${c.recordId ? `onclick="deleteCustomerRow('${c.recordId}')"` : 'disabled title="This customer only exists from order history — nothing to delete unless you edit and save them first."'}>Delete</button></td>
       </tr>`).join('')}</tbody>
@@ -885,13 +885,16 @@ function renderProductionTab() {
   const deliveries = active.filter(o => o.fulfillment === 'delivery');
 
   function orderCard(o) {
-    const itemButtons = (o.items||[]).map(i => {
+    const itemListItems = (o.items||[]).map(i => {
       const p = products.find(p=>p.id===i.productId);
       if (!p) return '';
       const doneArr = (o.madeItems && o.madeItems[i.productId]) || [];
       return Array.from({length: i.qty}).map((_, idx) => {
         const done = !!doneArr[idx];
-        return `<button class="btn ${done ? 'btn-success' : 'btn-outline-secondary'} mb-2 me-2 d-flex justify-content-between align-items-center" style="min-width:160px;" onclick="toggleUnit('${o.id}','${i.productId}',${idx})"><span>${esc(p.name)}</span><span class="ms-2" style="visibility:${done?'visible':'hidden'};">✓</span></button>`;
+        return `<li class="list-group-item d-flex justify-content-between align-items-center" style="cursor:pointer;" onclick="toggleUnit('${o.id}','${i.productId}',${idx})">
+          <span class="${done ? 'text-success' : ''}">${esc(p.name)}</span>
+          <i class="bi ${done ? 'bi-toggle-on text-success' : 'bi-toggle-off text-secondary'} fs-5"></i>
+        </li>`;
       }).join('');
     }).filter(Boolean).join('');
     const ready = allItemsMade(o);
@@ -903,8 +906,8 @@ function renderProductionTab() {
             <a href="#" class="text-secondary fs-4" onclick="openCustomerDetail('${o.id}'); return false;" title="Customer details"><i class="bi bi-person-vcard"></i></a>
           </div>
           ${o.notes ? `<div class="small text-muted fst-italic mt-3 mb-2">${esc(o.notes)}</div>` : ''}
-          <div class="d-flex flex-wrap mt-3 mb-3">${itemButtons}</div>
-          <div class="mt-auto d-flex justify-content-end">
+          <ul class="list-group mt-3 mb-3">${itemListItems}</ul>
+          <div class="mt-auto">
             <button class="btn ${ready ? 'btn-primary' : 'btn-outline-secondary'}" ${ready ? '' : 'disabled'} onclick="markOrderReady('${o.id}')">Mark as Ready</button>
           </div>
         </div>
@@ -918,18 +921,18 @@ function renderProductionTab() {
       ${bakeProducts.map(p => {
         const done = totals[p.id] === 0;
         return `
-        <div class="col"><div class="card h-100 ${done ? 'border-success' : ''}"><div class="card-body">
+        <div class="col"><div class="card h-100 shadow-sm ${done ? 'border-success' : ''}"><div class="card-body">
           <div class="fs-5 fw-bold">${esc(p.name)}</div>
           <div class="display-5 fw-bold ${done ? 'text-success' : ''}">${done ? '✓' : totals[p.id]}</div>
         </div></div></div>
       `;}).join('')}
     </div>
 
-    <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-3">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
-    ${pickups.length ? `<div class="card mb-3"><div class="card-body"><div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">${pickups.map(o => orderCard(o)).join('')}</div></div></div>` : ''}
+    <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-3">Pickup <span class="badge rounded-pill text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
+    ${pickups.length ? `<div class="card mb-3 shadow-sm"><div class="card-body"><div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">${pickups.map(o => orderCard(o)).join('')}</div></div></div>` : ''}
 
-    <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-3">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${deliveries.length}</span></h4>
-    ${deliveries.length ? `<div class="card mb-3"><div class="card-body"><div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">${deliveries.map(o => orderCard(o)).join('')}</div></div></div>` : ''}
+    <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-3">Delivery <span class="badge rounded-pill text-bg-secondary" style="font-size:0.75rem;">${deliveries.length}</span></h4>
+    ${deliveries.length ? `<div class="card mb-3 shadow-sm"><div class="card-body"><div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">${deliveries.map(o => orderCard(o)).join('')}</div></div></div>` : ''}
   `;
 }
 
@@ -985,10 +988,9 @@ function renderFulfillmentTab() {
   function orderRow(o, idx, total) {
     const itemListItems = (o.items||[]).map(i=>{
       const p = products.find(p=>p.id===i.productId);
-      return p ? `<li class="list-group-item d-flex justify-content-between align-items-center">${esc(p.name)}<span class="badge text-bg-secondary">${i.qty}</span></li>` : '';
+      return p ? `<li class="list-group-item d-flex justify-content-between align-items-center">${esc(p.name)}<span class="badge rounded-pill text-bg-secondary">${i.qty}</span></li>` : '';
     }).filter(Boolean).join('');
     const label = o.fulfillment === 'delivery' ? 'Mark as Delivered' : 'Mark as Picked Up';
-    const showArrows = total !== undefined;
     const addr = o.fulfillment==='delivery' ? parseAddress(o.deliveryAddress||o.address||'') : null;
     return `<div class="col">
       <div class="card h-100 bg-light">
@@ -1003,8 +1005,7 @@ function renderFulfillmentTab() {
             ${o.notes ? `<div class="small text-muted fst-italic mb-2">${esc(o.notes)}</div>` : ''}
           </div>
           <ul class="list-group mb-3">${itemListItems}</ul>
-          <div class="mt-auto d-flex justify-content-between align-items-center">
-            <div>${showArrows ? `${idx>0 ? `<button class="btn btn-outline-secondary me-2" onclick="moveRoute(${idx},-1)">↑</button>` : ''}${idx<total-1 ? `<button class="btn btn-outline-secondary" onclick="moveRoute(${idx},1)">↓</button>` : ''}` : ''}</div>
+          <div class="mt-auto">
             <button class="btn btn-primary text-nowrap" onclick="completeOrder('${o.id}')">${label}</button>
           </div>
         </div>
@@ -1013,12 +1014,12 @@ function renderFulfillmentTab() {
   }
 
   container.innerHTML = `
-    <h4 class="text-muted d-flex align-items-center gap-2 mb-3">Pickup <span class="badge text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
-    ${pickups.length ? `<div class="card mb-4"><div class="card-body"><div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">${pickups.map(o => orderRow(o)).join('')}</div></div></div>` : ''}
+    <h4 class="text-muted d-flex align-items-center gap-2 mb-3">Pickup <span class="badge rounded-pill text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
+    ${pickups.length ? `<div class="card mb-4 shadow-sm"><div class="card-body"><div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">${pickups.map(o => orderRow(o)).join('')}</div></div></div>` : ''}
 
-    <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-3">Delivery <span class="badge text-bg-secondary" style="font-size:0.75rem;">${orderedDeliveries.length}</span></h4>
+    <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-3">Delivery <span class="badge rounded-pill text-bg-secondary" style="font-size:0.75rem;">${orderedDeliveries.length}</span></h4>
     ${orderedDeliveries.length ? `
-      <div class="card mb-3"><div class="card-body"><div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">${orderedDeliveries.map((o,idx) => orderRow(o, idx, orderedDeliveries.length)).join('')}</div></div></div>
+      <div class="card mb-3 shadow-sm"><div class="card-body"><div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">${orderedDeliveries.map((o,idx) => orderRow(o, idx, orderedDeliveries.length)).join('')}</div></div></div>
       <button class="btn btn-dark mt-2 mb-4" onclick="openRouteMap()">Open Route in Google Maps</button>
     ` : ''}
   `;
@@ -1047,7 +1048,7 @@ function openRouteMap() {
 function renderProductsTab() {
   document.getElementById('tab-products').innerHTML = `
     <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 mb-3" onclick="setReorderMode(!reorderModeOn)">
-      <i class="bi ${reorderModeOn ? 'bi-toggle-on' : 'bi-toggle-off'} fs-5"></i> Reorder Products
+      Reorder ${reorderModeOn ? 'On' : 'Off'}
     </button>
     <div class="table-responsive"><table class="table table-striped table-bordered bg-white">
       <thead><tr>${reorderModeOn ? '<th></th>' : ''}<th>Name</th><th>Status</th><th>Description</th><th class="text-end">Price</th><th class="text-end">Cost</th><th>Unit</th><th></th></tr></thead>
