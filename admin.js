@@ -7,7 +7,7 @@ let products = [], orders = [], customers = [], settings = {};
 let currentAdminTab = 'home';
 let currentOrderFilter = 'all';
 let editingOrderId = null, editingProductId = null, editingCustomerRecordId = null;
-let omQty = {}, omOptions = {}, omDiscountType = 'none', omCustomerMode = 'new', omExistingList = [];
+let omQty = {}, omOptions = {}, omDiscountPctSelected = 0, omCustomerMode = 'new', omExistingList = [];
 let dragProductId = null;
 let customerSortCol = 'lastName', customerSortDir = 'asc';
 let byProductSortCol = 'qty', byProductSortDir = 'desc';
@@ -575,13 +575,26 @@ function onOmExistingSelect() {
   setOmFieldsReadOnly(true);
 }
 
-function setOmDiscount(type) {
-  omDiscountType = type;
-  const id = type === 'social' ? 'om-disc-social' : type === 'family' ? 'om-disc-family' : 'om-disc-none';
-  document.getElementById(id).checked = true;
+function setOmDiscount(pct) {
+  omDiscountPctSelected = parseFloat(pct) || 0;
   updateOMTotal();
 }
-function omDiscountPct() { return omDiscountType==='social'?50 : omDiscountType==='family'?25 : 0; }
+function omDiscountPct() { return omDiscountPctSelected; }
+
+function populateOmDiscountSelect(selectedPct) {
+  const select = document.getElementById('om-discount-select');
+  const codes = settings.discountCodes || [];
+  select.innerHTML = '<option value="0">No Discount</option>' +
+    codes.map(d => `<option value="${d.discountPct}">${esc(d.code)} — ${d.discountPct}% off</option>`).join('');
+  // If the order's existing discount doesn't match any current code (e.g. an old order,
+  // or a code that's since been removed from Settings), add it as its own option so the
+  // real value is never silently lost or misrepresented when editing.
+  if (selectedPct && !codes.some(d => Number(d.discountPct) === Number(selectedPct))) {
+    select.innerHTML += `<option value="${selectedPct}">${selectedPct}% off</option>`;
+  }
+  select.value = String(selectedPct || 0);
+  omDiscountPctSelected = selectedPct || 0;
+}
 
 function openOrderModal(id) {
   editingOrderId = id || null;
@@ -621,7 +634,8 @@ function openOrderModal(id) {
   document.getElementById('om-notes').value = order ? order.notes : '';
   document.getElementById('om-addressField').classList.toggle('d-none', fulfillment !== 'delivery');
   document.getElementById('omCustomerTypeField').classList.toggle('d-none', !!order);
-  setOmDiscount(order && order.discountSocial ? 'social' : (order && order.discountFamily ? 'family' : 'none'));
+  const existingDiscountPct = order ? (order.discountPct !== undefined ? Number(order.discountPct) : (order.discountSocial ? 50 : (order.discountFamily ? 25 : 0))) : 0;
+  populateOmDiscountSelect(existingDiscountPct);
   resetOmModeUI();
 
   const isCompleted = order && (order.fulfillmentStatus === 'delivered' || order.fulfillmentStatus === 'pickedup');
@@ -740,33 +754,34 @@ async function saveOrderFromModal() {
     payment: document.getElementById('om-payment').value,
     paymentStatus: document.getElementById('om-paymentStatus').value,
     fulfillmentStatus: document.getElementById('om-fulfillmentStatus').value,
-    discountSocial: omDiscountType==='social',
-    discountFamily: omDiscountType==='family',
     discountPct: omDiscountPct(),
     products
   });
   if (error) { alert(error); return; }
 
-  if (editingOrderId) {
-    const idx = orders.findIndex(o=>o.id===editingOrderId);
-    orders[idx] = { ...orders[idx], ...orderData };
-    orderModal.hide();
-    renderOrdersTab();
-    try {
+  const saveBtn = document.getElementById('om-save-btn');
+  saveBtn.disabled = true;
+  const originalText = saveBtn.textContent;
+  saveBtn.textContent = 'Saving...';
+
+  try {
+    if (editingOrderId) {
       await apiWrite('orders','update',editingOrderId,orderData);
-    } catch (err) {
-      alert('Save failed: ' + err.message + '\n\nYour changes were NOT saved. Please try again.');
+      const idx = orders.findIndex(o=>o.id===editingOrderId);
+      orders[idx] = { ...orders[idx], ...orderData };
+    } else {
+      const newOrder = { id:'o'+Date.now(), createdAt:Date.now(), source:'admin-manual', ...orderData };
+      await persistNewOrder(newOrder, customers);
+      orders.push(newOrder);
     }
-  } else {
-    const newOrder = { id:'o'+Date.now(), createdAt:Date.now(), source:'admin-manual', ...orderData };
-    orders.push(newOrder);
     orderModal.hide();
     renderOrdersTab();
-    try {
-      await persistNewOrder(newOrder, customers);
-    } catch (err) {
-      alert('Save failed: ' + err.message + '\n\nYour changes were NOT saved. Please try again.');
-    }
+    showToast('Order saved.');
+  } catch (err) {
+    alert('Save failed: ' + err.message + '\n\nYour changes were NOT saved. Please try again.');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = originalText;
   }
 }
 
@@ -956,6 +971,11 @@ async function saveCustomerFromModal() {
     zip: document.getElementById('cm-zip').value.trim()
   };
 
+  const saveBtn = document.getElementById('cm-save-btn');
+  saveBtn.disabled = true;
+  const originalText = saveBtn.textContent;
+  saveBtn.textContent = 'Saving...';
+
   if (editingCustomerRecordId) {
     const rec = customers.find(c=>c.id===editingCustomerRecordId);
     Object.assign(rec, data);
@@ -963,8 +983,12 @@ async function saveCustomerFromModal() {
       await apiWrite('customers','update',editingCustomerRecordId,data);
       customerModal.hide();
       renderCustomersTab();
+      showToast('Customer saved.');
     } catch (err) {
       alert('Save failed: ' + err.message + '\n\nYour changes were NOT saved. Please try again.');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = originalText;
     }
   } else {
     const key = custKey(data);
@@ -975,8 +999,12 @@ async function saveCustomerFromModal() {
         await apiWrite('customers','update',existingRec.id,data);
         customerModal.hide();
         renderCustomersTab();
+        showToast('Customer saved.');
       } catch (err) {
         alert('Save failed: ' + err.message + '\n\nYour changes were NOT saved. Please try again.');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = originalText;
       }
     } else {
       const newCust = { id:'c'+Date.now(), ...data };
@@ -985,9 +1013,13 @@ async function saveCustomerFromModal() {
         await apiWrite('customers','add',null,newCust);
         customerModal.hide();
         renderCustomersTab();
+        showToast('Customer saved.');
       } catch (err) {
         customers = customers.filter(c => c.id !== newCust.id); // roll back local state since it never actually saved
         alert('Save failed: ' + err.message + '\n\nYour changes were NOT saved. Please try again.');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = originalText;
       }
     }
   }
@@ -1257,7 +1289,7 @@ function renderSettingsTab() {
         <div class="card h-100 shadow-sm efb-bg-light">
           <div class="card-body">
             <div class="small fw-bold mb-2">${esc(slot.label)}</div>
-            <img id="settings-logo-preview-${slot.key}" src="${current}" style="max-height:60px; display:block; margin-bottom:10px;" alt="${esc(slot.label)} logo"/>
+            <img id="settings-logo-preview-${slot.key}" src="${current}" style="max-height:60px; display:block; margin-bottom:10px; padding:8px; background: linear-gradient(135deg, #fff 50%, #212529 50%);" alt="${esc(slot.label)} logo"/>
             <input type="file" id="settings-logo-input-${slot.key}" accept="image/*" class="d-none" onchange="handleSettingsLogoUpload(event, '${slot.key}')"/>
             <button class="btn btn-outline-secondary btn-sm me-2" onclick="document.getElementById('settings-logo-input-${slot.key}').click()">Choose Photo</button>
             <button class="btn btn-outline-danger btn-sm" onclick="removeSettingsLogo('${slot.key}')">Remove</button>
@@ -1297,7 +1329,7 @@ function renderSettingsTab() {
         <button type="button" class="btn btn-outline-secondary btn-sm" id="settings-discount-add-btn" onclick="addSettingsDiscountRow()">Add Code</button>
       </div>
     </div>
-    <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+    <button class="btn btn-success" id="settings-save-btn" onclick="saveSettings()">Save</button>
   `;
   renderSettingsDiscountRows();
 }
@@ -1346,7 +1378,7 @@ function removeSettingsDiscountRow(idx) {
 }
 
 function updateSettingsDiscountSaveState() {
-  const saveBtn = document.querySelector('#tab-settings button.btn-primary');
+  const saveBtn = document.getElementById('settings-save-btn');
   if (!saveBtn) return;
   const hasIncomplete = settingsDiscountCodes.some(d => !(d.code||'').trim() || !(Number(d.discountPct) > 0 && Number(d.discountPct) <= 100));
   saveBtn.disabled = hasIncomplete;
@@ -1366,6 +1398,11 @@ async function saveSettings() {
     if (settingsLogoUris[slot.key] !== undefined) data[slot.key] = settingsLogoUris[slot.key];
   });
 
+  const saveBtn = document.getElementById('settings-save-btn');
+  saveBtn.disabled = true;
+  const originalText = saveBtn.textContent;
+  saveBtn.textContent = 'Saving...';
+
   try {
     if (settings.id) {
       await apiWrite('settings', 'update', settings.id, data);
@@ -1379,6 +1416,9 @@ async function saveSettings() {
     applyLogo();
   } catch (err) {
     showToast('Save failed: ' + err.message, 'bg-danger');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = originalText;
   }
 }
 
@@ -1461,9 +1501,19 @@ function renderProductOptionRows() {
 function updateProductModalSaveState() {
   const saveBtn = document.getElementById('pm-save-btn');
   if (!saveBtn) return;
+  const name = document.getElementById('pm-name').value.trim();
+  const desc = document.getElementById('pm-desc').value.trim();
+  const unit = document.getElementById('pm-unit').value.trim();
+  const priceVal = document.getElementById('pm-price').value;
+  const costVal = document.getElementById('pm-cost').value;
+  const priceValid = priceVal !== '' && Number(priceVal) > 0;
+  const costValid = costVal !== '' && Number(costVal) >= 0;
+  const missingCoreField = !name || !desc || !unit || !priceValid || !costValid;
   const hasIncompleteOption = pmOptions.some(o => !(o.name||'').trim() || !(Number(o.price) > 0));
-  saveBtn.disabled = hasIncompleteOption;
-  saveBtn.title = hasIncompleteOption ? 'Every option needs both a name and a price above $0 before you can save.' : '';
+  saveBtn.disabled = missingCoreField || hasIncompleteOption;
+  saveBtn.title = missingCoreField
+    ? 'Please fill in every field before saving.'
+    : (hasIncompleteOption ? 'Every option needs both a name and a price above $0 before you can save.' : '');
 }
 
 function addProductOptionRow() {
@@ -1496,18 +1546,30 @@ async function saveProductFromModal() {
   if (pmPhotoDataUri !== null) data.photo = pmPhotoDataUri; // only touch photo if it was actually changed this session
   const validOptions = pmOptions.filter(o => (o.name||'').trim());
   data.options = validOptions;
-  if (editingProductId) {
-    const p = products.find(p=>p.id===editingProductId);
-    Object.assign(p, data);
+
+  const saveBtn = document.getElementById('pm-save-btn');
+  saveBtn.disabled = true;
+  const originalText = saveBtn.textContent;
+  saveBtn.textContent = 'Saving...';
+
+  try {
+    if (editingProductId) {
+      await apiWrite('products','update',editingProductId,data);
+      const p = products.find(p=>p.id===editingProductId);
+      Object.assign(p, data);
+    } else {
+      const newProduct = { id:'p'+Date.now(), sortOrder:products.length, ...data };
+      await apiWrite('products','add',null,newProduct);
+      products.push(newProduct);
+    }
     productModal.hide();
     renderProductsTab();
-    await apiWrite('products','update',editingProductId,data);
-  } else {
-    const newProduct = { id:'p'+Date.now(), sortOrder:products.length, ...data };
-    products.push(newProduct);
-    productModal.hide();
-    renderProductsTab();
-    await apiWrite('products','add',null,newProduct);
+    showToast('Product saved.');
+  } catch (err) {
+    alert('Save failed: ' + err.message + '\n\nYour changes were NOT saved. Please try again.');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = originalText;
   }
 }
 

@@ -70,11 +70,14 @@ function setOrderedBefore(val) {
 
   // Full reset every time — nothing carries over between Yes and No, or between repeated switches.
   const clearFields = () => {
-    document.getElementById('lookupPhone').value = '';
+    const lookupEl = document.getElementById('lookupPhone');
+    lookupEl.value = '';
+    lookupEl.classList.remove('has-value');
     ['cf-first','cf-last','cf-phone','cf-email','cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
       const el = document.getElementById(id);
       el.value = '';
       el.setAttribute('value', '');
+      el.classList.remove('has-value');
       el.dispatchEvent(new Event('input', { bubbles: true }));
     });
   };
@@ -85,6 +88,12 @@ function setOrderedBefore(val) {
 
   document.getElementById('contactFieldsSection').classList.toggle('d-none', !!val);
   updateContinueState(1);
+}
+
+function setFieldValue(id, value) {
+  const el = document.getElementById(id);
+  el.value = value || '';
+  el.classList.toggle('has-value', !!value);
 }
 
 function lookupReturningCustomer() {
@@ -99,27 +108,27 @@ function lookupReturningCustomer() {
   if (!match) {
     msg.className = 'small mt-2 text-danger';
     msg.textContent = "We couldn't find a record with that phone number — no problem, just fill in your info below.";
-    document.getElementById('cf-first').value = '';
-    document.getElementById('cf-last').value = '';
-    document.getElementById('cf-phone').value = phone;
-    document.getElementById('cf-email').value = '';
+    setFieldValue('cf-first', '');
+    setFieldValue('cf-last', '');
+    setFieldValue('cf-phone', phone);
+    setFieldValue('cf-email', '');
     updateContinueState(1);
     return;
   }
 
-  document.getElementById('cf-first').value = match.firstName;
-  document.getElementById('cf-last').value = match.lastName;
-  document.getElementById('cf-phone').value = match.phone;
-  document.getElementById('cf-email').value = match.email || '';
+  setFieldValue('cf-first', match.firstName);
+  setFieldValue('cf-last', match.lastName);
+  setFieldValue('cf-phone', match.phone);
+  setFieldValue('cf-email', match.email || '');
 
   if (match.address) {
     const parts = (match.street || match.city || match.state || match.zip)
       ? { street: match.street, city: match.city, state: match.state, zip: match.zip }
       : parseAddress(match.address);
-    document.getElementById('cf-street').value = parts.street || '';
-    document.getElementById('cf-city').value = parts.city || '';
-    document.getElementById('cf-state').value = parts.state || '';
-    document.getElementById('cf-zip').value = parts.zip || '';
+    setFieldValue('cf-street', parts.street || '');
+    setFieldValue('cf-city', parts.city || '');
+    setFieldValue('cf-state', parts.state || '');
+    setFieldValue('cf-zip', parts.zip || '');
   }
 
   msg.className = 'small mt-2 text-success';
@@ -152,7 +161,7 @@ function renderProducts() {
         <div class="card-body p-2 d-flex flex-column">
           <div class="fw-bold small">${esc(p.name)}</div>
           ${p.desc ? `<div class="text-muted" style="font-size:0.75rem;">${esc(p.desc)}</div>` : ''}
-          <div class="mt-auto pt-2">
+          <div class="pt-2">
             <div class="input-group input-group-sm mb-1">
               <button class="btn btn-outline-secondary" type="button" onclick="changeQty('${p.id}', -1)"><i class="bi bi-dash"></i></button>
               <span class="form-control text-center px-0" id="qty-${p.id}">0</span>
@@ -368,10 +377,10 @@ function useFoundExistingCustomer() {
   const normed = normPhone(phone);
   const match = getMergedCustomers(products, orders, customers).find(c => normPhone(c.phone) === normed);
   if (!match) return;
-  document.getElementById('cf-first').value = match.firstName;
-  document.getElementById('cf-last').value = match.lastName;
-  document.getElementById('cf-phone').value = match.phone;
-  document.getElementById('cf-email').value = match.email || '';
+  setFieldValue('cf-first', match.firstName);
+  setFieldValue('cf-last', match.lastName);
+  setFieldValue('cf-phone', match.phone);
+  setFieldValue('cf-email', match.email || '');
   document.getElementById('foundExistingMsg').innerHTML = `<span class="text-success">Got it — using ${esc(match.firstName)}'s info.</span>`;
   updateContinueState(1);
 }

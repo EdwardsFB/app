@@ -9,7 +9,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <style>
-  body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background: #1c1a17; z-index: 1050; }
+  body { background-color: #1c1a17; min-height: calc(100% + env(safe-area-inset-top)); }
   :root { --efb-light-grey: #fafafa; }
   .efb-bg-light { background-color: var(--efb-light-grey) !important; }
   .table-striped > tbody > tr:nth-of-type(odd) > * { --bs-table-striped-bg: var(--efb-light-grey); }
@@ -227,25 +227,15 @@
           </div>
         </div>
 
-        <h5 class="text-muted mb-3">Discounts</h5>
-        <div class="mb-4">
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="om-discount-radio" id="om-disc-none" checked onchange="setOmDiscount('none')">
-            <label class="form-check-label" for="om-disc-none">No Discount</label>
-          </div>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="om-discount-radio" id="om-disc-family" onchange="setOmDiscount('family')">
-            <label class="form-check-label" for="om-disc-family">25%</label>
-          </div>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="om-discount-radio" id="om-disc-social" onchange="setOmDiscount('social')">
-            <label class="form-check-label" for="om-disc-social">50%</label>
-          </div>
-        </div>
+        <h5 class="text-muted mb-3">Discount</h5>
+        <div class="row g-2 mb-4"><div class="col form-floating">
+          <select id="om-discount-select" class="form-select" onchange="setOmDiscount(this.value)"></select>
+          <label for="om-discount-select">Discount</label>
+        </div></div>
 
         <div class="row g-2 mb-3"><div class="col form-floating"><textarea id="om-notes" class="form-control" style="height:80px;" placeholder="Notes"></textarea><label for="om-notes">Notes</label></div></div>
 
-        <div class="card bg-dark text-white">
+        <div class="card bg-dark text-white" style="position: sticky; bottom: -1rem; z-index: 5; box-shadow: 0 -4px 8px rgba(0,0,0,0.15);">
           <div class="card-body py-2">
             <div class="d-flex justify-content-between small"><span>Subtotal</span><span id="om-subtotal">$0.00</span></div>
             <div class="d-flex justify-content-between small d-none" id="om-discountRow"><span id="om-discountLabel">Discount</span><span id="om-discountAmt">-$0.00</span></div>
@@ -255,7 +245,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button class="btn btn-success" onclick="saveOrderFromModal()">Save</button>
+        <button class="btn btn-success" id="om-save-btn" onclick="saveOrderFromModal()">Save</button>
       </div>
     </div>
   </div>
@@ -279,13 +269,13 @@
           </div>
           <div class="small text-muted mt-1" id="pm-photo-status"></div>
         </div>
-        <div class="row g-2 mb-2"><div class="col form-floating"><input id="pm-name" class="form-control" type="text" placeholder="Name"/><label for="pm-name">Name</label></div></div>
-        <div class="row g-2 mb-2"><div class="col form-floating"><input id="pm-desc" class="form-control" type="text" placeholder="Description"/><label for="pm-desc">Description</label></div></div>
+        <div class="row g-2 mb-2"><div class="col form-floating"><input id="pm-name" class="form-control" type="text" placeholder="Name" oninput="updateProductModalSaveState()"/><label for="pm-name">Name</label></div></div>
+        <div class="row g-2 mb-2"><div class="col form-floating"><input id="pm-desc" class="form-control" type="text" placeholder="Description" oninput="updateProductModalSaveState()"/><label for="pm-desc">Description</label></div></div>
         <div class="row g-2 mb-2">
-          <div class="col form-floating"><input id="pm-price" class="form-control" type="number" step="0.01" placeholder="Price"/><label for="pm-price">Price ($)</label></div>
-          <div class="col form-floating"><input id="pm-cost" class="form-control" type="number" step="0.01" placeholder="Cost"/><label for="pm-cost">Cost ($)</label></div>
+          <div class="col form-floating"><input id="pm-price" class="form-control" type="number" step="0.01" placeholder="Price" oninput="updateProductModalSaveState()"/><label for="pm-price">Price ($)</label></div>
+          <div class="col form-floating"><input id="pm-cost" class="form-control" type="number" step="0.01" placeholder="Cost" oninput="updateProductModalSaveState()"/><label for="pm-cost">Cost ($)</label></div>
         </div>
-        <div class="row g-2 mb-3"><div class="col form-floating"><input id="pm-unit" class="form-control" type="text" placeholder="Unit"/><label for="pm-unit">Unit</label></div></div>
+        <div class="row g-2 mb-3"><div class="col form-floating"><input id="pm-unit" class="form-control" type="text" placeholder="Unit" oninput="updateProductModalSaveState()"/><label for="pm-unit">Unit</label></div></div>
         <div class="mb-3">
           <label class="form-label small d-block mb-2 fw-bold">Options</label>
           <div id="pm-options-list"></div>
@@ -334,7 +324,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button class="btn btn-success" onclick="saveCustomerFromModal()">Save</button>
+        <button class="btn btn-success" id="cm-save-btn" onclick="saveCustomerFromModal()">Save</button>
       </div>
     </div>
   </div>

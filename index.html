@@ -10,8 +10,9 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <style>
   .form-floating > label { color: #6c757d !important; }
+  .form-floating > .form-control.has-value ~ label { transform: scale(.85) translateY(-.5rem) translateX(.15rem); }
   button, .btn { touch-action: manipulation; }
-  body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background: #212529; z-index: 1050; }
+  body { background-color: #212529; min-height: calc(100% + env(safe-area-inset-top)); }
   #cf-date { color: #adb5bd; }
   #cf-date.has-value { color: #212529; }
   input:-webkit-autofill,
@@ -75,7 +76,7 @@
         <div id="lookupSection" class="d-none mb-3">
           <div class="input-group">
             <div class="form-floating">
-              <input id="lookupPhone" type="tel" autocomplete="off" class="form-control" oninput="formatPhoneInput(this)" placeholder="Phone Number"/>
+              <input id="lookupPhone" type="tel" autocomplete="off" class="form-control" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value);" placeholder="Phone Number"/>
               <label for="lookupPhone">Enter your phone number</label>
             </div>
             <button class="btn btn-outline-secondary" onclick="lookupReturningCustomer()" aria-label="Find My Info"><i class="bi bi-search"></i></button>
@@ -85,12 +86,12 @@
 
         <div id="contactFieldsSection" class="d-none">
           <div class="row g-2 mb-2">
-            <div class="col form-floating"><input id="cf-first" class="form-control" type="text" autocomplete="off" placeholder="First Name"/><label for="cf-first">First Name <span class="text-danger">*</span></label></div>
-            <div class="col form-floating"><input id="cf-last" class="form-control" type="text" autocomplete="off" placeholder="Last Name"/><label for="cf-last">Last Name <span class="text-danger">*</span></label></div>
+            <div class="col form-floating"><input id="cf-first" class="form-control" type="text" autocomplete="off" placeholder="First Name" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-first">First Name <span class="text-danger">*</span></label></div>
+            <div class="col form-floating"><input id="cf-last" class="form-control" type="text" autocomplete="off" placeholder="Last Name" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-last">Last Name <span class="text-danger">*</span></label></div>
           </div>
           <div class="row g-2 mb-2">
-            <div class="col form-floating"><input id="cf-phone" class="form-control" type="tel" autocomplete="off" oninput="formatPhoneInput(this)" placeholder="Phone"/><label for="cf-phone">Phone <span class="text-danger">*</span></label></div>
-            <div class="col form-floating"><input id="cf-email" class="form-control" type="email" autocomplete="off" placeholder="Email"/><label for="cf-email">Email</label></div>
+            <div class="col form-floating"><input id="cf-phone" class="form-control" type="tel" autocomplete="off" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value);" placeholder="Phone"/><label for="cf-phone">Phone <span class="text-danger">*</span></label></div>
+            <div class="col form-floating"><input id="cf-email" class="form-control" type="email" autocomplete="off" placeholder="Email" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-email">Email</label></div>
           </div>
           <div id="foundExistingMsg" class="small mb-2"></div>
         </div>
@@ -123,11 +124,11 @@
         </div>
         <div id="fulfillmentDetailsField" class="d-none">
           <div id="addressField" class="d-none mb-2">
-            <div class="row g-2 mb-2"><div class="col form-floating"><input id="cf-street" class="form-control" type="text" placeholder="Street Address"/><label for="cf-street">Street Address <span class="text-danger">*</span></label></div></div>
+            <div class="row g-2 mb-2"><div class="col form-floating"><input id="cf-street" class="form-control" type="text" placeholder="Street Address" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-street">Street Address <span class="text-danger">*</span></label></div></div>
             <div class="row g-2">
-              <div class="col-6 form-floating"><input id="cf-city" class="form-control" type="text" placeholder="City"/><label for="cf-city">City</label></div>
-              <div class="col-3 form-floating"><input id="cf-state" class="form-control" type="text" maxlength="2" placeholder="State"/><label for="cf-state">State</label></div>
-              <div class="col-3 form-floating"><input id="cf-zip" class="form-control" type="text" placeholder="ZIP"/><label for="cf-zip">ZIP</label></div>
+              <div class="col-6 form-floating"><input id="cf-city" class="form-control" type="text" placeholder="City" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-city">City</label></div>
+              <div class="col-3 form-floating"><input id="cf-state" class="form-control" type="text" maxlength="2" placeholder="State" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-state">State</label></div>
+              <div class="col-3 form-floating"><input id="cf-zip" class="form-control" type="text" placeholder="ZIP" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-zip">ZIP</label></div>
             </div>
           </div>
           <div class="row g-2 mb-2 mt-2">
