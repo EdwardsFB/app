@@ -452,7 +452,7 @@ function renderOrdersList() {
           <td><div>${esc(o.firstName)} ${esc(o.lastName)}</div><div class="small text-muted">${esc(o.phone||'')}</div></td>
           <td><i class="bi ${o.fulfillment==='delivery' ? 'bi-truck' : 'bi-cart4'}" title="${cap(o.fulfillment)}"></i></td>
           <td>${cap(o.payment)}</td>
-          <td class="small text-muted">${o.date||'—'}</td>
+          <td>${o.date||'—'}</td>
           <td><select class="form-select form-select-sm" onchange="updatePaymentStatus('${o.id}', this.value)">
                 <option value="unpaid" ${o.paymentStatus==='unpaid'?'selected':''}>Unpaid</option>
                 <option value="paid" ${o.paymentStatus==='paid'?'selected':''}>Paid</option>
@@ -1358,11 +1358,11 @@ let pmOptions = [];
 function renderProductOptionRows() {
   document.getElementById('pm-options-list').innerHTML = pmOptions.map((opt, idx) => `
     <div class="row g-2 mb-2 align-items-center">
-      <div class="col"><input class="form-control form-control-sm" placeholder="Name (e.g. Sliced)" value="${(opt.name||'').replace(/"/g,'&quot;')}" oninput="pmOptions[${idx}].name = this.value"/></div>
-      <div class="col-4"><input class="form-control form-control-sm" type="number" step="0.01" placeholder="Price" value="${opt.price ?? ''}" oninput="pmOptions[${idx}].price = parseFloat(this.value)||0"/></div>
+      <div class="col form-floating"><input id="pm-opt-name-${idx}" class="form-control" placeholder="Name" value="${(opt.name||'').replace(/"/g,'&quot;')}" oninput="pmOptions[${idx}].name = this.value"/><label for="pm-opt-name-${idx}">Name (e.g. Sliced)</label></div>
+      <div class="col-4 form-floating"><input id="pm-opt-price-${idx}" class="form-control" type="number" step="0.01" placeholder="Price" value="${opt.price ?? ''}" oninput="pmOptions[${idx}].price = parseFloat(this.value)||0"/><label for="pm-opt-price-${idx}">Price ($)</label></div>
       <div class="col-auto"><button type="button" class="btn btn-outline-danger btn-sm" onclick="removeProductOptionRow(${idx})"><i class="bi bi-x-lg"></i></button></div>
     </div>
-  `).join('') || '<div class="small text-muted mb-2">No options yet.</div>';
+  `).join('');
 }
 
 function addProductOptionRow() {

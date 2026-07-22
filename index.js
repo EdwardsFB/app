@@ -9,6 +9,19 @@ let paymentMethod = null;
 const VENMO_HANDLE = 'edwardsfamilybakery';
 
 async function init() {
+  // Defend against the browser restoring old form values on reload/back-forward navigation.
+  hasOrderedBefore = null;
+  ['lookupPhone','cf-first','cf-last','cf-phone','cf-email'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('btn-ordered-yes').classList.remove('active');
+  document.getElementById('btn-ordered-no').classList.remove('active');
+  document.getElementById('lookupSection').classList.add('d-none');
+  document.getElementById('contactFieldsSection').classList.add('d-none');
+  document.getElementById('lookupMsg').textContent = '';
+  document.getElementById('foundExistingMsg').innerHTML = '';
+
   try {
     const data = await apiGetAll();
     products = data.products || [];
@@ -219,7 +232,7 @@ function setFulfillment(type) {
   currentFulfillment = type;
   document.getElementById('fulfillmentDetailsField').classList.remove('d-none');
   document.getElementById('addressField').classList.toggle('d-none', type !== 'delivery');
-  document.getElementById('cf-date-label').textContent = type === 'delivery' ? 'Delivery Date' : 'Pickup Date';
+  document.getElementById('cf-date-label').innerHTML = (type === 'delivery' ? 'Delivery Date' : 'Pickup Date') + ' <span class="text-danger">*</span>';
   populateDateOptions(type);
   updateContinueState(3);
 }
@@ -456,5 +469,12 @@ async function submitOrder() {
     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Place Order'; }
   }
 }
+
+// Safari (and other browsers) can restore this exact page from a back-forward
+// cache when returning to it, which would otherwise show whatever was typed
+// before instead of a genuinely fresh page. Force a real reload in that case.
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) location.reload();
+});
 
 init();

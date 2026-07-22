@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no"/>
 <title>Edwards Family Bakery — Admin</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍞</text></svg>">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -22,7 +23,7 @@
     .sidebar { width: 260px; min-width: 260px; transform: translateX(-100%); transition: transform 0.25s ease-in-out; }
     .sidebar.mobile-open { transform: translateX(0); }
     .main-content { margin-left: 0 !important; }
-    .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #1c1a17; padding: 10px 16px; position: sticky; top: 0; z-index: 1035; }
+    .mobile-topbar { display: flex; align-items: center; justify-content: space-between; background: #1c1a17; padding: 10px 16px; padding-top: calc(10px + env(safe-area-inset-top)); position: sticky; top: 0; z-index: 1035; }
     .mobile-topbar img { max-height: 32px; }
     .mobile-topbar .hamburger-btn { background: none; border: none; color: #fff; font-size: 1.6rem; padding: 0; line-height: 1; }
     .sidebar-backdrop.show { display: block; }
@@ -38,16 +39,6 @@
   .switch-grey:checked { background-color: #6c757d !important; border-color: #6c757d !important; }
   .switch-grey:not(:checked) { border-color: #adb5bd !important; background-color: #e9ecef !important; }
   .switch-green:checked { background-color: #198754 !important; border-color: #198754 !important; }
-  :root { --bs-primary: #0a6669; --bs-primary-rgb: 10,102,105; }
-  .btn-primary {
-    --bs-btn-bg: #0a6669; --bs-btn-border-color: #0a6669;
-    --bs-btn-hover-bg: #085254; --bs-btn-hover-border-color: #074648;
-    --bs-btn-active-bg: #063f41; --bs-btn-active-border-color: #053638;
-    --bs-btn-disabled-bg: #0a6669; --bs-btn-disabled-border-color: #0a6669;
-  }
-  .bg-primary { background-color: #0a6669 !important; }
-  .text-primary { color: #0a6669 !important; }
-  .border-primary { border-color: #0a6669 !important; }
   .btn-outline-secondary {
     --bs-btn-hover-bg: #e3e3e3;
     --bs-btn-hover-border-color: #e3e3e3;
@@ -299,9 +290,9 @@
         </div>
         <div class="row g-2 mb-3"><div class="col form-floating"><input id="pm-unit" class="form-control" type="text" placeholder="Unit"/><label for="pm-unit">Unit (e.g. "per loaf")</label></div></div>
         <div class="mb-3">
-          <label class="form-label small d-block mb-2">Options (optional add-ons customers can select, e.g. "Sliced" for +$0.25)</label>
+          <label class="form-label small d-block mb-2 fw-bold">Options</label>
           <div id="pm-options-list"></div>
-          <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addProductOptionRow()">+ Add Option</button>
+          <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addProductOptionRow()">Add Option</button>
         </div>
         <div>
           <div class="form-check form-check-inline">
