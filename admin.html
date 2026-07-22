@@ -36,12 +36,25 @@
   table.table-bordered, .table-responsive > table { border: 1px solid rgba(0,0,0,0.175); }
   .badge { vertical-align: middle; display: inline-flex; align-items: center; justify-content: center; }
   .switch-grey:checked { background-color: #6c757d !important; border-color: #6c757d !important; }
+  .switch-grey:not(:checked) { border-color: #adb5bd !important; background-color: #e9ecef !important; }
   .switch-green:checked { background-color: #198754 !important; border-color: #198754 !important; }
+  .btn-outline-secondary {
+    --bs-btn-hover-bg: #e3e3e3;
+    --bs-btn-hover-border-color: #e3e3e3;
+    --bs-btn-hover-color: #495057;
+    --bs-btn-active-bg: #e3e3e3;
+    --bs-btn-active-border-color: #e3e3e3;
+    --bs-btn-active-color: #495057;
+  }
   .mobile-map-link { color: inherit; text-decoration: none; pointer-events: none; cursor: default; }
   .form-floating > label { color: #6c757d !important; }
   .form-floating.efb-locked-field > .form-control:focus ~ label::after,
   .form-floating.efb-locked-field > .form-control:not(:placeholder-shown) ~ label::after,
   .form-floating.efb-locked-field > .form-select ~ label::after { background-color: #f8f9fa !important; }
+  .efb-toast-container { bottom: 0; right: 0; }
+  @media (max-width: 767.98px) {
+    .efb-toast-container { top: 0; bottom: auto; left: 50%; right: auto; transform: translateX(-50%); }
+  }
   input[type="date"] { color: #adb5bd; }
   input[type="date"].has-value { color: #212529; }
   input[type="date"]::-webkit-datetime-edit-text,
@@ -78,7 +91,7 @@
 </div>
 
 <!-- ADMIN APP -->
-<div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080;" id="toastContainer"></div>
+<div class="toast-container position-fixed p-3 efb-toast-container" style="z-index: 1080;" id="toastContainer"></div>
 
 <div class="mobile-topbar d-none" id="mobileTopbar">
   <button class="hamburger-btn" onclick="toggleMobileSidebar()" aria-label="Menu"><i class="bi bi-list"></i></button>
