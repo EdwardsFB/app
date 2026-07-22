@@ -298,6 +298,11 @@
           <div class="col form-floating"><input id="pm-cost" class="form-control" type="number" step="0.01" placeholder="Cost"/><label for="pm-cost">Cost ($)</label></div>
         </div>
         <div class="row g-2 mb-3"><div class="col form-floating"><input id="pm-unit" class="form-control" type="text" placeholder="Unit"/><label for="pm-unit">Unit (e.g. "per loaf")</label></div></div>
+        <div class="mb-3">
+          <label class="form-label small d-block mb-2">Options (optional add-ons customers can select, e.g. "Sliced" for +$0.25)</label>
+          <div id="pm-options-list"></div>
+          <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addProductOptionRow()">+ Add Option</button>
+        </div>
         <div>
           <div class="form-check form-check-inline">
             <input class="form-check-input" type="radio" name="pm-active-radio" id="pm-active-yes" value="yes">

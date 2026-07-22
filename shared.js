@@ -43,6 +43,11 @@ function getOrderNumber(order, allOrders) {
   return n === undefined ? '???' : String(n).padStart(3, '0');
 }
 
+function getProductOptions(product) {
+  if (!product || !Array.isArray(product.options)) return [];
+  return product.options;
+}
+
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -218,9 +223,11 @@ function computeOrderTotals(products, items, discountPct) {
     const price = (i.price !== undefined) ? i.price : (p ? p.price : 0);
     const cost = (i.cost !== undefined) ? i.cost : (p ? p.cost : 0);
     const name = (i.name !== undefined) ? i.name : (p ? p.name : 'Unknown item');
-    return { ...i, price, cost, name };
+    const selectedOptions = i.selectedOptions || [];
+    return { ...i, price, cost, name, selectedOptions };
   });
-  const subtotal = enrichedItems.reduce((s,i) => s + i.price*i.qty, 0);
+  const lineUnitPrice = i => i.price + i.selectedOptions.reduce((s,o) => s + (Number(o.price)||0), 0);
+  const subtotal = enrichedItems.reduce((s,i) => s + lineUnitPrice(i)*i.qty, 0);
   const costTotal = enrichedItems.reduce((s,i) => s + i.cost*i.qty, 0);
   const total = subtotal * (1 - (discountPct||0)/100);
   return { subtotal, costTotal, total, profit: total - costTotal, items: enrichedItems };

@@ -112,7 +112,7 @@
         <h2 class="h5 mb-3">This Week's Menu</h2>
         <div id="productsList" class="row row-cols-2 row-cols-md-3 g-3 mb-3"></div>
         <div id="step2Error" class="text-danger small mb-2"></div>
-        <div class="d-flex gap-2 mb-5 pb-4">
+        <div class="d-flex gap-2">
           <button class="btn btn-outline-secondary" onclick="goToStep(1)">Back</button>
           <button class="btn btn-primary flex-fill" onclick="goToStep(3)" id="step2-continue">Continue</button>
         </div>
@@ -189,7 +189,7 @@
           </div>
         </div>
         <div id="step4Error" class="text-danger small mb-2"></div>
-        <div class="d-flex gap-2 mb-4">
+        <div class="d-flex gap-2">
           <button class="btn btn-outline-secondary" onclick="goToStep(3)">Back</button>
           <button class="btn btn-primary flex-fill" onclick="submitOrder()" id="step4-submit">Place Order</button>
         </div>
@@ -210,7 +210,7 @@
           <h3 class="h6 text-uppercase text-muted">Complete Payment with Venmo</h3>
           <p class="mb-2">Total due: <strong id="venmoAmount"></strong></p>
           <a id="venmoLink" class="btn btn-dark w-100 mb-2" href="#" target="_blank">Pay with Venmo</a>
-          <p class="small text-muted mb-0">Your order number is already included in the payment note.</p>
+          <p class="small text-muted mb-0">Order number will be included in payment note.</p>
         </div>
       </div>
 
@@ -221,7 +221,7 @@
         </div>
       </div>
 
-      <button class="btn btn-outline-secondary" onclick="location.reload()">Place Another Order</button>
+      <button class="btn btn-outline-secondary" onclick="location.reload()">Place New Order</button>
     </div>
 
   </div>

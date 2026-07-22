@@ -1,6 +1,7 @@
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
+let cOptions = {}; // cOptions[productId] = { optionName: price } for currently-checked options
 let currentFulfillment = null;
 let currentStep = 1;
 let hasOrderedBefore = null;
@@ -30,7 +31,7 @@ async function init() {
 }
 
 function applyLogo() {
-  const logoSrc = (settings && settings.logo) || LOGO_DATA_URI;
+  const logoSrc = (settings && settings.logoCustomer) || LOGO_DATA_URI;
   if (!logoSrc) return;
   document.getElementById('logoImg').src = logoSrc;
   document.getElementById('logoImg').classList.remove('d-none');
@@ -52,16 +53,18 @@ function setOrderedBefore(val) {
   document.getElementById('btn-ordered-yes').classList.toggle('active', val === true);
   document.getElementById('btn-ordered-no').classList.toggle('active', val === false);
   document.getElementById('lookupSection').classList.toggle('d-none', !val);
+
+  // Full reset every time — nothing carries over between Yes and No, or between repeated switches.
+  document.getElementById('lookupPhone').value = '';
   document.getElementById('lookupMsg').textContent = '';
   document.getElementById('foundExistingMsg').innerHTML = '';
-  if (val) {
-    // Yes — wait for a lookup attempt before showing the (likely pre-filled) fields
-    document.getElementById('contactFieldsSection').classList.add('d-none');
-  } else {
-    // No — go straight to blank required fields
-    ['cf-first','cf-last','cf-phone','cf-email'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('contactFieldsSection').classList.remove('d-none');
-  }
+  ['cf-first','cf-last','cf-phone','cf-email'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('cf-street').value = '';
+  document.getElementById('cf-city').value = '';
+  document.getElementById('cf-state').value = '';
+  document.getElementById('cf-zip').value = '';
+
+  document.getElementById('contactFieldsSection').classList.toggle('d-none', !!val);
   updateContinueState(1);
 }
 
@@ -98,14 +101,11 @@ function lookupReturningCustomer() {
     document.getElementById('cf-city').value = parts.city || '';
     document.getElementById('cf-state').value = parts.state || '';
     document.getElementById('cf-zip').value = parts.zip || '';
-    document.getElementById('rad-delivery').checked = true;
-    setFulfillment('delivery');
   }
 
   msg.className = 'small mt-2 text-success';
   msg.textContent = `Welcome back, ${match.firstName}! We filled in your info below — feel free to update anything that's changed.`;
   updateContinueState(1);
-  updateContinueState(3);
 }
 
 // ══════════════════════════════════════════
@@ -115,8 +115,17 @@ function lookupReturningCustomer() {
 function renderProducts() {
   const visibleProducts = products.filter(p => p.active !== false);
   cQty = {};
-  visibleProducts.forEach(p => cQty[p.id] = 0);
-  document.getElementById('productsList').innerHTML = visibleProducts.map(p => `
+  cOptions = {};
+  visibleProducts.forEach(p => { cQty[p.id] = 0; cOptions[p.id] = {}; });
+  document.getElementById('productsList').innerHTML = visibleProducts.map(p => {
+    const options = getProductOptions(p);
+    const optionsHtml = options.map(opt => `
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="opt-${p.id}-${esc(opt.name)}" onchange="toggleOption('${p.id}', '${esc(opt.name)}', ${opt.price}, this.checked)">
+        <label class="form-check-label small" for="opt-${p.id}-${esc(opt.name)}">${esc(opt.name)} (+$${Number(opt.price).toFixed(2)} ea)</label>
+      </div>
+    `).join('');
+    return `
     <div class="col">
       <div class="card h-100">
         <img src="${p.photo || PLACEHOLDER_PHOTO_URI}" class="card-img-top product-card-img" alt="${esc(p.name)}">
@@ -130,11 +139,20 @@ function renderProducts() {
               <button class="btn btn-outline-secondary" type="button" onclick="changeQty('${p.id}', 1)"><i class="bi bi-plus"></i></button>
             </div>
             <div class="small fw-bold">$${Number(p.price).toFixed(2)} <span class="text-muted fw-normal">${esc(p.unit||'')}</span></div>
+            ${optionsHtml}
           </div>
         </div>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
+}
+
+function toggleOption(productId, optionName, optionPrice, checked) {
+  if (!cOptions[productId]) cOptions[productId] = {};
+  cOptions[productId][optionName] = checked ? optionPrice : undefined;
+  if (!checked) delete cOptions[productId][optionName];
+  updateStickyTotal();
 }
 
 function changeQty(id, delta) {
@@ -144,12 +162,18 @@ function changeQty(id, delta) {
   updateContinueState(2);
 }
 
+function getSelectedOptionsFor(productId) {
+  const opts = cOptions[productId] || {};
+  return Object.keys(opts).map(name => ({ name, price: opts[name] }));
+}
+
 function updateStickyTotal() {
   let count = 0, total = 0;
   products.forEach(p => {
     const qty = cQty[p.id]||0;
     count += qty;
-    total += qty * p.price;
+    const optionsUnitPrice = getSelectedOptionsFor(p.id).reduce((s,o) => s + o.price, 0);
+    total += qty * (p.price + optionsUnitPrice);
   });
   document.getElementById('stickyItemCount').textContent = `${count} item${count!==1?'s':''}`;
   document.getElementById('stickyTotal').textContent = '$' + total.toFixed(2);
@@ -183,7 +207,7 @@ function getUpcomingDatesForDays(allowedDayNames, count) {
 function populateDateOptions(type) {
   const allowedDaysStr = type === 'delivery' ? (settings.deliveryDays || '') : (settings.pickupDays || '');
   const allowedDayNames = allowedDaysStr.split(',').filter(Boolean);
-  const dates = getUpcomingDatesForDays(allowedDayNames, 8);
+  const dates = getUpcomingDatesForDays(allowedDayNames, 3);
   const select = document.getElementById('cf-date');
   const label = type === 'delivery' ? 'delivery' : 'pickup';
   select.innerHTML = `<option value="" disabled selected>Choose a ${label} date</option>` +
@@ -218,9 +242,12 @@ function renderReview() {
   products.forEach(p => {
     const qty = cQty[p.id]||0;
     if (qty > 0) {
-      const sub = qty * p.price;
+      const selected = getSelectedOptionsFor(p.id);
+      const optionsUnitPrice = selected.reduce((s,o) => s + o.price, 0);
+      const sub = qty * (p.price + optionsUnitPrice);
       total += sub;
-      html += `<div class="d-flex justify-content-between small"><span>${qty}× ${esc(p.name)}</span><span>$${sub.toFixed(2)}</span></div>`;
+      const optionsLabel = selected.length ? ` (${selected.map(o=>esc(o.name)).join(', ')})` : '';
+      html += `<div class="d-flex justify-content-between small"><span>${qty}× ${esc(p.name)}${optionsLabel}</span><span>$${sub.toFixed(2)}</span></div>`;
     }
   });
   document.getElementById('reviewItems').innerHTML = html || '<div class="small text-muted">No items selected</div>';
@@ -385,7 +412,7 @@ async function submitOrder() {
     const state = document.getElementById('cf-state').value.trim();
     const zip = document.getElementById('cf-zip').value.trim();
     const notes = document.getElementById('cf-notes').value.trim();
-    const items = products.filter(p => (cQty[p.id]||0) > 0).map(p => ({ productId: p.id, qty: cQty[p.id] }));
+    const items = products.filter(p => (cQty[p.id]||0) > 0).map(p => ({ productId: p.id, qty: cQty[p.id], selectedOptions: getSelectedOptionsFor(p.id) }));
 
     if (!paymentMethod) { errEl.textContent = 'Please choose how you\'ll pay.'; return; }
 

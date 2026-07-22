@@ -189,16 +189,22 @@ function removeProductPhoto() {
 }
 
 function applyLogo() {
-  const logoSrc = (settings && settings.logo) || LOGO_DATA_URI;
-  if (!logoSrc) return;
-  document.getElementById('logoImg').src = logoSrc;
-  document.getElementById('logoImg').classList.remove('d-none');
-  document.getElementById('brandText').classList.add('d-none');
-  document.getElementById('mobileLogoImg').src = logoSrc;
-  document.getElementById('mobileLogoImg').classList.remove('d-none');
-  document.getElementById('mobileBrandText').classList.add('d-none');
+  const s = settings || {};
+  const sidebarSrc = s.logoAdminSidebar || LOGO_DATA_URI;
+  const mobileSrc = s.logoAdminMobile || LOGO_DATA_URI;
+  const passcodeSrc = s.logoPasscode || LOGO_DATA_URI;
+  if (sidebarSrc) {
+    document.getElementById('logoImg').src = sidebarSrc;
+    document.getElementById('logoImg').classList.remove('d-none');
+    document.getElementById('brandText').classList.add('d-none');
+  }
+  if (mobileSrc) {
+    document.getElementById('mobileLogoImg').src = mobileSrc;
+    document.getElementById('mobileLogoImg').classList.remove('d-none');
+    document.getElementById('mobileBrandText').classList.add('d-none');
+  }
   const passcodeLogo = document.getElementById('passcodeLogoImg');
-  if (passcodeLogo) passcodeLogo.src = logoSrc;
+  if (passcodeLogo && passcodeSrc) passcodeLogo.src = passcodeSrc;
 }
 
 function toggleMobileSidebar() {
@@ -436,7 +442,11 @@ function renderOrdersList() {
     <thead><tr>${cols.map(([k,l]) => `<th class="${k==='total'?'text-end':''}" style="cursor:pointer;" onclick="sortOrdersBy('${k}')">${l}${orderSortArrow(k)}</th>`).join('')}<th></th></tr></thead>
     <tbody>
       ${list.map(o => {
-        const itemStr = (o.items||[]).map(i => { const name = i.name || (products.find(p=>p.id===i.productId)||{}).name; return name ? `${i.qty}× ${name}` : ''; }).filter(Boolean).join(', ');
+        const itemStr = (o.items||[]).map(i => {
+          const name = i.name || (products.find(p=>p.id===i.productId)||{}).name;
+          const opts = (i.selectedOptions||[]).map(o=>o.name).join(', ');
+          return name ? `${i.qty}× ${name}${opts ? ' ('+opts+')' : ''}` : '';
+        }).filter(Boolean).join(', ');
         return `<tr title="${esc(itemStr)}">
           <td class="text-muted small">#${String(numberMap.get(o.id)).padStart(3,'0')}</td>
           <td><div>${esc(o.firstName)} ${esc(o.lastName)}</div><div class="small text-muted">${esc(o.phone||'')}</div></td>
@@ -1000,11 +1010,13 @@ function renderProductionTab() {
       const p = products.find(p=>p.id===i.productId);
       const name = i.name || (p && p.name);
       if (!name) return '';
+      const opts = (i.selectedOptions||[]).map(o=>o.name).join(', ');
+      const displayName = opts ? `${name} (${opts})` : name;
       const doneArr = (o.madeItems && o.madeItems[i.productId]) || [];
       return Array.from({length: i.qty}).map((_, idx) => {
         const done = !!doneArr[idx];
         return `<li class="list-group-item d-flex justify-content-between align-items-center" style="cursor:pointer;" onclick="toggleUnit('${o.id}','${i.productId}',${idx})">
-          <span class="${done ? 'text-success' : ''}">${esc(name)}</span>
+          <span class="${done ? 'text-success' : ''}">${esc(displayName)}</span>
           <div class="form-check form-switch mb-0">
             <input class="form-check-input switch-green" type="checkbox" ${done?'checked':''} style="pointer-events:none;" tabindex="-1">
           </div>
@@ -1165,12 +1177,19 @@ function openRouteMap() {
 // ══════════════════════════════════════════
 
 // DAYS_OF_WEEK now lives in shared.js so index.js can use it too
-let settingsLogoDataUri = null; // holds a newly-picked logo this session, or null for no change
+let settingsLogoUris = {}; // holds any newly-picked logos this session, keyed by slot, or '' if removed
+
+const LOGO_SLOTS = [
+  { key: 'logoAdminSidebar', label: 'Admin — Left Sidebar' },
+  { key: 'logoAdminMobile', label: 'Admin — Mobile Top Bar' },
+  { key: 'logoPasscode', label: 'Passcode Screen' },
+  { key: 'logoCustomer', label: 'Customer Order Page' },
+];
 
 function renderSettingsTab() {
   const pickupDays = (settings.pickupDays || '').split(',').filter(Boolean);
   const deliveryDays = (settings.deliveryDays || '').split(',').filter(Boolean);
-  settingsLogoDataUri = null;
+  settingsLogoUris = {}; // holds any newly-picked logos this session, keyed by slot
 
   function dayCheckboxes(groupId, selectedDays) {
     return DAYS_OF_WEEK.map(day => `
@@ -1179,6 +1198,21 @@ function renderSettingsTab() {
         <label class="form-check-label" for="${groupId}-${day}">${day}</label>
       </div>
     `).join('');
+  }
+
+  function logoSlotHtml(slot) {
+    const current = settings[slot.key] || LOGO_DATA_URI || '';
+    return `
+      <div class="col-md-6 mb-3">
+        <div class="border rounded p-3 h-100">
+          <div class="small fw-bold mb-2">${esc(slot.label)}</div>
+          <img id="settings-logo-preview-${slot.key}" src="${current}" style="max-height:60px; display:block; margin-bottom:10px;" alt="${esc(slot.label)} logo"/>
+          <input type="file" id="settings-logo-input-${slot.key}" accept="image/*" class="d-none" onchange="handleSettingsLogoUpload(event, '${slot.key}')"/>
+          <button class="btn btn-outline-secondary btn-sm me-2" onclick="document.getElementById('settings-logo-input-${slot.key}').click()">Choose Photo</button>
+          <button class="btn btn-outline-danger btn-sm" onclick="removeSettingsLogo('${slot.key}')">Remove</button>
+          <div id="settings-logo-status-${slot.key}" class="small text-muted mt-2"></div>
+        </div>
+      </div>`;
   }
 
   document.getElementById('tab-settings').innerHTML = `
@@ -1198,29 +1232,24 @@ function renderSettingsTab() {
     </div>
     <div class="card mb-3 shadow-sm">
       <div class="card-body">
-        <h5 class="text-muted mb-3">Logo</h5>
-        <p class="small text-muted">Uploading a logo here updates it everywhere in the app — the admin sidebar, mobile header, passcode screen, and the customer order page.</p>
-        <img id="settings-logo-preview" src="${settings.logo || LOGO_DATA_URI || ''}" style="max-height:80px; display:block; margin-bottom:10px;" alt="Current logo"/>
-        <input type="file" id="settings-logo-input" accept="image/*" class="d-none" onchange="handleSettingsLogoUpload(event)"/>
-        <button class="btn btn-outline-secondary btn-sm me-2" onclick="document.getElementById('settings-logo-input').click()">Choose Photo</button>
-        <button class="btn btn-outline-danger btn-sm" onclick="removeSettingsLogo()">Remove Logo</button>
-        <div id="settings-logo-status" class="small text-muted mt-2"></div>
+        <h5 class="text-muted mb-3">Logos</h5>
+        <p class="small text-muted">Each spot has its own logo, in case you ever want them different. Upload once per spot below.</p>
+        <div class="row">${LOGO_SLOTS.map(logoSlotHtml).join('')}</div>
       </div>
     </div>
     <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
-    <span id="settings-save-status" class="small ms-2"></span>
   `;
 }
 
-async function handleSettingsLogoUpload(event) {
+async function handleSettingsLogoUpload(event, key) {
   const file = event.target.files[0];
   if (!file) return;
-  const statusEl = document.getElementById('settings-logo-status');
+  const statusEl = document.getElementById('settings-logo-status-'+key);
   statusEl.textContent = 'Compressing photo...';
   try {
     const compressed = await compressImageFile(file, 600);
-    settingsLogoDataUri = compressed;
-    document.getElementById('settings-logo-preview').src = compressed;
+    settingsLogoUris[key] = compressed;
+    document.getElementById('settings-logo-preview-'+key).src = compressed;
     statusEl.textContent = 'Photo ready — click Save Settings to keep it.';
   } catch (err) {
     statusEl.textContent = 'Could not process that photo: ' + err.message;
@@ -1228,10 +1257,10 @@ async function handleSettingsLogoUpload(event) {
   event.target.value = '';
 }
 
-function removeSettingsLogo() {
-  settingsLogoDataUri = '';
-  document.getElementById('settings-logo-preview').src = '';
-  document.getElementById('settings-logo-status').textContent = 'Logo will be removed on Save (falls back to the default).';
+function removeSettingsLogo(key) {
+  settingsLogoUris[key] = '';
+  document.getElementById('settings-logo-preview-'+key).src = '';
+  document.getElementById('settings-logo-status-'+key).textContent = 'Logo will be removed on Save (falls back to the default).';
 }
 
 async function saveSettings() {
@@ -1241,11 +1270,10 @@ async function saveSettings() {
     pickupDays: pickupDays.join(','),
     deliveryDays: deliveryDays.join(','),
   };
-  if (settingsLogoDataUri !== null) data.logo = settingsLogoDataUri;
+  LOGO_SLOTS.forEach(slot => {
+    if (settingsLogoUris[slot.key] !== undefined) data[slot.key] = settingsLogoUris[slot.key];
+  });
 
-  const statusEl = document.getElementById('settings-save-status');
-  statusEl.textContent = 'Saving...';
-  statusEl.className = 'small ms-2 text-muted';
   try {
     if (settings.id) {
       await apiWrite('settings', 'update', settings.id, data);
@@ -1255,12 +1283,10 @@ async function saveSettings() {
       await apiWrite('settings', 'add', null, newSettings);
       settings = newSettings;
     }
-    statusEl.textContent = '✅ Saved.';
-    statusEl.className = 'small ms-2 text-success';
+    showToast('Settings saved.');
     applyLogo();
   } catch (err) {
-    statusEl.textContent = '❌ Save failed: ' + err.message;
-    statusEl.className = 'small ms-2 text-danger';
+    showToast('Save failed: ' + err.message, 'bg-danger');
   }
 }
 
@@ -1319,7 +1345,34 @@ function openProductModal(id) {
   pmPhotoDataUri = null; // no change yet — only set if the admin picks/removes a photo this session
   document.getElementById('pm-photo-preview').src = (p && p.photo) ? p.photo : PLACEHOLDER_PHOTO_URI;
   document.getElementById('pm-photo-status').textContent = '';
+  pmOptions = [];
+  if (p && Array.isArray(p.options)) {
+    pmOptions = p.options.map(o => ({ name: o.name || '', price: o.price || 0 }));
+  }
+  renderProductOptionRows();
   productModal.show();
+}
+
+let pmOptions = [];
+
+function renderProductOptionRows() {
+  document.getElementById('pm-options-list').innerHTML = pmOptions.map((opt, idx) => `
+    <div class="row g-2 mb-2 align-items-center">
+      <div class="col"><input class="form-control form-control-sm" placeholder="Name (e.g. Sliced)" value="${(opt.name||'').replace(/"/g,'&quot;')}" oninput="pmOptions[${idx}].name = this.value"/></div>
+      <div class="col-4"><input class="form-control form-control-sm" type="number" step="0.01" placeholder="Price" value="${opt.price ?? ''}" oninput="pmOptions[${idx}].price = parseFloat(this.value)||0"/></div>
+      <div class="col-auto"><button type="button" class="btn btn-outline-danger btn-sm" onclick="removeProductOptionRow(${idx})"><i class="bi bi-x-lg"></i></button></div>
+    </div>
+  `).join('') || '<div class="small text-muted mb-2">No options yet.</div>';
+}
+
+function addProductOptionRow() {
+  pmOptions.push({ name: '', price: 0 });
+  renderProductOptionRows();
+}
+
+function removeProductOptionRow(idx) {
+  pmOptions.splice(idx, 1);
+  renderProductOptionRows();
 }
 function deleteProductRow(id) {
   const p = products.find(p=>p.id===id); if (!p) return;
@@ -1340,6 +1393,8 @@ async function saveProductFromModal() {
     active: document.getElementById('pm-active-yes').checked
   };
   if (pmPhotoDataUri !== null) data.photo = pmPhotoDataUri; // only touch photo if it was actually changed this session
+  const validOptions = pmOptions.filter(o => (o.name||'').trim());
+  data.options = validOptions;
   if (editingProductId) {
     const p = products.find(p=>p.id===editingProductId);
     Object.assign(p, data);
