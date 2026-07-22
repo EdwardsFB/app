@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#212529"/>
 <meta name="format-detection" content="telephone=no, date=no, address=no, email=no"/>
 <title>Edwards Family Bakery — Order</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍞</text></svg>">
@@ -12,7 +13,7 @@
   .form-floating > label { color: #6c757d !important; }
   .form-floating > .form-control.has-value ~ label { transform: scale(.85) translateY(-.5rem) translateX(.15rem); }
   button, .btn { touch-action: manipulation; }
-  body { background-color: #212529; min-height: calc(100% + env(safe-area-inset-top)); }
+  body { background-color: #212529; }
   #cf-date { color: #adb5bd; }
   #cf-date.has-value { color: #212529; }
   input:-webkit-autofill,
@@ -76,7 +77,7 @@
         <div id="lookupSection" class="d-none mb-3">
           <div class="input-group">
             <div class="form-floating">
-              <input id="lookupPhone" type="tel" autocomplete="off" class="form-control" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value);" placeholder="Phone Number"/>
+              <input id="lookupPhone" name="fld-a1" type="tel" autocomplete="off" class="form-control" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value);" placeholder="Phone Number"/>
               <label for="lookupPhone">Enter your phone number</label>
             </div>
             <button class="btn btn-outline-secondary" onclick="lookupReturningCustomer()" aria-label="Find My Info"><i class="bi bi-search"></i></button>
@@ -86,12 +87,12 @@
 
         <div id="contactFieldsSection" class="d-none">
           <div class="row g-2 mb-2">
-            <div class="col form-floating"><input id="cf-first" class="form-control" type="text" autocomplete="off" placeholder="First Name" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-first">First Name <span class="text-danger">*</span></label></div>
-            <div class="col form-floating"><input id="cf-last" class="form-control" type="text" autocomplete="off" placeholder="Last Name" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-last">Last Name <span class="text-danger">*</span></label></div>
+            <div class="col form-floating"><input id="cf-first" name="fld-b2" class="form-control" type="text" autocomplete="off" placeholder="First Name" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-first">First Name <span class="text-danger">*</span></label></div>
+            <div class="col form-floating"><input id="cf-last" name="fld-c3" class="form-control" type="text" autocomplete="off" placeholder="Last Name" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-last">Last Name <span class="text-danger">*</span></label></div>
           </div>
           <div class="row g-2 mb-2">
-            <div class="col form-floating"><input id="cf-phone" class="form-control" type="tel" autocomplete="off" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value);" placeholder="Phone"/><label for="cf-phone">Phone <span class="text-danger">*</span></label></div>
-            <div class="col form-floating"><input id="cf-email" class="form-control" type="email" autocomplete="off" placeholder="Email" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-email">Email</label></div>
+            <div class="col form-floating"><input id="cf-phone" name="fld-d4" class="form-control" type="tel" autocomplete="off" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value);" placeholder="Phone"/><label for="cf-phone">Phone <span class="text-danger">*</span></label></div>
+            <div class="col form-floating"><input id="cf-email" name="fld-e5" class="form-control" type="email" autocomplete="off" placeholder="Email" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-email">Email</label></div>
           </div>
           <div id="foundExistingMsg" class="small mb-2"></div>
         </div>
