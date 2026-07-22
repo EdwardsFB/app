@@ -7,6 +7,28 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍞</text></svg>">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+  .form-floating > label { color: #6c757d !important; }
+  input[type="date"] { color: #adb5bd; }
+  input[type="date"].has-value { color: #212529; }
+  input[type="date"]::-webkit-datetime-edit-text,
+  input[type="date"]::-webkit-datetime-edit-month-field,
+  input[type="date"]::-webkit-datetime-edit-day-field,
+  input[type="date"]::-webkit-datetime-edit-year-field { color: #adb5bd; }
+  input[type="date"].has-value::-webkit-datetime-edit-text,
+  input[type="date"].has-value::-webkit-datetime-edit-month-field,
+  input[type="date"].has-value::-webkit-datetime-edit-day-field,
+  input[type="date"].has-value::-webkit-datetime-edit-year-field { color: #212529; }
+  .step-circle { width:32px; height:32px; border-radius:50%; background:#e9ecef; color:#6c757d; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.9rem; flex-shrink:0; transition: background-color .2s, color .2s; }
+  .step-circle.step-active { background:#212529; color:#fff; }
+  .step-circle.step-complete { background:#198754; color:#fff; }
+  .step-line { flex:1 1 auto; height:2px; background:#e9ecef; max-width:40px; }
+  .wizard-step { animation: fadeIn .15s ease-in; }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  #stickyTotalBar { z-index:1030; }
+  .product-card-img { height:120px; object-fit:cover; background:#e9ecef; }
+  .btn:disabled, .btn.disabled { background-color: #e9ecef !important; border-color: #dee2e6 !important; color: #adb5bd !important; opacity: 1 !important; }
+</style>
 </head>
 <body class="bg-light">
 
@@ -24,12 +46,31 @@
 
   <div class="container" style="max-width: 640px;">
 
-    <!-- ORDER FORM -->
-    <div id="orderFormScreen">
+    <!-- WIZARD -->
+    <div id="wizardScreen">
 
-      <div class="card mb-3">
-        <div class="card-body">
-          <h2 class="h6">Ordered With Us Before?</h2>
+      <!-- Stepper -->
+      <div class="d-flex justify-content-center align-items-center mb-2" id="stepperBar">
+        <div class="step-circle" data-step="1">1</div><div class="step-line"></div>
+        <div class="step-circle" data-step="2">2</div><div class="step-line"></div>
+        <div class="step-circle" data-step="3">3</div><div class="step-line"></div>
+        <div class="step-circle" data-step="4">4</div>
+      </div>
+      <div class="text-center small text-muted mb-4" id="stepperLabel">Step 1 of 4 — Your Info</div>
+
+      <!-- STEP 1: Contact Info -->
+      <div id="step1" class="wizard-step">
+        <h2 class="h5 mb-3">Your Info</h2>
+
+        <div class="mb-3">
+          <label class="form-label d-block">Have you ordered with us before?</label>
+          <div class="btn-group w-100" role="group" aria-label="Have you ordered before">
+            <button type="button" class="btn btn-outline-secondary" id="btn-ordered-yes" onclick="setOrderedBefore(true)">Yes</button>
+            <button type="button" class="btn btn-outline-secondary" id="btn-ordered-no" onclick="setOrderedBefore(false)">No</button>
+          </div>
+        </div>
+
+        <div id="lookupSection" class="d-none mb-3">
           <div class="input-group">
             <div class="form-floating">
               <input id="lookupPhone" type="tel" class="form-control" oninput="formatPhoneInput(this)" placeholder="Phone Number"/>
@@ -39,14 +80,8 @@
           </div>
           <div id="lookupMsg" class="small mt-2"></div>
         </div>
-      </div>
 
-      <h2 class="h6 text-uppercase text-muted">This Week's Menu</h2>
-      <div id="productsList" class="mb-4"></div>
-
-      <div class="card mb-3">
-        <div class="card-body">
-          <h2 class="h6 mb-3">Your Info</h2>
+        <div id="contactFieldsSection" class="d-none">
           <div class="row g-2 mb-2">
             <div class="col form-floating"><input id="cf-first" class="form-control" type="text" placeholder="First Name"/><label for="cf-first">First Name <span class="text-danger">*</span></label></div>
             <div class="col form-floating"><input id="cf-last" class="form-control" type="text" placeholder="Last Name"/><label for="cf-last">Last Name <span class="text-danger">*</span></label></div>
@@ -55,69 +90,133 @@
             <div class="col form-floating"><input id="cf-phone" class="form-control" type="tel" oninput="formatPhoneInput(this)" placeholder="Phone"/><label for="cf-phone">Phone <span class="text-danger">*</span></label></div>
             <div class="col form-floating"><input id="cf-email" class="form-control" type="email" placeholder="Email"/><label for="cf-email">Email</label></div>
           </div>
-          <div class="row g-2 mb-2">
-            <div class="col form-floating"><input id="cf-date" class="form-control" type="date" placeholder="Preferred Day" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-date">Preferred Day</label></div>
-            <div class="col"></div>
-          </div>
-          <div class="mb-2">
-            <label class="form-label small d-block">Pickup or Delivery?</label>
-            <div class="btn-group w-100" role="group">
-              <input type="radio" class="btn-check" name="fulfillment" id="rad-pickup" checked onclick="setFulfillment('pickup')">
-              <label class="btn btn-outline-secondary" for="rad-pickup"><i class="bi bi-geo-alt"></i> Pickup</label>
-              <input type="radio" class="btn-check" name="fulfillment" id="rad-delivery" onclick="setFulfillment('delivery')">
-              <label class="btn btn-outline-secondary" for="rad-delivery"><i class="bi bi-truck"></i> Delivery</label>
-            </div>
-          </div>
-          <div class="mb-2 d-none" id="addressField">
-            <div class="row g-2 mb-2"><div class="col form-floating"><input id="cf-street" class="form-control" type="text" placeholder="Street Address"/><label for="cf-street">Street Address <span class="text-danger">*</span></label></div></div>
-            <div class="row g-2">
-              <div class="col-6 form-floating"><input id="cf-city" class="form-control" type="text" placeholder="City"/><label for="cf-city">City</label></div>
-              <div class="col-3 form-floating"><input id="cf-state" class="form-control" type="text" maxlength="2" placeholder="State"/><label for="cf-state">State</label></div>
-              <div class="col-3 form-floating"><input id="cf-zip" class="form-control" type="text" placeholder="ZIP"/><label for="cf-zip">ZIP</label></div>
-            </div>
-          </div>
-          <div class="row g-2 mb-0"><div class="col form-floating">
-            <textarea id="cf-notes" class="form-control" style="height:80px;" placeholder="Notes"></textarea>
-            <label for="cf-notes">Notes</label>
-          </div></div>
+        </div>
+
+        <div id="step1Error" class="text-danger small mb-2"></div>
+        <button class="btn btn-dark w-100" onclick="goToStep(2)">Continue</button>
+      </div>
+
+      <!-- STEP 2: Products -->
+      <div id="step2" class="wizard-step d-none">
+        <h2 class="h5 mb-3">This Week's Menu</h2>
+        <div id="productsList" class="row row-cols-2 row-cols-md-3 g-3 mb-3"></div>
+        <div id="step2Error" class="text-danger small mb-2"></div>
+        <div class="d-flex gap-2 mb-5 pb-4">
+          <button class="btn btn-outline-secondary" onclick="goToStep(1)">Back</button>
+          <button class="btn btn-dark flex-fill" onclick="goToStep(3)">Continue</button>
         </div>
       </div>
 
-      <div class="card bg-dark text-white mb-3">
-        <div class="card-body">
-          <h2 class="h6 text-white-50 text-uppercase">Order Summary</h2>
-          <div id="summaryLines"></div>
-          <hr class="border-secondary">
-          <div class="d-flex justify-content-between fs-4 fw-bold">
-            <span>Total</span><span id="summaryTotal">$0.00</span>
+      <!-- STEP 3: Fulfillment -->
+      <div id="step3" class="wizard-step d-none">
+        <h2 class="h5 mb-3">Pickup or Delivery?</h2>
+        <div class="btn-group w-100 mb-3" role="group" aria-label="Pickup or delivery">
+          <input type="radio" class="btn-check" name="fulfillment" id="rad-pickup" checked onclick="setFulfillment('pickup')">
+          <label class="btn btn-outline-secondary" for="rad-pickup"><i class="bi bi-geo-alt"></i> Pickup</label>
+          <input type="radio" class="btn-check" name="fulfillment" id="rad-delivery" onclick="setFulfillment('delivery')">
+          <label class="btn btn-outline-secondary" for="rad-delivery"><i class="bi bi-truck"></i> Delivery</label>
+        </div>
+        <div id="addressField" class="d-none mb-2">
+          <div class="row g-2 mb-2"><div class="col form-floating"><input id="cf-street" class="form-control" type="text" placeholder="Street Address"/><label for="cf-street">Street Address <span class="text-danger">*</span></label></div></div>
+          <div class="row g-2">
+            <div class="col-6 form-floating"><input id="cf-city" class="form-control" type="text" placeholder="City"/><label for="cf-city">City</label></div>
+            <div class="col-3 form-floating"><input id="cf-state" class="form-control" type="text" maxlength="2" placeholder="State"/><label for="cf-state">State</label></div>
+            <div class="col-3 form-floating"><input id="cf-zip" class="form-control" type="text" placeholder="ZIP"/><label for="cf-zip">ZIP</label></div>
           </div>
+        </div>
+        <div class="row g-2 mb-2 mt-2">
+          <div class="col form-floating"><input id="cf-date" class="form-control" type="date" placeholder="Pickup Date" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-date" id="cf-date-label">Pickup Date</label></div>
+        </div>
+        <div class="row g-2 mb-3"><div class="col form-floating">
+          <textarea id="cf-notes" class="form-control" style="height:80px;" placeholder="Notes"></textarea>
+          <label for="cf-notes">Notes</label>
+        </div></div>
+        <div id="step3Error" class="text-danger small mb-2"></div>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-secondary" onclick="goToStep(2)">Back</button>
+          <button class="btn btn-dark flex-fill" onclick="goToStep(4)">Continue</button>
         </div>
       </div>
 
-      <div id="formError" class="text-danger small mb-2"></div>
-      <button class="btn btn-dark btn-lg w-100 mb-4" onclick="submitOrder()">Place Order</button>
+      <!-- STEP 4: Review & Payment -->
+      <div id="step4" class="wizard-step d-none">
+        <h2 class="h5 mb-3">Review Your Order</h2>
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h3 class="h6 text-uppercase text-muted mb-0">Items</h3>
+              <a href="#" class="small" onclick="goToStep(2); return false;">Edit</a>
+            </div>
+            <div id="reviewItems"></div>
+          </div>
+        </div>
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h3 class="h6 text-uppercase text-muted mb-0">Contact & Fulfillment</h3>
+              <a href="#" class="small" onclick="goToStep(1); return false;">Edit</a>
+            </div>
+            <div id="reviewContact" class="small"></div>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label d-block">How will you pay?</label>
+          <div class="btn-group w-100" role="group" aria-label="Payment method">
+            <input type="radio" class="btn-check" name="paymentMethod" id="pay-venmo" checked onclick="setPaymentMethod('venmo')">
+            <label class="btn btn-outline-secondary" for="pay-venmo"><i class="bi bi-phone"></i> Venmo</label>
+            <input type="radio" class="btn-check" name="paymentMethod" id="pay-cash" onclick="setPaymentMethod('cash')">
+            <label class="btn btn-outline-secondary" for="pay-cash"><i class="bi bi-cash"></i> Cash</label>
+          </div>
+        </div>
+        <div class="card bg-dark text-white mb-3">
+          <div class="card-body d-flex justify-content-between align-items-center">
+            <span class="h6 mb-0">Total</span><span id="reviewTotal" class="h4 mb-0">$0.00</span>
+          </div>
+        </div>
+        <div id="step4Error" class="text-danger small mb-2"></div>
+        <div class="d-flex gap-2 mb-4">
+          <button class="btn btn-outline-secondary" onclick="goToStep(3)">Back</button>
+          <button class="btn btn-dark flex-fill" onclick="submitOrder()">Place Order</button>
+        </div>
+      </div>
 
-      <p class="text-center small"><a href="admin.html" class="text-muted text-decoration-none">Admin View</a></p>
+      <p class="text-center small mt-2"><a href="admin.html" class="text-muted text-decoration-none">Admin View</a></p>
     </div>
 
     <!-- CONFIRMATION -->
     <div id="confirmScreen" class="d-none text-center py-5">
       <div class="display-4 mb-3">🍞</div>
       <h2>Order Received!</h2>
-      <p id="confirmMsg" class="text-muted"></p>
-      <div class="card text-start mb-3">
+      <p id="confirmMsg" class="text-muted mb-1"></p>
+      <p class="small text-muted">Order # <span id="confirmOrderNum" class="fw-bold"></span></p>
+
+      <div id="venmoConfirmCard" class="card text-start mb-3 d-none">
         <div class="card-body">
-          <h3 class="h6 text-uppercase text-muted">Complete Payment</h3>
+          <h3 class="h6 text-uppercase text-muted">Complete Payment with Venmo</h3>
+          <p class="mb-2">Total due: <strong id="venmoAmount"></strong></p>
           <a id="venmoLink" class="btn btn-dark w-100 mb-2" href="#" target="_blank">Pay with Venmo</a>
-          <p class="small text-muted mb-0">Or bring cash at pickup/delivery. Please include your name in the Venmo note.</p>
+          <p class="small text-muted mb-0">Your order number is already included in the payment note.</p>
         </div>
       </div>
+
+      <div id="cashConfirmCard" class="card text-start mb-3 d-none">
+        <div class="card-body">
+          <h3 class="h6 text-uppercase text-muted">Pay with Cash</h3>
+          <p class="mb-0">Please have <strong id="cashAmount"></strong> ready at pickup/delivery.</p>
+        </div>
+      </div>
+
       <button class="btn btn-outline-secondary" onclick="location.reload()">Place Another Order</button>
       <p class="text-center small mt-4"><a href="admin.html" class="text-muted text-decoration-none">Admin View</a></p>
     </div>
 
   </div>
   <div class="mb-5"></div>
+</div>
+
+<div id="stickyTotalBar" class="d-none position-fixed bottom-0 start-0 end-0 bg-dark text-white py-2 px-3 d-flex justify-content-between align-items-center">
+  <span id="stickyItemCount" class="small">0 items</span>
+  <span id="stickyTotal" class="fw-bold">$0.00</span>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
