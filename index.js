@@ -188,7 +188,7 @@ function renderProducts() {
               <span class="form-control text-center px-0" id="qty-${p.id}">0</span>
               <button class="btn btn-outline-secondary" type="button" onclick="changeQty('${p.id}', 1)"><i class="bi bi-plus"></i></button>
             </div>
-            <div class="small fw-bold mt-1">$${Number(p.price).toFixed(2)} <span class="text-muted fw-normal">${esc(p.unit||'')}</span></div>
+            <div class="small fw-bold mt-3">$${Number(p.price).toFixed(2)} <span class="text-muted fw-normal">${esc(p.unit||'')}</span></div>
             ${optionsWrapHtml}
           </div>
         </div>
@@ -542,9 +542,5 @@ async function submitOrder() {
 window.addEventListener('pageshow', (event) => {
   if (event.persisted) location.reload();
 });
-
-window.addEventListener('scroll', () => {
-  document.getElementById('pageHeader').classList.toggle('collapsed', window.scrollY > 24);
-}, { passive: true });
 
 init();
