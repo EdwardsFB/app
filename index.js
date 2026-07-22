@@ -6,6 +6,7 @@ let currentFulfillment = null;
 let currentStep = 1;
 let hasOrderedBefore = null;
 let paymentMethod = null;
+let appliedDiscountPct = 0;
 const VENMO_HANDLE = 'edwardsfamilybakery';
 
 async function init() {
@@ -265,6 +266,24 @@ function formatDateHuman(dateStr) {
   return dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 }
 
+function applyDiscountCode() {
+  const input = document.getElementById('discountCodeInput');
+  const msg = document.getElementById('discountCodeMsg');
+  const code = input.value.trim().toUpperCase();
+  if (!code) { appliedDiscountPct = 0; msg.className = 'small mt-1 text-danger'; msg.textContent = 'Please enter a code.'; renderReview(); return; }
+  const match = (settings.discountCodes || []).find(d => (d.code||'').toUpperCase() === code);
+  if (!match) {
+    appliedDiscountPct = 0;
+    msg.className = 'small mt-1 text-danger';
+    msg.textContent = "That code isn't valid.";
+  } else {
+    appliedDiscountPct = Number(match.discountPct) || 0;
+    msg.className = 'small mt-1 text-success';
+    msg.textContent = `Code applied — ${appliedDiscountPct}% off!`;
+  }
+  renderReview();
+}
+
 function renderReview() {
   let html = '', total = 0;
   products.forEach(p => {
@@ -300,7 +319,11 @@ function renderReview() {
   }
   document.getElementById('reviewContact').innerHTML = contactHtml;
 
-  document.getElementById('reviewTotal').textContent = '$' + total.toFixed(2);
+  const discountAmt = total * (appliedDiscountPct / 100);
+  const finalTotal = total - discountAmt;
+  document.getElementById('reviewDiscountRow').classList.toggle('d-none', appliedDiscountPct === 0);
+  document.getElementById('reviewDiscountAmt').textContent = '-$' + discountAmt.toFixed(2);
+  document.getElementById('reviewTotal').textContent = '$' + finalTotal.toFixed(2);
 }
 
 // ══════════════════════════════════════════
@@ -448,6 +471,7 @@ async function submitOrder() {
       first, last, phone, items, fulfillment: currentFulfillment,
       street, city, state, zip, date, notes,
       payment: paymentMethod, paymentStatus: 'unpaid', fulfillmentStatus: 'pending',
+      discountPct: appliedDiscountPct,
       products
     });
     if (error) { errEl.textContent = error; return; }

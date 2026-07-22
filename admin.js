@@ -7,7 +7,7 @@ let products = [], orders = [], customers = [], settings = {};
 let currentAdminTab = 'home';
 let currentOrderFilter = 'all';
 let editingOrderId = null, editingProductId = null, editingCustomerRecordId = null;
-let omQty = {}, omDiscountType = 'none', omCustomerMode = 'new', omExistingList = [];
+let omQty = {}, omOptions = {}, omDiscountType = 'none', omCustomerMode = 'new', omExistingList = [];
 let dragProductId = null;
 let customerSortCol = 'lastName', customerSortDir = 'asc';
 let byProductSortCol = 'qty', byProductSortDir = 'desc';
@@ -587,7 +587,15 @@ function openOrderModal(id) {
   editingOrderId = id || null;
   const order = id ? orders.find(o=>o.id===id) : null;
   omQty = {};
-  products.forEach(p => omQty[p.id] = order ? ((order.items||[]).find(i=>i.productId===p.id)?.qty || 0) : 0);
+  omOptions = {};
+  products.forEach(p => {
+    const existingItem = order ? (order.items||[]).find(i=>i.productId===p.id) : null;
+    omQty[p.id] = existingItem ? (existingItem.qty || 0) : 0;
+    omOptions[p.id] = {};
+    if (existingItem && existingItem.selectedOptions) {
+      existingItem.selectedOptions.forEach(o => omOptions[p.id][o.name] = o.price);
+    }
+  });
   const fulfillment = order ? order.fulfillment : 'pickup';
 
   document.getElementById('orderModalTitle').textContent = order ? 'Edit Order' : 'Add Order';
@@ -633,17 +641,29 @@ function openOrderModal(id) {
     const existingItem = order ? (order.items||[]).find(i=>i.productId===p.id) : null;
     const displayPrice = (existingItem && existingItem.price !== undefined) ? existingItem.price : p.price;
     const qty = omQty[p.id] || 0;
+    const options = getProductOptions(p);
+    const optionsHtml = options.map(opt => `
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="om-opt-${p.id}-${esc(opt.name)}" ${omOptions[p.id] && omOptions[p.id][opt.name] !== undefined ? 'checked' : ''}
+          onchange="toggleOmOption('${p.id}', '${esc(opt.name)}', ${opt.price}, this.checked)" ${isCompleted ? 'disabled' : ''}>
+        <label class="form-check-label small" for="om-opt-${p.id}-${esc(opt.name)}">${esc(opt.name)} (+$${Number(opt.price).toFixed(2)} ea)</label>
+      </div>
+    `).join('');
+    const optionsWrapHtml = options.length ? `<div id="om-opts-wrap-${p.id}" class="${qty ? '' : 'd-none'} mt-1">${optionsHtml}</div>` : '';
     const qtyControl = isCompleted
       ? `<div class="fw-bold text-end" style="width:130px;">${qty}</div>`
       : `<div class="input-group" style="width:130px;">
           <button class="btn btn-outline-secondary" type="button" style="border-color:#ced4da;" onclick="adjustOmQty('${p.id}',-1)"><i class="bi bi-dash-lg"></i></button>
           <input type="number" min="0" class="form-control text-center px-0" id="om-qty-${p.id}" value="${qty}"
-            oninput="omQty['${p.id}']=parseInt(this.value)||0; updateOMTotal();"/>
+            oninput="omQty['${p.id}']=parseInt(this.value)||0; updateOmOptionsVisibility('${p.id}'); updateOMTotal();"/>
           <button class="btn btn-outline-secondary" type="button" style="border-color:#ced4da;" onclick="adjustOmQty('${p.id}',1)"><i class="bi bi-plus-lg"></i></button>
         </div>`;
-    return `<li class="list-group-item d-flex justify-content-between align-items-center">
-      <div><div class="fw-bold">${esc(p.name)}</div><div class="small text-muted">$${Number(displayPrice).toFixed(2)} ${esc(p.unit||'')}</div></div>
-      ${qtyControl}
+    return `<li class="list-group-item">
+      <div class="d-flex justify-content-between align-items-center">
+        <div><div class="fw-bold">${esc(p.name)}</div><div class="small text-muted">$${Number(displayPrice).toFixed(2)} ${esc(p.unit||'')}</div></div>
+        ${qtyControl}
+      </div>
+      ${optionsWrapHtml}
     </li>`;
   }).join('') + `</ul>`;
 
@@ -654,12 +674,40 @@ function openOrderModal(id) {
 function adjustOmQty(productId, delta) {
   omQty[productId] = Math.max(0, (omQty[productId]||0) + delta);
   document.getElementById('om-qty-'+productId).value = omQty[productId];
+  updateOmOptionsVisibility(productId);
   updateOMTotal();
+}
+
+function updateOmOptionsVisibility(productId) {
+  const wrap = document.getElementById('om-opts-wrap-'+productId);
+  if (!wrap) return;
+  const hasQty = (omQty[productId]||0) > 0;
+  wrap.classList.toggle('d-none', !hasQty);
+  if (!hasQty) {
+    omOptions[productId] = {};
+    wrap.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+  }
+}
+
+function toggleOmOption(productId, optionName, optionPrice, checked) {
+  if (!omOptions[productId]) omOptions[productId] = {};
+  if (checked) omOptions[productId][optionName] = optionPrice;
+  else delete omOptions[productId][optionName];
+  updateOMTotal();
+}
+
+function getOmSelectedOptionsFor(productId) {
+  const opts = omOptions[productId] || {};
+  return Object.keys(opts).map(name => ({ name, price: opts[name] }));
 }
 
 function updateOMTotal() {
   let subtotal = 0;
-  products.forEach(p => subtotal += (omQty[p.id]||0) * p.price);
+  products.forEach(p => {
+    const qty = omQty[p.id]||0;
+    const optionsUnitPrice = getOmSelectedOptionsFor(p.id).reduce((s,o) => s + o.price, 0);
+    subtotal += qty * (p.price + optionsUnitPrice);
+  });
   const pct = omDiscountPct();
   const discountAmt = subtotal * (pct/100);
   document.getElementById('om-subtotal').textContent = '$'+subtotal.toFixed(2);
@@ -673,7 +721,7 @@ async function saveOrderFromModal() {
   const first = document.getElementById('om-first').value.trim();
   const last = document.getElementById('om-last').value.trim();
   const phone = document.getElementById('om-phone').value.trim();
-  const currentItems = products.filter(p => (omQty[p.id]||0) > 0).map(p => ({ productId:p.id, qty:omQty[p.id] }));
+  const currentItems = products.filter(p => (omQty[p.id]||0) > 0).map(p => ({ productId:p.id, qty:omQty[p.id], selectedOptions: getOmSelectedOptionsFor(p.id) }));
   // If this order has an existing line item for a product that's since been deleted from the
   // catalog, carry it forward unchanged rather than silently dropping it on save.
   const existingOrderForSave = editingOrderId ? orders.find(o=>o.id===editingOrderId) : null;
@@ -1178,6 +1226,7 @@ function openRouteMap() {
 
 // DAYS_OF_WEEK now lives in shared.js so index.js can use it too
 let settingsLogoUris = {}; // holds any newly-picked logos this session, keyed by slot, or '' if removed
+let settingsDiscountCodes = [];
 
 const LOGO_SLOTS = [
   { key: 'logoAdminSidebar', label: 'Admin — Left Sidebar' },
@@ -1190,6 +1239,7 @@ function renderSettingsTab() {
   const pickupDays = (settings.pickupDays || '').split(',').filter(Boolean);
   const deliveryDays = (settings.deliveryDays || '').split(',').filter(Boolean);
   settingsLogoUris = {}; // holds any newly-picked logos this session, keyed by slot
+  settingsDiscountCodes = (settings.discountCodes || []).map(d => ({ code: d.code || '', discountPct: d.discountPct || 0 }));
 
   function dayCheckboxes(groupId, selectedDays) {
     return DAYS_OF_WEEK.map(day => `
@@ -1203,14 +1253,16 @@ function renderSettingsTab() {
   function logoSlotHtml(slot) {
     const current = settings[slot.key] || LOGO_DATA_URI || '';
     return `
-      <div class="col-md-6 mb-3">
-        <div class="border rounded p-3 h-100">
-          <div class="small fw-bold mb-2">${esc(slot.label)}</div>
-          <img id="settings-logo-preview-${slot.key}" src="${current}" style="max-height:60px; display:block; margin-bottom:10px;" alt="${esc(slot.label)} logo"/>
-          <input type="file" id="settings-logo-input-${slot.key}" accept="image/*" class="d-none" onchange="handleSettingsLogoUpload(event, '${slot.key}')"/>
-          <button class="btn btn-outline-secondary btn-sm me-2" onclick="document.getElementById('settings-logo-input-${slot.key}').click()">Choose Photo</button>
-          <button class="btn btn-outline-danger btn-sm" onclick="removeSettingsLogo('${slot.key}')">Remove</button>
-          <div id="settings-logo-status-${slot.key}" class="small text-muted mt-2"></div>
+      <div class="col">
+        <div class="card h-100 shadow-sm efb-bg-light">
+          <div class="card-body">
+            <div class="small fw-bold mb-2">${esc(slot.label)}</div>
+            <img id="settings-logo-preview-${slot.key}" src="${current}" style="max-height:60px; display:block; margin-bottom:10px;" alt="${esc(slot.label)} logo"/>
+            <input type="file" id="settings-logo-input-${slot.key}" accept="image/*" class="d-none" onchange="handleSettingsLogoUpload(event, '${slot.key}')"/>
+            <button class="btn btn-outline-secondary btn-sm me-2" onclick="document.getElementById('settings-logo-input-${slot.key}').click()">Choose Photo</button>
+            <button class="btn btn-outline-danger btn-sm" onclick="removeSettingsLogo('${slot.key}')">Remove</button>
+            <div id="settings-logo-status-${slot.key}" class="small text-muted mt-2"></div>
+          </div>
         </div>
       </div>`;
   }
@@ -1234,11 +1286,20 @@ function renderSettingsTab() {
       <div class="card-body">
         <h5 class="text-muted mb-3">Logos</h5>
         <p class="small text-muted">Each spot has its own logo, in case you ever want them different. Upload once per spot below.</p>
-        <div class="row">${LOGO_SLOTS.map(logoSlotHtml).join('')}</div>
+        <div class="row row-cols-1 row-cols-md-2 g-3">${LOGO_SLOTS.map(logoSlotHtml).join('')}</div>
+      </div>
+    </div>
+    <div class="card mb-3 shadow-sm">
+      <div class="card-body">
+        <h5 class="text-muted mb-3">Discount Codes</h5>
+        <p class="small text-muted">Codes customers can enter at checkout for a percentage off their whole order. Codes aren't case-sensitive.</p>
+        <div id="settings-discount-list"></div>
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="settings-discount-add-btn" onclick="addSettingsDiscountRow()">Add Code</button>
       </div>
     </div>
     <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
   `;
+  renderSettingsDiscountRows();
 }
 
 async function handleSettingsLogoUpload(event, key) {
@@ -1263,12 +1324,43 @@ function removeSettingsLogo(key) {
   document.getElementById('settings-logo-status-'+key).textContent = 'Logo will be removed on Save (falls back to the default).';
 }
 
+function renderSettingsDiscountRows() {
+  document.getElementById('settings-discount-list').innerHTML = settingsDiscountCodes.map((d, idx) => `
+    <div class="row g-2 mb-2 align-items-center">
+      <div class="col form-floating"><input id="settings-discount-code-${idx}" class="form-control" placeholder="Code" value="${(d.code||'').replace(/"/g,'&quot;')}" oninput="settingsDiscountCodes[${idx}].code = this.value; updateSettingsDiscountSaveState();"/><label for="settings-discount-code-${idx}">Code</label></div>
+      <div class="col-4 form-floating"><input id="settings-discount-pct-${idx}" class="form-control" type="number" step="1" placeholder="Percent Off" value="${d.discountPct ?? ''}" oninput="settingsDiscountCodes[${idx}].discountPct = parseFloat(this.value)||0; updateSettingsDiscountSaveState();"/><label for="settings-discount-pct-${idx}">Percent Off</label></div>
+      <div class="col-auto"><button type="button" class="btn btn-outline-danger btn-sm" onclick="removeSettingsDiscountRow(${idx})"><i class="bi bi-x-lg"></i></button></div>
+    </div>
+  `).join('');
+  updateSettingsDiscountSaveState();
+}
+
+function addSettingsDiscountRow() {
+  settingsDiscountCodes.push({ code: '', discountPct: 0 });
+  renderSettingsDiscountRows();
+}
+
+function removeSettingsDiscountRow(idx) {
+  settingsDiscountCodes.splice(idx, 1);
+  renderSettingsDiscountRows();
+}
+
+function updateSettingsDiscountSaveState() {
+  const saveBtn = document.querySelector('#tab-settings button.btn-primary');
+  if (!saveBtn) return;
+  const hasIncomplete = settingsDiscountCodes.some(d => !(d.code||'').trim() || !(Number(d.discountPct) > 0 && Number(d.discountPct) <= 100));
+  saveBtn.disabled = hasIncomplete;
+  saveBtn.title = hasIncomplete ? 'Every discount code needs a code and a percent off between 1 and 100 before you can save.' : '';
+}
+
 async function saveSettings() {
   const pickupDays = DAYS_OF_WEEK.filter(day => document.getElementById(`pickup-${day}`).checked);
   const deliveryDays = DAYS_OF_WEEK.filter(day => document.getElementById(`delivery-${day}`).checked);
   const data = {
     pickupDays: pickupDays.join(','),
     deliveryDays: deliveryDays.join(','),
+    discountCodes: settingsDiscountCodes.filter(d => (d.code||'').trim() && Number(d.discountPct) > 0)
+      .map(d => ({ code: d.code.trim().toUpperCase(), discountPct: Number(d.discountPct) })),
   };
   LOGO_SLOTS.forEach(slot => {
     if (settingsLogoUris[slot.key] !== undefined) data[slot.key] = settingsLogoUris[slot.key];
@@ -1358,11 +1450,20 @@ let pmOptions = [];
 function renderProductOptionRows() {
   document.getElementById('pm-options-list').innerHTML = pmOptions.map((opt, idx) => `
     <div class="row g-2 mb-2 align-items-center">
-      <div class="col form-floating"><input id="pm-opt-name-${idx}" class="form-control" placeholder="Name" value="${(opt.name||'').replace(/"/g,'&quot;')}" oninput="pmOptions[${idx}].name = this.value"/><label for="pm-opt-name-${idx}">Name</label></div>
-      <div class="col-4 form-floating"><input id="pm-opt-price-${idx}" class="form-control" type="number" step="0.01" placeholder="Price" value="${opt.price ?? ''}" oninput="pmOptions[${idx}].price = parseFloat(this.value)||0"/><label for="pm-opt-price-${idx}">Price ($)</label></div>
+      <div class="col form-floating"><input id="pm-opt-name-${idx}" class="form-control" placeholder="Name" value="${(opt.name||'').replace(/"/g,'&quot;')}" oninput="pmOptions[${idx}].name = this.value; updateProductModalSaveState();"/><label for="pm-opt-name-${idx}">Name</label></div>
+      <div class="col-4 form-floating"><input id="pm-opt-price-${idx}" class="form-control" type="number" step="0.01" placeholder="Price" value="${opt.price ?? ''}" oninput="pmOptions[${idx}].price = parseFloat(this.value)||0; updateProductModalSaveState();"/><label for="pm-opt-price-${idx}">Price ($)</label></div>
       <div class="col-auto"><button type="button" class="btn btn-outline-danger btn-sm" onclick="removeProductOptionRow(${idx})"><i class="bi bi-x-lg"></i></button></div>
     </div>
   `).join('');
+  updateProductModalSaveState();
+}
+
+function updateProductModalSaveState() {
+  const saveBtn = document.getElementById('pm-save-btn');
+  if (!saveBtn) return;
+  const hasIncompleteOption = pmOptions.some(o => !(o.name||'').trim() || !(Number(o.price) > 0));
+  saveBtn.disabled = hasIncompleteOption;
+  saveBtn.title = hasIncompleteOption ? 'Every option needs both a name and a price above $0 before you can save.' : '';
 }
 
 function addProductOptionRow() {
