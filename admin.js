@@ -391,12 +391,7 @@ function renderOrdersTab() {
   renderOrdersList();
 }
 
-function getOrderNumberMap() {
-  const sorted = [...orders].sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
-  const map = new Map();
-  sorted.forEach((o,i) => map.set(o.id, i+1));
-  return map;
-}
+// getOrderNumberMap now lives in shared.js so index.js can use the same numbering
 
 let orderSortCol = 'createdAt', orderSortDir = 'desc';
 function sortOrdersBy(col) {
@@ -428,7 +423,7 @@ function renderOrdersList() {
 
   const el = document.getElementById('ordersList');
   if (!list.length) { el.innerHTML = '<div class="text-center text-muted py-5">No orders here.</div>'; return; }
-  const numberMap = getOrderNumberMap();
+  const numberMap = getOrderNumberMap(orders);
 
   list.sort((a,b) => {
     const av = getOrderSortValue(a, orderSortCol, numberMap), bv = getOrderSortValue(b, orderSortCol, numberMap);

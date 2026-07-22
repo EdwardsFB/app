@@ -53,6 +53,7 @@ function setOrderedBefore(val) {
   document.getElementById('btn-ordered-no').classList.toggle('active', val === false);
   document.getElementById('lookupSection').classList.toggle('d-none', !val);
   document.getElementById('lookupMsg').textContent = '';
+  document.getElementById('foundExistingMsg').innerHTML = '';
   if (val) {
     // Yes — wait for a lookup attempt before showing the (likely pre-filled) fields
     document.getElementById('contactFieldsSection').classList.add('d-none');
@@ -232,7 +233,9 @@ function renderReview() {
   const typeLabel = currentFulfillment === 'delivery' ? 'Delivery' : 'Pickup';
   const humanDate = formatDateHuman(date);
 
-  let contactHtml = `<div>${typeLabel}${humanDate ? ' on ' + esc(humanDate) : ''}</div>`;
+  let contactHtml = `<div>${esc(first)} ${esc(last)}</div><div>${esc(phone)}</div>`;
+  if (email) contactHtml += `<div>${esc(email)}</div>`;
+  contactHtml += `<div class="mt-2">${typeLabel}${humanDate ? ' on ' + esc(humanDate) : ''}</div>`;
   if (currentFulfillment === 'delivery') {
     const street = document.getElementById('cf-street').value.trim();
     const city = document.getElementById('cf-city').value.trim();
@@ -240,8 +243,6 @@ function renderReview() {
     const zip = document.getElementById('cf-zip').value.trim();
     contactHtml += `<div>${esc(street)}, ${esc(city)}, ${esc(state)} ${esc(zip)}</div>`;
   }
-  contactHtml += `<div class="mt-2">${esc(first)} ${esc(last)}</div><div>${esc(phone)}</div>`;
-  if (email) contactHtml += `<div>${esc(email)}</div>`;
   document.getElementById('reviewContact').innerHTML = contactHtml;
 
   document.getElementById('reviewTotal').textContent = '$' + total.toFixed(2);
@@ -312,6 +313,8 @@ function validateStep(step) {
   }
   if (step === 3) {
     if (!currentFulfillment) return 'Please choose Pickup or Delivery.';
+    const date = document.getElementById('cf-date').value;
+    if (!date) return `Please choose a ${currentFulfillment === 'delivery' ? 'delivery' : 'pickup'} date.`;
     if (currentFulfillment === 'delivery') {
       const street = document.getElementById('cf-street').value.trim();
       const city = document.getElementById('cf-city').value.trim();
@@ -401,13 +404,13 @@ async function submitOrder() {
     const newOrder = { id: 'o' + Date.now(), createdAt: Date.now(), source: 'customer', ...orderData };
     await persistNewOrder(newOrder, customers, email);
 
-    const orderNum = newOrder.id.slice(-6);
+    const orderNum = getOrderNumber(newOrder, [...orders, newOrder]);
     document.getElementById('confirmMsg').textContent = `Thanks, ${first}!`;
     document.getElementById('confirmOrderNum').textContent = orderNum;
 
     if (paymentMethod === 'venmo') {
       document.getElementById('venmoAmount').textContent = '$' + newOrder.total.toFixed(2);
-      const note = encodeURIComponent(`Edwards Family Bakery, Order #${orderNum}`);
+      const note = `Edwards-Family-Bakery-Order-${orderNum}`;
       document.getElementById('venmoLink').href = `https://venmo.com/${VENMO_HANDLE}?txn=pay&amount=${newOrder.total.toFixed(2)}&note=${note}`;
       document.getElementById('venmoConfirmCard').classList.remove('d-none');
       document.getElementById('cashConfirmCard').classList.add('d-none');

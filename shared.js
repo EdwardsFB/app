@@ -31,6 +31,18 @@ const LOGO_DATA_URI = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA/AAAAFoCAY
 
 const DAYS_OF_WEEK = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
+function getOrderNumberMap(allOrders) {
+  const sorted = [...allOrders].sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+  const map = new Map();
+  sorted.forEach((o,i) => map.set(o.id, i+1));
+  return map;
+}
+
+function getOrderNumber(order, allOrders) {
+  const n = getOrderNumberMap(allOrders).get(order.id);
+  return n === undefined ? '???' : String(n).padStart(3, '0');
+}
+
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
