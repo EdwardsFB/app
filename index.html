@@ -9,7 +9,15 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <style>
   .form-floating > label { color: #6c757d !important; }
-  input[type="date"] { color: #adb5bd; }
+  input[type="date"] { color: #adb5bd; text-align: left; }
+  input[type="date"]::-webkit-date-and-time-value { text-align: left; }
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0px 1000px #fff inset !important;
+    -webkit-text-fill-color: #212529 !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
   input[type="date"].has-value { color: #212529; }
   input[type="date"]::-webkit-datetime-edit-text,
   input[type="date"]::-webkit-datetime-edit-month-field,
@@ -57,6 +65,7 @@
         <div class="step-circle" data-step="4">4</div>
       </div>
       <div class="text-center small text-muted mb-4" id="stepperLabel">Step 1 of 4 — Your Info</div>
+      <p class="text-center small mb-3"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
 
       <!-- STEP 1: Contact Info -->
       <div id="step1" class="wizard-step">
@@ -76,7 +85,7 @@
               <input id="lookupPhone" type="tel" class="form-control" oninput="formatPhoneInput(this)" placeholder="Phone Number"/>
               <label for="lookupPhone">Enter your phone number</label>
             </div>
-            <button class="btn btn-outline-secondary" onclick="lookupReturningCustomer()">Find My Info</button>
+            <button class="btn btn-outline-secondary" onclick="lookupReturningCustomer()" aria-label="Find My Info"><i class="bi bi-search"></i></button>
           </div>
           <div id="lookupMsg" class="small mt-2"></div>
         </div>
@@ -93,7 +102,7 @@
         </div>
 
         <div id="step1Error" class="text-danger small mb-2"></div>
-        <button class="btn btn-dark w-100" onclick="goToStep(2)">Continue</button>
+        <button class="btn btn-primary w-100" onclick="goToStep(2)" id="step1-continue">Continue</button>
       </div>
 
       <!-- STEP 2: Products -->
@@ -103,7 +112,7 @@
         <div id="step2Error" class="text-danger small mb-2"></div>
         <div class="d-flex gap-2 mb-5 pb-4">
           <button class="btn btn-outline-secondary" onclick="goToStep(1)">Back</button>
-          <button class="btn btn-dark flex-fill" onclick="goToStep(3)">Continue</button>
+          <button class="btn btn-primary flex-fill" onclick="goToStep(3)" id="step2-continue">Continue</button>
         </div>
       </div>
 
@@ -134,7 +143,7 @@
         <div id="step3Error" class="text-danger small mb-2"></div>
         <div class="d-flex gap-2">
           <button class="btn btn-outline-secondary" onclick="goToStep(2)">Back</button>
-          <button class="btn btn-dark flex-fill" onclick="goToStep(4)">Continue</button>
+          <button class="btn btn-primary flex-fill" onclick="goToStep(4)" id="step3-continue">Continue</button>
         </div>
       </div>
 
@@ -176,11 +185,10 @@
         <div id="step4Error" class="text-danger small mb-2"></div>
         <div class="d-flex gap-2 mb-4">
           <button class="btn btn-outline-secondary" onclick="goToStep(3)">Back</button>
-          <button class="btn btn-dark flex-fill" onclick="submitOrder()">Place Order</button>
+          <button class="btn btn-primary flex-fill" onclick="submitOrder()" id="step4-submit">Place Order</button>
         </div>
       </div>
 
-      <p class="text-center small mt-2"><a href="admin.html" class="text-muted text-decoration-none">Admin View</a></p>
     </div>
 
     <!-- CONFIRMATION -->
@@ -207,14 +215,13 @@
       </div>
 
       <button class="btn btn-outline-secondary" onclick="location.reload()">Place Another Order</button>
-      <p class="text-center small mt-4"><a href="admin.html" class="text-muted text-decoration-none">Admin View</a></p>
     </div>
 
   </div>
   <div class="mb-5"></div>
 </div>
 
-<div id="stickyTotalBar" class="d-none position-fixed bottom-0 start-0 end-0 bg-dark text-white py-2 px-3 d-flex justify-content-between align-items-center">
+<div id="stickyTotalBar" class="d-none position-fixed bottom-0 start-0 end-0 bg-primary text-white py-2 px-3 d-flex justify-content-between align-items-center">
   <span id="stickyItemCount" class="small">0 items</span>
   <span id="stickyTotal" class="fw-bold">$0.00</span>
 </div>

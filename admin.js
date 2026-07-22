@@ -284,9 +284,10 @@ function renderHomeTab() {
   const container = document.getElementById('tab-home');
   if (!orders.length) { container.innerHTML = '<div class="text-center text-muted py-5"><h5>No data yet</h5></div>'; return; }
 
-  const totalRevenue = orders.reduce((s,o)=>s+Number(o.total),0);
-  const totalProfit = orders.reduce((s,o)=>s+Number(o.profit||0),0);
-  const avgOrder = totalRevenue / orders.length;
+  const paidOrders = orders.filter(o => o.paymentStatus === 'paid');
+  const totalRevenue = paidOrders.reduce((s,o)=>s+Number(o.total),0);
+  const totalProfit = paidOrders.reduce((s,o)=>s+Number(o.profit||0),0);
+  const avgOrder = paidOrders.length ? totalRevenue / paidOrders.length : 0;
   const avgMargin = totalRevenue ? (totalProfit/totalRevenue)*100 : 0;
   const unpaidCount = orders.filter(o=>o.paymentStatus==='unpaid').length;
   const newCount = orders.filter(o=>o.fulfillmentStatus==='pending').length;
@@ -307,7 +308,7 @@ function renderHomeTab() {
   ];
 
   const paymentStats = { venmo:0, cash:0 };
-  orders.forEach(o => { paymentStats[o.payment] = (paymentStats[o.payment]||0) + Number(o.total); });
+  paidOrders.forEach(o => { paymentStats[o.payment] = (paymentStats[o.payment]||0) + Number(o.total); });
   cards.push(['Total Revenue', '$'+totalRevenue.toFixed(0), '']);
   cards.push(['Venmo', '$'+(paymentStats.venmo||0).toFixed(0), '']);
   cards.push(['Cash', '$'+(paymentStats.cash||0).toFixed(0), '']);
@@ -342,11 +343,14 @@ function sortByProductBy(col) {
 function renderByProductTable() {
   const stats = {};
   products.forEach(p => stats[p.id] = { name:p.name, qty:0, revenue:0, cost:0 });
-  orders.forEach(o => (o.items||[]).forEach(i => {
+  orders.filter(o => o.paymentStatus === 'paid').forEach(o => (o.items||[]).forEach(i => {
     if (stats[i.productId]) {
       const p = products.find(p=>p.id===i.productId);
+      const price = i.price !== undefined ? i.price : (p ? p.price : 0);
+      const cost = i.cost !== undefined ? i.cost : (p ? p.cost : 0);
       stats[i.productId].qty += i.qty;
-      if (p) { stats[i.productId].revenue += p.price*i.qty; stats[i.productId].cost += p.cost*i.qty; }
+      stats[i.productId].revenue += price*i.qty;
+      stats[i.productId].cost += cost*i.qty;
     }
   }));
   let rowsData = Object.values(stats).filter(s=>s.qty>0).map(s => {
@@ -578,8 +582,9 @@ function openOrderModal(id) {
   document.getElementById('om-first').value = order ? order.firstName : '';
   document.getElementById('om-last').value = order ? order.lastName : '';
   document.getElementById('om-phone').value = order ? order.phone : '';
-  document.getElementById('om-date').value = order ? order.date : '';
-  document.getElementById('om-date').classList.toggle('has-value', !!(order && order.date));
+  const cleanDate = order && order.date ? (String(order.date).match(/\d{4}-\d{2}-\d{2}/) || [''])[0] : '';
+  document.getElementById('om-date').value = cleanDate;
+  document.getElementById('om-date').classList.toggle('has-value', !!cleanDate);
   document.getElementById('om-fulfillment').value = fulfillment;
   document.getElementById('om-payment').value = order ? order.payment : 'venmo';
   if (order) {

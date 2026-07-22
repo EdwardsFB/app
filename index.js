@@ -19,7 +19,9 @@ async function init() {
   }
   applyLogo();
   renderProducts();
+  wireLiveValidation();
   updateStepperUI(1);
+  updateContinueState(1);
   document.getElementById('loading').classList.add('d-none');
   document.getElementById('app').classList.remove('d-none');
   setTimeout(() => window.scrollTo(0, 1), 50);
@@ -30,6 +32,12 @@ function applyLogo() {
   document.getElementById('logoImg').src = LOGO_DATA_URI;
   document.getElementById('logoImg').classList.remove('d-none');
   document.getElementById('brandText').classList.add('d-none');
+}
+
+function cancelOrder() {
+  if (confirm('Cancel this order and start over? Anything you\'ve entered will be lost.')) {
+    location.reload();
+  }
 }
 
 // ══════════════════════════════════════════
@@ -50,6 +58,7 @@ function setOrderedBefore(val) {
     ['cf-first','cf-last','cf-phone','cf-email'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('contactFieldsSection').classList.remove('d-none');
   }
+  updateContinueState(1);
 }
 
 function lookupReturningCustomer() {
@@ -68,6 +77,7 @@ function lookupReturningCustomer() {
     document.getElementById('cf-last').value = '';
     document.getElementById('cf-phone').value = phone;
     document.getElementById('cf-email').value = '';
+    updateContinueState(1);
     return;
   }
 
@@ -90,6 +100,8 @@ function lookupReturningCustomer() {
 
   msg.className = 'small mt-2 text-success';
   msg.textContent = `Welcome back, ${match.firstName}! We filled in your info below — feel free to update anything that's changed.`;
+  updateContinueState(1);
+  updateContinueState(3);
 }
 
 // ══════════════════════════════════════════
@@ -125,6 +137,7 @@ function changeQty(id, delta) {
   cQty[id] = Math.max(0, (cQty[id]||0) + delta);
   document.getElementById('qty-'+id).textContent = cQty[id];
   updateStickyTotal();
+  updateContinueState(2);
 }
 
 function updateStickyTotal() {
@@ -154,6 +167,13 @@ function setFulfillment(type) {
 
 function setPaymentMethod(method) { paymentMethod = method; }
 
+function formatDateHuman(dateStr) {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const dateObj = new Date(y, m - 1, d); // local time, avoids UTC-shift-by-a-day issues
+  return dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+}
+
 function renderReview() {
   let html = '', total = 0;
   products.forEach(p => {
@@ -171,19 +191,19 @@ function renderReview() {
   const phone = document.getElementById('cf-phone').value.trim();
   const email = document.getElementById('cf-email').value.trim();
   const date = document.getElementById('cf-date').value;
+  const typeLabel = currentFulfillment === 'delivery' ? 'Delivery' : 'Pickup';
+  const humanDate = formatDateHuman(date);
 
-  let contactHtml = `<div>${esc(first)} ${esc(last)}</div><div>${esc(phone)}</div>`;
-  if (email) contactHtml += `<div>${esc(email)}</div>`;
-  contactHtml += `<div class="mt-1">${currentFulfillment === 'delivery' ? 'Delivery' : 'Pickup'}`;
+  let contactHtml = `<div>${typeLabel}${humanDate ? ' on ' + esc(humanDate) : ''}</div>`;
   if (currentFulfillment === 'delivery') {
     const street = document.getElementById('cf-street').value.trim();
     const city = document.getElementById('cf-city').value.trim();
     const state = document.getElementById('cf-state').value.trim();
     const zip = document.getElementById('cf-zip').value.trim();
-    contactHtml += ` to ${esc(street)}, ${esc(city)}, ${esc(state)} ${esc(zip)}`;
+    contactHtml += `<div>${esc(street)}, ${esc(city)}, ${esc(state)} ${esc(zip)}</div>`;
   }
-  if (date) contactHtml += ` — ${esc(date)}`;
-  contactHtml += `</div>`;
+  contactHtml += `<div class="mt-2">${esc(first)} ${esc(last)}</div><div>${esc(phone)}</div>`;
+  if (email) contactHtml += `<div>${esc(email)}</div>`;
   document.getElementById('reviewContact').innerHTML = contactHtml;
 
   document.getElementById('reviewTotal').textContent = '$' + total.toFixed(2);
@@ -192,6 +212,24 @@ function renderReview() {
 // ══════════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════════
+
+function updateContinueState(step) {
+  const err = validateStep(step);
+  const btnId = step === 4 ? 'step4-submit' : 'step'+step+'-continue';
+  const btn = document.getElementById(btnId);
+  if (btn) btn.disabled = !!err;
+}
+
+function wireLiveValidation() {
+  ['cf-first','cf-last','cf-phone'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => updateContinueState(1));
+  });
+  ['cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => updateContinueState(3));
+  });
+  document.getElementById('rad-pickup').addEventListener('change', () => updateContinueState(3));
+  document.getElementById('rad-delivery').addEventListener('change', () => updateContinueState(3));
+}
 
 function validateStep(step) {
   if (step === 1) {
@@ -236,6 +274,7 @@ function goToStep(step) {
   if (step === 2) updateStickyTotal();
   if (step === 4) renderReview();
   updateStepperUI(step);
+  updateContinueState(step);
   currentStep = step;
   window.scrollTo(0,0);
 }
@@ -299,7 +338,7 @@ async function submitOrder() {
 
   if (paymentMethod === 'venmo') {
     document.getElementById('venmoAmount').textContent = '$' + newOrder.total.toFixed(2);
-    const note = encodeURIComponent(`EFB Order #${orderNum} - ${first} ${last}`);
+    const note = encodeURIComponent(`Edwards Family Bakery, Order #${orderNum}`);
     document.getElementById('venmoLink').href = `https://venmo.com/${VENMO_HANDLE}?txn=pay&amount=${newOrder.total.toFixed(2)}&note=${note}`;
     document.getElementById('venmoConfirmCard').classList.remove('d-none');
     document.getElementById('cashConfirmCard').classList.add('d-none');
