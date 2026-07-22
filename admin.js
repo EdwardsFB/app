@@ -246,7 +246,7 @@ function switchTab(tab) {
   if (tab === 'home') refreshAndRenderTab('home', renderHomeTab);
   if (tab === 'orders') refreshAndRenderTab('orders', renderOrdersTab);
   if (tab === 'customers') refreshAndRenderTab('customers', renderCustomersTab);
-  if (tab === 'production') refreshAndRenderTab('production', renderProductionTab);
+  if (tab === 'production') { productionDateFilter = null; refreshAndRenderTab('production', renderProductionTab); }
   if (tab === 'fulfillment') refreshAndRenderTab('fulfillment', renderFulfillmentTab);
   if (tab === 'products') refreshAndRenderTab('products', renderProductsTab);
   if (tab === 'settings') refreshAndRenderTab('settings', renderSettingsTab);
@@ -283,11 +283,23 @@ function openConfirm(message, callback) {
   confirmCallback = callback;
   confirmModalEl.show();
 }
-function runConfirmCallback() {
+async function runConfirmCallback() {
   const cb = confirmCallback;
-  confirmModalEl.hide();
-  confirmCallback = null;
-  if (cb) cb();
+  if (!cb) { confirmModalEl.hide(); return; }
+  const btn = document.getElementById('confirmModalDeleteBtn');
+  btn.disabled = true;
+  const originalText = btn.textContent;
+  btn.textContent = 'Deleting...';
+  try {
+    await cb();
+    confirmModalEl.hide();
+    confirmCallback = null;
+  } catch (err) {
+    alert('Delete failed: ' + err.message + '\n\nNothing was deleted. Please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
 }
 
 // ══════════════════════════════════════════
@@ -486,9 +498,10 @@ async function updateFulfillmentStatus(id, val) {
 function deleteOrder(id) {
   const o = orders.find(o=>o.id===id);
   openConfirm(`Delete ${o ? o.firstName+' '+o.lastName+"'s order" : 'this order'}? This cannot be undone.`, async () => {
+    await apiWrite('orders','delete',id,null);
     orders = orders.filter(o=>o.id!==id);
     renderOrdersTab();
-    await apiWrite('orders','delete',id,null);
+    showToast('Order deleted.');
   });
 }
 
@@ -978,9 +991,10 @@ function deleteCustomerRow(id) {
   if (!rec) return;
   const fullName = `${rec.firstName} ${rec.lastName}`.trim();
   openConfirm(`Delete this customer record for "${fullName}"? This won't affect any past orders — it only removes the standalone contact card.`, async () => {
+    await apiWrite('customers','delete',id,null);
     customers = customers.filter(c => c.id !== id);
     renderCustomersTab();
-    await apiWrite('customers','delete',id,null);
+    showToast('Customer record deleted.');
   });
 }
 
@@ -1124,7 +1138,7 @@ function renderProductionTab() {
 
   const active = productionDateFilter === 'all' ? allActive : allActive.filter(o => (o.date || '') === productionDateFilter);
 
-  const filterBarHtml = `
+  const filterBarHtml = distinctDates.length < 2 ? '' : `
     <div class="d-flex flex-wrap gap-2 mb-4">
       ${distinctDates.map(d => `<button class="btn btn-sm ${productionDateFilter === d ? 'btn-dark' : 'btn-outline-secondary'}" onclick="setProductionDateFilter('${d}')">${esc(formatProductionDateLabel(d))}</button>`).join('')}
       <button class="btn btn-sm ${productionDateFilter === 'all' ? 'btn-dark' : 'btn-outline-secondary'}" onclick="setProductionDateFilter('all')">All</button>
@@ -1592,9 +1606,10 @@ function removeProductOptionRow(idx) {
 function deleteProductRow(id) {
   const p = products.find(p=>p.id===id); if (!p) return;
   openConfirm(`Delete "${p.name}" from the menu? This won't affect past orders.`, async () => {
+    await apiWrite('products','delete',id,null);
     products = products.filter(pr=>pr.id!==id);
     renderProductsTab();
-    await apiWrite('products','delete',id,null);
+    showToast('Product deleted.');
   });
 }
 async function saveProductFromModal() {

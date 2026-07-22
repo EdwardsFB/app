@@ -21,7 +21,8 @@ async function init() {
   document.getElementById('lookupSection').classList.add('d-none');
   document.getElementById('contactFieldsSection').classList.add('d-none');
   document.getElementById('lookupMsg').textContent = '';
-  document.getElementById('foundExistingMsg').innerHTML = '';
+  const foundMsgEl = document.getElementById('foundExistingMsg');
+  if (foundMsgEl) foundMsgEl.innerHTML = '';
 
   try {
     const data = await apiGetAll();
@@ -65,11 +66,11 @@ function cancelOrder() {
 function contactFieldsHtml() {
   return `
     <div class="row g-2 mb-2">
-      <div class="col form-floating"><input id="cf-first" name="fld-b2" class="form-control" type="text" autocomplete="off" placeholder="First Name" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-first">First Name <span class="text-danger">*</span></label></div>
-      <div class="col form-floating"><input id="cf-last" name="fld-c3" class="form-control" type="text" autocomplete="off" placeholder="Last Name" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-last">Last Name <span class="text-danger">*</span></label></div>
+      <div class="col form-floating"><input id="cf-first" name="fld-b2" class="form-control" type="text" autocomplete="off" placeholder="First Name" oninput="this.classList.toggle('has-value', !!this.value); updateContinueState(1);"/><label for="cf-first">First Name <span class="text-danger">*</span></label></div>
+      <div class="col form-floating"><input id="cf-last" name="fld-c3" class="form-control" type="text" autocomplete="off" placeholder="Last Name" oninput="this.classList.toggle('has-value', !!this.value); updateContinueState(1);"/><label for="cf-last">Last Name <span class="text-danger">*</span></label></div>
     </div>
     <div class="row g-2 mb-2">
-      <div class="col form-floating"><input id="cf-phone" name="fld-d4" class="form-control" type="tel" autocomplete="off" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value);" placeholder="Phone"/><label for="cf-phone">Phone <span class="text-danger">*</span></label></div>
+      <div class="col form-floating"><input id="cf-phone" name="fld-d4" class="form-control" type="tel" autocomplete="off" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value); updateContinueState(1);" onblur="checkForExistingCustomerOnNoPath()" placeholder="Phone"/><label for="cf-phone">Phone <span class="text-danger">*</span></label></div>
       <div class="col form-floating"><input id="cf-email" name="fld-e5" class="form-control" type="email" autocomplete="off" placeholder="Email" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-email">Email</label></div>
     </div>
     <div id="foundExistingMsg" class="small mb-2"></div>
@@ -356,10 +357,6 @@ function updateContinueState(step) {
 }
 
 function wireLiveValidation() {
-  ['cf-first','cf-last','cf-phone'].forEach(id => {
-    document.getElementById(id).addEventListener('input', () => updateContinueState(1));
-  });
-  document.getElementById('cf-phone').addEventListener('blur', checkForExistingCustomerOnNoPath);
   ['cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
     document.getElementById(id).addEventListener('input', () => updateContinueState(3));
   });
