@@ -127,6 +127,55 @@ async function refreshData() {
   customers = data.customers || [];
 }
 
+// Simple grey placeholder shown for any product without a real photo yet.
+const PLACEHOLDER_PHOTO_URI = 'data:image/svg+xml;utf8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="240" viewBox="0 0 400 240"><rect width="400" height="240" fill="#e9ecef"/><text x="200" y="120" font-family="sans-serif" font-size="18" fill="#adb5bd" text-anchor="middle" dominant-baseline="middle">Photo coming soon</text></svg>`);
+
+let pmPhotoDataUri = null; // holds the current product-modal photo (base64), or null/'' for no photo
+
+function compressImageFile(file, maxWidth) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Could not read that file.'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("That file doesn't look like a valid image."));
+      img.onload = () => {
+        const scale = Math.min(1, maxWidth / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleProductPhotoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('pm-photo-status');
+  statusEl.textContent = 'Compressing photo...';
+  try {
+    const compressed = await compressImageFile(file, 800);
+    pmPhotoDataUri = compressed;
+    document.getElementById('pm-photo-preview').src = compressed;
+    statusEl.textContent = 'Photo ready — click Save to keep it.';
+  } catch (err) {
+    statusEl.textContent = 'Could not process that photo: ' + err.message;
+  }
+  event.target.value = ''; // allow re-selecting the same file later
+}
+
+function removeProductPhoto() {
+  pmPhotoDataUri = '';
+  document.getElementById('pm-photo-preview').src = PLACEHOLDER_PHOTO_URI;
+  document.getElementById('pm-photo-status').textContent = 'Photo will be removed on Save.';
+}
+
 function applyLogo() {
   if (!LOGO_DATA_URI) return;
   document.getElementById('logoImg').src = LOGO_DATA_URI;
@@ -1146,6 +1195,9 @@ function openProductModal(id) {
   const isActive = p ? (p.active !== false) : true;
   document.getElementById('pm-active-yes').checked = isActive;
   document.getElementById('pm-active-no').checked = !isActive;
+  pmPhotoDataUri = null; // no change yet — only set if the admin picks/removes a photo this session
+  document.getElementById('pm-photo-preview').src = (p && p.photo) ? p.photo : PLACEHOLDER_PHOTO_URI;
+  document.getElementById('pm-photo-status').textContent = '';
   productModal.show();
 }
 function deleteProductRow(id) {
@@ -1166,6 +1218,7 @@ async function saveProductFromModal() {
     unit: document.getElementById('pm-unit').value.trim(),
     active: document.getElementById('pm-active-yes').checked
   };
+  if (pmPhotoDataUri !== null) data.photo = pmPhotoDataUri; // only touch photo if it was actually changed this session
   if (editingProductId) {
     const p = products.find(p=>p.id===editingProductId);
     Object.assign(p, data);
