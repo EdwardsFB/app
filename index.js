@@ -1,4 +1,5 @@
 let products = [], orders = [], customers = [];
+let settings = {};
 let cQty = {};
 let currentFulfillment = null;
 let currentStep = 1;
@@ -12,6 +13,7 @@ async function init() {
     products = data.products || [];
     orders = data.orders || [];
     customers = data.customers || [];
+    settings = data.settings || {};
   } catch (err) {
     document.getElementById('loading').innerHTML =
       '<div class="text-center text-danger"><p>Could not load the menu right now.</p><p class="small">' + esc(err.message) + '</p></div>';
@@ -28,8 +30,9 @@ async function init() {
 }
 
 function applyLogo() {
-  if (!LOGO_DATA_URI) return;
-  document.getElementById('logoImg').src = LOGO_DATA_URI;
+  const logoSrc = (settings && settings.logo) || LOGO_DATA_URI;
+  if (!logoSrc) return;
+  document.getElementById('logoImg').src = logoSrc;
   document.getElementById('logoImg').classList.remove('d-none');
   document.getElementById('brandText').classList.add('d-none');
 }
@@ -155,11 +158,44 @@ function updateStickyTotal() {
 // STEP 3 — FULFILLMENT
 // ══════════════════════════════════════════
 
+function getUpcomingDatesForDays(allowedDayNames, count) {
+  // Starts from tomorrow, giving at least one day of lead time.
+  const dates = [];
+  const cursor = new Date();
+  cursor.setHours(0, 0, 0, 0);
+  cursor.setDate(cursor.getDate() + 1);
+  let guard = 0;
+  while (dates.length < count && guard < 60) {
+    const dayName = DAYS_OF_WEEK[cursor.getDay()];
+    if (!allowedDayNames.length || allowedDayNames.includes(dayName)) {
+      const y = cursor.getFullYear();
+      const m = String(cursor.getMonth() + 1).padStart(2, '0');
+      const d = String(cursor.getDate()).padStart(2, '0');
+      dates.push(`${y}-${m}-${d}`);
+    }
+    cursor.setDate(cursor.getDate() + 1);
+    guard++;
+  }
+  return dates;
+}
+
+function populateDateOptions(type) {
+  const allowedDaysStr = type === 'delivery' ? (settings.deliveryDays || '') : (settings.pickupDays || '');
+  const allowedDayNames = allowedDaysStr.split(',').filter(Boolean);
+  const dates = getUpcomingDatesForDays(allowedDayNames, 8);
+  const select = document.getElementById('cf-date');
+  const label = type === 'delivery' ? 'delivery' : 'pickup';
+  select.innerHTML = `<option value="" disabled selected>Choose a ${label} date</option>` +
+    dates.map(d => `<option value="${d}">${esc(formatDateHuman(d))}</option>`).join('');
+  select.classList.remove('has-value');
+}
+
 function setFulfillment(type) {
   currentFulfillment = type;
   document.getElementById('fulfillmentDetailsField').classList.remove('d-none');
   document.getElementById('addressField').classList.toggle('d-none', type !== 'delivery');
   document.getElementById('cf-date-label').textContent = type === 'delivery' ? 'Delivery Date' : 'Pickup Date';
+  populateDateOptions(type);
   updateContinueState(3);
 }
 

@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════
 if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
 
-let products = [], orders = [], customers = [];
+let products = [], orders = [], customers = [], settings = {};
 let currentAdminTab = 'home';
 let currentOrderFilter = 'all';
 let editingOrderId = null, editingProductId = null, editingCustomerRecordId = null;
@@ -103,6 +103,7 @@ async function loadAndShowApp() {
     products = data.products || [];
     orders = data.orders || [];
     customers = data.customers || [];
+    settings = data.settings || {};
   } catch (err) {
     document.getElementById('loading').innerHTML =
       '<div class="text-center text-danger"><p>Could not load data.</p><p class="small">'+esc(err.message)+'</p></div>';
@@ -113,7 +114,7 @@ async function loadAndShowApp() {
   document.getElementById('app').classList.remove('d-none');
   document.getElementById('mobileTopbar').classList.remove('d-none');
 
-  const validTabs = ['home','orders','production','fulfillment','customers','products'];
+  const validTabs = ['home','orders','production','fulfillment','customers','products','settings'];
   const hashTab = location.hash.replace('#','');
   switchTab(validTabs.includes(hashTab) ? hashTab : 'home');
   setTimeout(() => window.scrollTo(0, 1), 50);
@@ -124,6 +125,7 @@ async function refreshData() {
   products = data.products || [];
   orders = data.orders || [];
   customers = data.customers || [];
+  settings = data.settings || {};
 }
 
 // Simple grey placeholder shown for any product without a real photo yet.
@@ -187,13 +189,16 @@ function removeProductPhoto() {
 }
 
 function applyLogo() {
-  if (!LOGO_DATA_URI) return;
-  document.getElementById('logoImg').src = LOGO_DATA_URI;
+  const logoSrc = (settings && settings.logo) || LOGO_DATA_URI;
+  if (!logoSrc) return;
+  document.getElementById('logoImg').src = logoSrc;
   document.getElementById('logoImg').classList.remove('d-none');
   document.getElementById('brandText').classList.add('d-none');
-  document.getElementById('mobileLogoImg').src = LOGO_DATA_URI;
+  document.getElementById('mobileLogoImg').src = logoSrc;
   document.getElementById('mobileLogoImg').classList.remove('d-none');
   document.getElementById('mobileBrandText').classList.add('d-none');
+  const passcodeLogo = document.getElementById('passcodeLogoImg');
+  if (passcodeLogo) passcodeLogo.src = logoSrc;
 }
 
 function toggleMobileSidebar() {
@@ -221,10 +226,10 @@ function switchTab(tab) {
     el.classList.toggle('text-white', el.dataset.tab === tab);
     el.classList.toggle('text-white-50', el.dataset.tab !== tab);
   });
-  ['home','orders','production','fulfillment','customers','products'].forEach(t => {
+  ['home','orders','production','fulfillment','customers','products','settings'].forEach(t => {
     document.getElementById('tab-'+t).classList.toggle('d-none', t !== tab);
   });
-  const titles = { home:'Home', orders:'Orders', production:'Production', fulfillment:'Fulfillment', customers:'Customers', products:'Products' };
+  const titles = { home:'Home', orders:'Orders', production:'Production', fulfillment:'Fulfillment', customers:'Customers', products:'Products', settings:'Settings' };
   document.getElementById('pageTitle').textContent = titles[tab];
   document.getElementById('newOrderBtn').classList.toggle('d-none', tab !== 'orders');
   document.getElementById('addCustomerBtn').classList.toggle('d-none', tab !== 'customers');
@@ -238,6 +243,7 @@ function switchTab(tab) {
   if (tab === 'production') refreshAndRenderTab('production', renderProductionTab);
   if (tab === 'fulfillment') refreshAndRenderTab('fulfillment', renderFulfillmentTab);
   if (tab === 'products') refreshAndRenderTab('products', renderProductsTab);
+  if (tab === 'settings') refreshAndRenderTab('settings', renderSettingsTab);
 }
 
 async function refreshAndRenderTab(tab, renderFn) {
@@ -255,6 +261,7 @@ async function refreshAndRenderTab(tab, renderFn) {
         .concat(fresh.orders.filter(o => !pendingIds.has(o.id)));
     }
     customers = fresh.customers || customers;
+    settings = fresh.settings || settings;
   } catch (err) {
     console.error('Could not refresh data for ' + tab, err);
     return;
@@ -1158,6 +1165,110 @@ function openRouteMap() {
 // ══════════════════════════════════════════
 // PRODUCTS
 // ══════════════════════════════════════════
+// ══════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════
+
+// DAYS_OF_WEEK now lives in shared.js so index.js can use it too
+let settingsLogoDataUri = null; // holds a newly-picked logo this session, or null for no change
+
+function renderSettingsTab() {
+  const pickupDays = (settings.pickupDays || '').split(',').filter(Boolean);
+  const deliveryDays = (settings.deliveryDays || '').split(',').filter(Boolean);
+  settingsLogoDataUri = null;
+
+  function dayCheckboxes(groupId, selectedDays) {
+    return DAYS_OF_WEEK.map(day => `
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="${groupId}-${day}" value="${day}" ${selectedDays.includes(day) ? 'checked' : ''}>
+        <label class="form-check-label" for="${groupId}-${day}">${day}</label>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('tab-settings').innerHTML = `
+    <div class="card mb-3 shadow-sm">
+      <div class="card-body">
+        <h5 class="text-muted mb-3">Pickup Days</h5>
+        <p class="small text-muted">Check every day of the week customers are allowed to choose for pickup. The customer order form will only let them pick one of these days.</p>
+        <div class="mb-2">${dayCheckboxes('pickup', pickupDays)}</div>
+      </div>
+    </div>
+    <div class="card mb-3 shadow-sm">
+      <div class="card-body">
+        <h5 class="text-muted mb-3">Delivery Days</h5>
+        <p class="small text-muted">Same idea, for delivery.</p>
+        <div class="mb-2">${dayCheckboxes('delivery', deliveryDays)}</div>
+      </div>
+    </div>
+    <div class="card mb-3 shadow-sm">
+      <div class="card-body">
+        <h5 class="text-muted mb-3">Logo</h5>
+        <p class="small text-muted">Uploading a logo here updates it everywhere in the app — the admin sidebar, mobile header, passcode screen, and the customer order page.</p>
+        <img id="settings-logo-preview" src="${settings.logo || LOGO_DATA_URI || ''}" style="max-height:80px; display:block; margin-bottom:10px;" alt="Current logo"/>
+        <input type="file" id="settings-logo-input" accept="image/*" class="d-none" onchange="handleSettingsLogoUpload(event)"/>
+        <button class="btn btn-outline-secondary btn-sm me-2" onclick="document.getElementById('settings-logo-input').click()">Choose Photo</button>
+        <button class="btn btn-outline-danger btn-sm" onclick="removeSettingsLogo()">Remove Logo</button>
+        <div id="settings-logo-status" class="small text-muted mt-2"></div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+    <span id="settings-save-status" class="small ms-2"></span>
+  `;
+}
+
+async function handleSettingsLogoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('settings-logo-status');
+  statusEl.textContent = 'Compressing photo...';
+  try {
+    const compressed = await compressImageFile(file, 600);
+    settingsLogoDataUri = compressed;
+    document.getElementById('settings-logo-preview').src = compressed;
+    statusEl.textContent = 'Photo ready — click Save Settings to keep it.';
+  } catch (err) {
+    statusEl.textContent = 'Could not process that photo: ' + err.message;
+  }
+  event.target.value = '';
+}
+
+function removeSettingsLogo() {
+  settingsLogoDataUri = '';
+  document.getElementById('settings-logo-preview').src = '';
+  document.getElementById('settings-logo-status').textContent = 'Logo will be removed on Save (falls back to the default).';
+}
+
+async function saveSettings() {
+  const pickupDays = DAYS_OF_WEEK.filter(day => document.getElementById(`pickup-${day}`).checked);
+  const deliveryDays = DAYS_OF_WEEK.filter(day => document.getElementById(`delivery-${day}`).checked);
+  const data = {
+    pickupDays: pickupDays.join(','),
+    deliveryDays: deliveryDays.join(','),
+  };
+  if (settingsLogoDataUri !== null) data.logo = settingsLogoDataUri;
+
+  const statusEl = document.getElementById('settings-save-status');
+  statusEl.textContent = 'Saving...';
+  statusEl.className = 'small ms-2 text-muted';
+  try {
+    if (settings.id) {
+      await apiWrite('settings', 'update', settings.id, data);
+      Object.assign(settings, data);
+    } else {
+      const newSettings = { id: 'settings1', ...data };
+      await apiWrite('settings', 'add', null, newSettings);
+      settings = newSettings;
+    }
+    statusEl.textContent = '✅ Saved.';
+    statusEl.className = 'small ms-2 text-success';
+    applyLogo();
+  } catch (err) {
+    statusEl.textContent = '❌ Save failed: ' + err.message;
+    statusEl.className = 'small ms-2 text-danger';
+  }
+}
+
 function renderProductsTab() {
   document.getElementById('tab-products').innerHTML = `
     <label class="btn btn-outline-secondary d-inline-flex align-items-center gap-2 mb-3" for="reorderModeToggle">
