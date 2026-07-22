@@ -11,7 +11,7 @@
 <style>
   .form-floating > label { color: #6c757d !important; }
   button, .btn { touch-action: manipulation; }
-  #pageHeader { padding-top: calc(1.5rem + env(safe-area-inset-top)); margin-top: calc(-1 * env(safe-area-inset-top)); }
+  body::before { content: ''; position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background: #212529; z-index: 1050; }
   #cf-date { color: #adb5bd; }
   #cf-date.has-value { color: #212529; }
   input:-webkit-autofill,
@@ -210,7 +210,7 @@
       <div id="cashConfirmCard" class="card text-start mb-3 d-none">
         <div class="card-body">
           <h3 class="h6 text-uppercase text-muted">Pay with Cash</h3>
-          <p class="mb-0">Please have <strong id="cashAmount"></strong> ready at pickup/delivery.</p>
+          <p class="mb-0">Please have <strong id="cashAmount"></strong> ready at <span id="cashFulfillmentWord">pickup/delivery</span>.</p>
         </div>
       </div>
 

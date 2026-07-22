@@ -68,14 +68,19 @@ function setOrderedBefore(val) {
   document.getElementById('lookupSection').classList.toggle('d-none', !val);
 
   // Full reset every time — nothing carries over between Yes and No, or between repeated switches.
-  document.getElementById('lookupPhone').value = '';
+  const clearFields = () => {
+    document.getElementById('lookupPhone').value = '';
+    ['cf-first','cf-last','cf-phone','cf-email','cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
+      const el = document.getElementById(id);
+      el.value = '';
+      el.setAttribute('value', '');
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  };
+  clearFields();
+  setTimeout(clearFields, 50); // fight Safari re-populating fields moments after we clear them
   document.getElementById('lookupMsg').textContent = '';
   document.getElementById('foundExistingMsg').innerHTML = '';
-  ['cf-first','cf-last','cf-phone','cf-email'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('cf-street').value = '';
-  document.getElementById('cf-city').value = '';
-  document.getElementById('cf-state').value = '';
-  document.getElementById('cf-zip').value = '';
 
   document.getElementById('contactFieldsSection').classList.toggle('d-none', !!val);
   updateContinueState(1);
@@ -138,6 +143,7 @@ function renderProducts() {
         <label class="form-check-label small" for="opt-${p.id}-${esc(opt.name)}">${esc(opt.name)} (+$${Number(opt.price).toFixed(2)} ea)</label>
       </div>
     `).join('');
+    const optionsWrapHtml = options.length ? `<div id="opts-wrap-${p.id}" class="d-none mt-1">${optionsHtml}</div>` : '';
     return `
     <div class="col">
       <div class="card h-100">
@@ -152,7 +158,7 @@ function renderProducts() {
               <button class="btn btn-outline-secondary" type="button" onclick="changeQty('${p.id}', 1)"><i class="bi bi-plus"></i></button>
             </div>
             <div class="small fw-bold">$${Number(p.price).toFixed(2)} <span class="text-muted fw-normal">${esc(p.unit||'')}</span></div>
-            ${optionsHtml}
+            ${optionsWrapHtml}
           </div>
         </div>
       </div>
@@ -171,6 +177,15 @@ function toggleOption(productId, optionName, optionPrice, checked) {
 function changeQty(id, delta) {
   cQty[id] = Math.max(0, (cQty[id]||0) + delta);
   document.getElementById('qty-'+id).textContent = cQty[id];
+  const optsWrap = document.getElementById('opts-wrap-'+id);
+  if (optsWrap) {
+    optsWrap.classList.toggle('d-none', cQty[id] === 0);
+    if (cQty[id] === 0) {
+      // No longer any of this item in the cart — clear and uncheck its options too.
+      cOptions[id] = {};
+      optsWrap.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    }
+  }
   updateStickyTotal();
   updateContinueState(2);
 }
@@ -456,6 +471,7 @@ async function submitOrder() {
       document.getElementById('cashConfirmCard').classList.add('d-none');
     } else {
       document.getElementById('cashAmount').textContent = '$' + newOrder.total.toFixed(2);
+      document.getElementById('cashFulfillmentWord').textContent = currentFulfillment === 'delivery' ? 'delivery' : 'pickup';
       document.getElementById('cashConfirmCard').classList.remove('d-none');
       document.getElementById('venmoConfirmCard').classList.add('d-none');
     }

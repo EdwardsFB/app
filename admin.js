@@ -448,8 +448,8 @@ function renderOrdersList() {
           return name ? `${i.qty}× ${name}${opts ? ' ('+opts+')' : ''}` : '';
         }).filter(Boolean).join(', ');
         return `<tr title="${esc(itemStr)}">
-          <td class="text-muted small">#${String(numberMap.get(o.id)).padStart(3,'0')}</td>
-          <td><div>${esc(o.firstName)} ${esc(o.lastName)}</div><div class="small text-muted">${esc(o.phone||'')}</div></td>
+          <td>#${String(numberMap.get(o.id)).padStart(3,'0')}</td>
+          <td>${esc(o.firstName)} ${esc(o.lastName)}</td>
           <td><i class="bi ${o.fulfillment==='delivery' ? 'bi-truck' : 'bi-cart4'}" title="${cap(o.fulfillment)}"></i></td>
           <td>${cap(o.payment)}</td>
           <td>${o.date||'—'}</td>
@@ -1358,7 +1358,7 @@ let pmOptions = [];
 function renderProductOptionRows() {
   document.getElementById('pm-options-list').innerHTML = pmOptions.map((opt, idx) => `
     <div class="row g-2 mb-2 align-items-center">
-      <div class="col form-floating"><input id="pm-opt-name-${idx}" class="form-control" placeholder="Name" value="${(opt.name||'').replace(/"/g,'&quot;')}" oninput="pmOptions[${idx}].name = this.value"/><label for="pm-opt-name-${idx}">Name (e.g. Sliced)</label></div>
+      <div class="col form-floating"><input id="pm-opt-name-${idx}" class="form-control" placeholder="Name" value="${(opt.name||'').replace(/"/g,'&quot;')}" oninput="pmOptions[${idx}].name = this.value"/><label for="pm-opt-name-${idx}">Name</label></div>
       <div class="col-4 form-floating"><input id="pm-opt-price-${idx}" class="form-control" type="number" step="0.01" placeholder="Price" value="${opt.price ?? ''}" oninput="pmOptions[${idx}].price = parseFloat(this.value)||0"/><label for="pm-opt-price-${idx}">Price ($)</label></div>
       <div class="col-auto"><button type="button" class="btn btn-outline-danger btn-sm" onclick="removeProductOptionRow(${idx})"><i class="bi bi-x-lg"></i></button></div>
     </div>
