@@ -14,7 +14,12 @@
   .form-floating > .form-control.has-value ~ label { transform: scale(.85) translateY(-.5rem) translateX(.15rem); }
   button, .btn { touch-action: manipulation; }
   body { background-color: #212529; }
-  #pageHeader { position: sticky; top: 0; z-index: 1030; background-color: #212529; }
+  #pageHeader { position: sticky; top: 0; z-index: 1030; background-color: #212529; transition: padding .2s ease; }
+  #pageHeader.collapsed { padding-top: .6rem !important; padding-bottom: .6rem !important; }
+  #pageHeader.collapsed #fullBrand { display: none; }
+  #compactBrand { display: none; font-family: Georgia, 'Times New Roman', serif; font-weight: 600; font-size: 1.15rem; white-space: nowrap; }
+  #pageHeader.collapsed #compactBrand { display: block; }
+  #stepperSticky { position: sticky; top: 52px; z-index: 1020; background-color: #f8f9fa; padding-top: .75rem; border-bottom: 1px solid #dee2e6; transition: top .2s ease; }
   #cf-date { color: #adb5bd; }
   #cf-date.has-value { color: #212529; }
   input:-webkit-autofill,
@@ -44,9 +49,12 @@
 <div id="app" class="d-none">
 
   <div id="pageHeader" class="bg-dark text-white text-center py-4 mb-4">
-    <img id="logoImg" class="d-none mb-4" style="max-height:70px;" alt="Edwards Family Bakery"/>
-    <h1 id="brandText" class="h3 mb-1">Edwards Family Bakery</h1>
-    <p class="mb-0 small text-white-50">Fresh-milled bread and homemade goods, baked weekly.</p>
+    <div id="fullBrand">
+      <img id="logoImg" class="d-none mb-4" style="max-height:70px;" alt="Edwards Family Bakery"/>
+      <h1 id="brandText" class="h3 mb-1">Edwards Family Bakery</h1>
+      <p class="mb-0 small text-white-50">Fresh-milled bread and homemade goods, baked weekly.</p>
+    </div>
+    <div id="compactBrand" class="d-none">Edwards Family Bakery</div>
   </div>
 
   <div class="container" style="max-width: 640px;">
@@ -55,6 +63,7 @@
     <div id="wizardScreen">
 
       <!-- Stepper -->
+      <div id="stepperSticky">
       <div class="d-flex justify-content-center align-items-center mb-2" id="stepperBar">
         <div class="step-circle" data-step="1" onclick="stepCircleClick(1)">1</div><div class="step-line"></div>
         <div class="step-circle" data-step="2" onclick="stepCircleClick(2)">2</div><div class="step-line"></div>
@@ -62,6 +71,7 @@
         <div class="step-circle" data-step="4" onclick="stepCircleClick(4)">4</div>
       </div>
       <div class="text-center small text-muted mb-4" id="stepperLabel">Step 1 of 4 — Your Info</div>
+      </div>
 
       <!-- STEP 1: Contact Info -->
       <div id="step1" class="wizard-step">
@@ -75,16 +85,7 @@
           </div>
         </div>
 
-        <div id="lookupSection" class="d-none mb-3">
-          <div class="input-group">
-            <div class="form-floating">
-              <input id="lookupPhone" name="fld-a1" type="tel" autocomplete="off" class="form-control" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value);" placeholder="Phone Number"/>
-              <label for="lookupPhone">Enter your phone number</label>
-            </div>
-            <button class="btn btn-outline-secondary" onclick="lookupReturningCustomer()" aria-label="Find My Info"><i class="bi bi-search"></i></button>
-          </div>
-          <div id="lookupMsg" class="small mt-2"></div>
-        </div>
+        <div id="lookupSection" class="d-none mb-3"></div>
 
         <div id="contactFieldsSection" class="d-none"></div>
 

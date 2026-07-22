@@ -20,7 +20,8 @@ async function init() {
   document.getElementById('btn-ordered-no').classList.remove('active');
   document.getElementById('lookupSection').classList.add('d-none');
   document.getElementById('contactFieldsSection').classList.add('d-none');
-  document.getElementById('lookupMsg').textContent = '';
+  const lookupMsgEl = document.getElementById('lookupMsg');
+  if (lookupMsgEl) lookupMsgEl.textContent = '';
   const foundMsgEl = document.getElementById('foundExistingMsg');
   if (foundMsgEl) foundMsgEl.innerHTML = '';
 
@@ -63,6 +64,19 @@ function cancelOrder() {
 // STEP 1 — CONTACT INFO
 // ══════════════════════════════════════════
 
+function lookupSectionHtml() {
+  return `
+    <div class="input-group">
+      <div class="form-floating">
+        <input id="lookupPhone" name="fld-a1" type="tel" autocomplete="off" class="form-control" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value);" placeholder="Phone Number"/>
+        <label for="lookupPhone">Enter your phone number</label>
+      </div>
+      <button class="btn btn-outline-secondary" onclick="lookupReturningCustomer()" aria-label="Find My Info"><i class="bi bi-search"></i></button>
+    </div>
+    <div id="lookupMsg" class="small mt-2"></div>
+  `;
+}
+
 function contactFieldsHtml() {
   return `
     <div class="row g-2 mb-2">
@@ -83,13 +97,10 @@ function setOrderedBefore(val) {
   document.getElementById('btn-ordered-no').classList.toggle('active', val === false);
   document.getElementById('lookupSection').classList.toggle('d-none', !val);
 
-  // Fully rebuild the contact fields from scratch every time — a brand new DOM node
+  // Fully rebuild both sections from scratch every time — a brand new DOM node
   // can't carry stale autofill state the way clearing an existing one can on Safari.
+  document.getElementById('lookupSection').innerHTML = lookupSectionHtml();
   document.getElementById('contactFieldsSection').innerHTML = contactFieldsHtml();
-  const lookupEl = document.getElementById('lookupPhone');
-  lookupEl.value = '';
-  lookupEl.classList.remove('has-value');
-  document.getElementById('lookupMsg').textContent = '';
   ['cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
     const el = document.getElementById(id);
     el.value = '';
@@ -177,7 +188,7 @@ function renderProducts() {
               <span class="form-control text-center px-0" id="qty-${p.id}">0</span>
               <button class="btn btn-outline-secondary" type="button" onclick="changeQty('${p.id}', 1)"><i class="bi bi-plus"></i></button>
             </div>
-            <div class="small fw-bold">$${Number(p.price).toFixed(2)} <span class="text-muted fw-normal">${esc(p.unit||'')}</span></div>
+            <div class="small fw-bold mt-1">$${Number(p.price).toFixed(2)} <span class="text-muted fw-normal">${esc(p.unit||'')}</span></div>
             ${optionsWrapHtml}
           </div>
         </div>
@@ -531,5 +542,9 @@ async function submitOrder() {
 window.addEventListener('pageshow', (event) => {
   if (event.persisted) location.reload();
 });
+
+window.addEventListener('scroll', () => {
+  document.getElementById('pageHeader').classList.toggle('collapsed', window.scrollY > 24);
+}, { passive: true });
 
 init();
