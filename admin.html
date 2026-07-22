@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
 <meta name="theme-color" content="#1c1a17"/>
 <meta name="format-detection" content="telephone=no, date=no, address=no, email=no"/>
 <title>Edwards Family Bakery — Admin</title>
@@ -183,11 +183,11 @@
           </div>
         </div>
         <div class="row g-2 mb-2">
-          <div class="col form-floating"><input id="om-first" class="form-control" type="text" autocomplete="off" placeholder="First Name"/><label for="om-first">First Name <span class="text-danger">*</span></label></div>
-          <div class="col form-floating"><input id="om-last" class="form-control" type="text" autocomplete="off" placeholder="Last Name"/><label for="om-last">Last Name <span class="text-danger">*</span></label></div>
+          <div class="col form-floating"><input id="om-first" class="form-control" type="text" autocomplete="off" placeholder="First Name" oninput="updateOmSaveState()"/><label for="om-first">First Name <span class="text-danger">*</span></label></div>
+          <div class="col form-floating"><input id="om-last" class="form-control" type="text" autocomplete="off" placeholder="Last Name" oninput="updateOmSaveState()"/><label for="om-last">Last Name <span class="text-danger">*</span></label></div>
         </div>
         <div class="row g-2 mb-4">
-          <div class="col form-floating"><input id="om-phone" class="form-control" type="tel" autocomplete="off" oninput="formatPhoneInput(this)" placeholder="Phone"/><label for="om-phone">Phone <span class="text-danger">*</span></label></div>
+          <div class="col form-floating"><input id="om-phone" class="form-control" type="tel" autocomplete="off" oninput="formatPhoneInput(this); updateOmSaveState();" placeholder="Phone"/><label for="om-phone">Phone <span class="text-danger">*</span></label></div>
         </div>
 
         <h5 class="text-muted mb-3">Products</h5>
@@ -200,18 +200,18 @@
             <label for="om-fulfillmentStatus">Status</label>
           </div>
           <div class="col form-floating">
-            <select id="om-fulfillment" class="form-select" onchange="document.getElementById('om-addressField').classList.toggle('d-none', this.value!=='delivery')">
+            <select id="om-fulfillment" class="form-select" onchange="document.getElementById('om-addressField').classList.toggle('d-none', this.value!=='delivery'); updateOmSaveState();">
               <option value="pickup">Pickup</option><option value="delivery">Delivery</option>
             </select>
             <label for="om-fulfillment">Type</label>
           </div>
         </div>
         <div class="mb-2 d-none" id="om-addressField">
-          <div class="row g-2 mb-2"><div class="col form-floating"><input id="om-street" class="form-control" type="text" placeholder="Street Address"/><label for="om-street">Street Address <span class="text-danger">*</span></label></div></div>
+          <div class="row g-2 mb-2"><div class="col form-floating"><input id="om-street" class="form-control" type="text" placeholder="Street Address" oninput="updateOmSaveState()"/><label for="om-street">Street Address <span class="text-danger">*</span></label></div></div>
           <div class="row g-2">
-            <div class="col-6 form-floating"><input id="om-city" class="form-control" type="text" placeholder="City"/><label for="om-city">City <span class="text-danger">*</span></label></div>
-            <div class="col-3 form-floating"><input id="om-state" class="form-control" type="text" maxlength="2" placeholder="State"/><label for="om-state">State <span class="text-danger">*</span></label></div>
-            <div class="col-3 form-floating"><input id="om-zip" class="form-control" type="text" placeholder="ZIP"/><label for="om-zip">ZIP <span class="text-danger">*</span></label></div>
+            <div class="col-6 form-floating"><input id="om-city" class="form-control" type="text" placeholder="City" oninput="updateOmSaveState()"/><label for="om-city">City <span class="text-danger">*</span></label></div>
+            <div class="col-3 form-floating"><input id="om-state" class="form-control" type="text" maxlength="2" placeholder="State" oninput="updateOmSaveState()"/><label for="om-state">State <span class="text-danger">*</span></label></div>
+            <div class="col-3 form-floating"><input id="om-zip" class="form-control" type="text" placeholder="ZIP" oninput="updateOmSaveState()"/><label for="om-zip">ZIP <span class="text-danger">*</span></label></div>
           </div>
         </div>
         <div class="row g-2 mb-4"><div class="col form-floating"><input id="om-date" class="form-control" type="date" placeholder="Date" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="om-date">Date</label></div></div>
@@ -308,7 +308,7 @@
       </div>
       <div class="modal-body">
         <div class="row g-2 mb-2">
-          <div class="col form-floating"><input id="cm-first" class="form-control" type="text" placeholder="First Name"/><label for="cm-first">First Name <span class="text-danger">*</span></label></div>
+          <div class="col form-floating"><input id="cm-first" class="form-control" type="text" placeholder="First Name" oninput="updateCmSaveState()"/><label for="cm-first">First Name <span class="text-danger">*</span></label></div>
           <div class="col form-floating"><input id="cm-last" class="form-control" type="text" placeholder="Last Name"/><label for="cm-last">Last Name</label></div>
         </div>
         <div class="row g-2 mb-2"><div class="col form-floating"><input id="cm-phone" class="form-control" type="tel" oninput="formatPhoneInput(this)" placeholder="Phone"/><label for="cm-phone">Phone</label></div></div>

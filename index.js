@@ -41,7 +41,7 @@ async function init() {
   updateContinueState(1);
   document.getElementById('loading').classList.add('d-none');
   document.getElementById('app').classList.remove('d-none');
-  setTimeout(() => window.scrollTo(0, 1), 50);
+  setTimeout(() => window.scrollTo(0, 0), 50);
 }
 
 function applyLogo() {
@@ -62,29 +62,38 @@ function cancelOrder() {
 // STEP 1 — CONTACT INFO
 // ══════════════════════════════════════════
 
+function contactFieldsHtml() {
+  return `
+    <div class="row g-2 mb-2">
+      <div class="col form-floating"><input id="cf-first" name="fld-b2" class="form-control" type="text" autocomplete="off" placeholder="First Name" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-first">First Name <span class="text-danger">*</span></label></div>
+      <div class="col form-floating"><input id="cf-last" name="fld-c3" class="form-control" type="text" autocomplete="off" placeholder="Last Name" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-last">Last Name <span class="text-danger">*</span></label></div>
+    </div>
+    <div class="row g-2 mb-2">
+      <div class="col form-floating"><input id="cf-phone" name="fld-d4" class="form-control" type="tel" autocomplete="off" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value);" placeholder="Phone"/><label for="cf-phone">Phone <span class="text-danger">*</span></label></div>
+      <div class="col form-floating"><input id="cf-email" name="fld-e5" class="form-control" type="email" autocomplete="off" placeholder="Email" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-email">Email</label></div>
+    </div>
+    <div id="foundExistingMsg" class="small mb-2"></div>
+  `;
+}
+
 function setOrderedBefore(val) {
   hasOrderedBefore = val;
   document.getElementById('btn-ordered-yes').classList.toggle('active', val === true);
   document.getElementById('btn-ordered-no').classList.toggle('active', val === false);
   document.getElementById('lookupSection').classList.toggle('d-none', !val);
 
-  // Full reset every time — nothing carries over between Yes and No, or between repeated switches.
-  const clearFields = () => {
-    const lookupEl = document.getElementById('lookupPhone');
-    lookupEl.value = '';
-    lookupEl.classList.remove('has-value');
-    ['cf-first','cf-last','cf-phone','cf-email','cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
-      const el = document.getElementById(id);
-      el.value = '';
-      el.setAttribute('value', '');
-      el.classList.remove('has-value');
-      el.dispatchEvent(new Event('input', { bubbles: true }));
-    });
-  };
-  clearFields();
-  setTimeout(clearFields, 50); // fight Safari re-populating fields moments after we clear them
+  // Fully rebuild the contact fields from scratch every time — a brand new DOM node
+  // can't carry stale autofill state the way clearing an existing one can on Safari.
+  document.getElementById('contactFieldsSection').innerHTML = contactFieldsHtml();
+  const lookupEl = document.getElementById('lookupPhone');
+  lookupEl.value = '';
+  lookupEl.classList.remove('has-value');
   document.getElementById('lookupMsg').textContent = '';
-  document.getElementById('foundExistingMsg').innerHTML = '';
+  ['cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = '';
+    el.classList.remove('has-value');
+  });
 
   document.getElementById('contactFieldsSection').classList.toggle('d-none', !!val);
   updateContinueState(1);

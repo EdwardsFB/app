@@ -117,7 +117,7 @@ async function loadAndShowApp() {
   const validTabs = ['home','orders','production','fulfillment','customers','products','settings'];
   const hashTab = location.hash.replace('#','');
   switchTab(validTabs.includes(hashTab) ? hashTab : 'home');
-  setTimeout(() => window.scrollTo(0, 1), 50);
+  setTimeout(() => window.scrollTo(0, 0), 50);
 }
 
 async function refreshData() {
@@ -669,7 +669,7 @@ function openOrderModal(id) {
       : `<div class="input-group" style="width:130px;">
           <button class="btn btn-outline-secondary" type="button" style="border-color:#ced4da;" onclick="adjustOmQty('${p.id}',-1)"><i class="bi bi-dash-lg"></i></button>
           <input type="number" min="0" class="form-control text-center px-0" id="om-qty-${p.id}" value="${qty}"
-            oninput="omQty['${p.id}']=parseInt(this.value)||0; updateOmOptionsVisibility('${p.id}'); updateOMTotal();"/>
+            oninput="omQty['${p.id}']=parseInt(this.value)||0; updateOmOptionsVisibility('${p.id}'); updateOMTotal(); updateOmSaveState();"/>
           <button class="btn btn-outline-secondary" type="button" style="border-color:#ced4da;" onclick="adjustOmQty('${p.id}',1)"><i class="bi bi-plus-lg"></i></button>
         </div>`;
     return `<li class="list-group-item">
@@ -682,6 +682,7 @@ function openOrderModal(id) {
   }).join('') + `</ul>`;
 
   updateOMTotal();
+  updateOmSaveState();
   orderModal.show();
 }
 
@@ -690,6 +691,7 @@ function adjustOmQty(productId, delta) {
   document.getElementById('om-qty-'+productId).value = omQty[productId];
   updateOmOptionsVisibility(productId);
   updateOMTotal();
+  updateOmSaveState();
 }
 
 function updateOmOptionsVisibility(productId) {
@@ -713,6 +715,24 @@ function toggleOmOption(productId, optionName, optionPrice, checked) {
 function getOmSelectedOptionsFor(productId) {
   const opts = omOptions[productId] || {};
   return Object.keys(opts).map(name => ({ name, price: opts[name] }));
+}
+
+function updateOmSaveState() {
+  const saveBtn = document.getElementById('om-save-btn');
+  if (!saveBtn) return;
+  const first = document.getElementById('om-first').value.trim();
+  const last = document.getElementById('om-last').value.trim();
+  const phone = document.getElementById('om-phone').value.trim();
+  const hasItems = products.some(p => (omQty[p.id]||0) > 0);
+  const fulfillment = document.getElementById('om-fulfillment').value;
+  let addressOk = true;
+  if (fulfillment === 'delivery') {
+    addressOk = document.getElementById('om-street').value.trim() && document.getElementById('om-city').value.trim()
+      && document.getElementById('om-state').value.trim() && document.getElementById('om-zip').value.trim();
+  }
+  const missing = !first || !last || !phone || !hasItems || !addressOk;
+  saveBtn.disabled = missing;
+  saveBtn.title = missing ? 'Please fill in every required field and add at least one item before saving.' : '';
 }
 
 function updateOMTotal() {
@@ -922,6 +942,12 @@ async function performMerge() {
   renderCustomersTab();
 }
 
+function updateCmSaveState() {
+  const saveBtn = document.getElementById('cm-save-btn');
+  if (!saveBtn) return;
+  saveBtn.disabled = !document.getElementById('cm-first').value.trim();
+}
+
 function openCustomerModal(existing) {
   editingCustomerRecordId = existing ? existing.recordId : null;
   document.getElementById('customerModalTitle').textContent = existing ? 'Edit Customer' : 'Add Customer';
@@ -943,6 +969,7 @@ function openCustomerModal(existing) {
     document.getElementById('cm-state').value = parsed.state;
     document.getElementById('cm-zip').value = parsed.zip;
   }
+  updateCmSaveState();
   customerModal.show();
 }
 
@@ -1063,11 +1090,48 @@ async function markOrderReady(id) {
   await apiWrite('orders','update',id,{fulfillmentStatus:'ready'});
 }
 
+let productionDateFilter = null; // null = not yet set; defaults to the soonest upcoming date on first render
+
+function formatProductionDateLabel(dateStr) {
+  if (!dateStr) return 'No Date';
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dateObj = new Date(y, m-1, d);
+  return dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function setProductionDateFilter(date) {
+  productionDateFilter = date;
+  renderProductionTab();
+}
+
 function renderProductionTab() {
   const container = document.getElementById('tab-production');
-  const active = orders.filter(o => o.fulfillmentStatus === 'pending');
+  const allActive = orders.filter(o => o.fulfillmentStatus === 'pending');
 
-  if (!active.length) { container.innerHTML = '<div class="text-center"><div class="alert alert-info d-inline-block" role="alert">Nothing waiting to be made — all caught up!</div></div>'; return; }
+  if (!allActive.length) { container.innerHTML = '<div class="text-center"><div class="alert alert-info d-inline-block" role="alert">Nothing waiting to be made — all caught up!</div></div>'; productionDateFilter = null; return; }
+
+  // Every distinct pickup/delivery date among pending orders, soonest first. Orders with no
+  // date set get grouped under their own bucket at the end rather than silently hidden.
+  const distinctDates = [...new Set(allActive.map(o => o.date || ''))].sort((a,b) => {
+    if (!a) return 1;
+    if (!b) return -1;
+    return a.localeCompare(b);
+  });
+
+  if (productionDateFilter === null || (productionDateFilter !== 'all' && !distinctDates.includes(productionDateFilter))) {
+    productionDateFilter = distinctDates.find(d => d) || distinctDates[0];
+  }
+
+  const active = productionDateFilter === 'all' ? allActive : allActive.filter(o => (o.date || '') === productionDateFilter);
+
+  const filterBarHtml = `
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      ${distinctDates.map(d => `<button class="btn btn-sm ${productionDateFilter === d ? 'btn-dark' : 'btn-outline-secondary'}" onclick="setProductionDateFilter('${d}')">${esc(formatProductionDateLabel(d))}</button>`).join('')}
+      <button class="btn btn-sm ${productionDateFilter === 'all' ? 'btn-dark' : 'btn-outline-secondary'}" onclick="setProductionDateFilter('all')">All</button>
+    </div>
+  `;
+
+  if (!active.length) { container.innerHTML = filterBarHtml + '<div class="text-center"><div class="alert alert-info d-inline-block" role="alert">Nothing to prep for this date.</div></div>'; return; }
 
   // Bake totals — cards stay visible even at 0 remaining, showing a green checkmark instead
   const totals = {};
@@ -1121,7 +1185,7 @@ function renderProductionTab() {
     </div>`;
   }
 
-  container.innerHTML = `
+  container.innerHTML = filterBarHtml + `
     <h4 class="text-muted mb-3">Prep</h4>
     <div class="row row-cols-2 row-cols-md-3 g-3 mb-4">
       ${bakeProducts.map(p => {
@@ -1359,8 +1423,8 @@ function removeSettingsLogo(key) {
 function renderSettingsDiscountRows() {
   document.getElementById('settings-discount-list').innerHTML = settingsDiscountCodes.map((d, idx) => `
     <div class="row g-2 mb-2 align-items-center">
-      <div class="col form-floating"><input id="settings-discount-code-${idx}" class="form-control" placeholder="Code" value="${(d.code||'').replace(/"/g,'&quot;')}" oninput="settingsDiscountCodes[${idx}].code = this.value; updateSettingsDiscountSaveState();"/><label for="settings-discount-code-${idx}">Code</label></div>
-      <div class="col-4 form-floating"><input id="settings-discount-pct-${idx}" class="form-control" type="number" step="1" placeholder="Percent Off" value="${d.discountPct ?? ''}" oninput="settingsDiscountCodes[${idx}].discountPct = parseFloat(this.value)||0; updateSettingsDiscountSaveState();"/><label for="settings-discount-pct-${idx}">Percent Off</label></div>
+      <div class="col form-floating"><input id="settings-discount-code-${idx}" class="form-control" placeholder="Code" value="${(d.code||'').replace(/"/g,'&quot;')}" oninput="settingsDiscountCodes[${idx}].code = this.value; updateSettingsDiscountSaveState();"/><label for="settings-discount-code-${idx}">Code <span class="text-danger">*</span></label></div>
+      <div class="col-4 form-floating"><input id="settings-discount-pct-${idx}" class="form-control" type="number" step="1" placeholder="Percent Off" value="${d.discountPct ?? ''}" oninput="settingsDiscountCodes[${idx}].discountPct = parseFloat(this.value)||0; updateSettingsDiscountSaveState();"/><label for="settings-discount-pct-${idx}">Percent Off <span class="text-danger">*</span></label></div>
       <div class="col-auto"><button type="button" class="btn btn-outline-danger btn-sm" onclick="removeSettingsDiscountRow(${idx})"><i class="bi bi-x-lg"></i></button></div>
     </div>
   `).join('');
@@ -1490,8 +1554,8 @@ let pmOptions = [];
 function renderProductOptionRows() {
   document.getElementById('pm-options-list').innerHTML = pmOptions.map((opt, idx) => `
     <div class="row g-2 mb-2 align-items-center">
-      <div class="col form-floating"><input id="pm-opt-name-${idx}" class="form-control" placeholder="Name" value="${(opt.name||'').replace(/"/g,'&quot;')}" oninput="pmOptions[${idx}].name = this.value; updateProductModalSaveState();"/><label for="pm-opt-name-${idx}">Name</label></div>
-      <div class="col-4 form-floating"><input id="pm-opt-price-${idx}" class="form-control" type="number" step="0.01" placeholder="Price" value="${opt.price ?? ''}" oninput="pmOptions[${idx}].price = parseFloat(this.value)||0; updateProductModalSaveState();"/><label for="pm-opt-price-${idx}">Price ($)</label></div>
+      <div class="col form-floating"><input id="pm-opt-name-${idx}" class="form-control" placeholder="Name" value="${(opt.name||'').replace(/"/g,'&quot;')}" oninput="pmOptions[${idx}].name = this.value; updateProductModalSaveState();"/><label for="pm-opt-name-${idx}">Name <span class="text-danger">*</span></label></div>
+      <div class="col-4 form-floating"><input id="pm-opt-price-${idx}" class="form-control" type="number" step="0.01" placeholder="Price" value="${opt.price ?? ''}" oninput="pmOptions[${idx}].price = parseFloat(this.value)||0; updateProductModalSaveState();"/><label for="pm-opt-price-${idx}">Price ($) <span class="text-danger">*</span></label></div>
       <div class="col-auto"><button type="button" class="btn btn-outline-danger btn-sm" onclick="removeProductOptionRow(${idx})"><i class="bi bi-x-lg"></i></button></div>
     </div>
   `).join('');
