@@ -133,6 +133,7 @@ const PLACEHOLDER_PHOTO_URI = 'data:image/svg+xml;utf8,' + encodeURIComponent(`<
 let pmPhotoDataUri = null; // holds the current product-modal photo (base64), or null/'' for no photo
 
 function compressImageFile(file, maxWidth) {
+  const CELL_LIMIT = 45000; // stay safely under Google Sheets' 50,000-char cell limit
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(new Error('Could not read that file.'));
@@ -140,13 +141,23 @@ function compressImageFile(file, maxWidth) {
       const img = new Image();
       img.onerror = () => reject(new Error("That file doesn't look like a valid image."));
       img.onload = () => {
-        const scale = Math.min(1, maxWidth / img.width);
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/jpeg', 0.8));
+        let width = maxWidth, quality = 0.8, dataUri = '';
+        for (let attempt = 0; attempt < 8; attempt++) {
+          const scale = Math.min(1, width / img.width);
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          dataUri = canvas.toDataURL('image/jpeg', quality);
+          if (dataUri.length <= CELL_LIMIT) break;
+          if (quality > 0.4) quality -= 0.15; else width = Math.round(width * 0.8);
+        }
+        if (dataUri.length > CELL_LIMIT) {
+          reject(new Error('This photo is too detailed to compress small enough — try a simpler or smaller source photo.'));
+        } else {
+          resolve(dataUri);
+        }
       };
       img.src = reader.result;
     };
