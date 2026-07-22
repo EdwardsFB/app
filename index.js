@@ -1,9 +1,9 @@
 let products = [], orders = [], customers = [];
 let cQty = {};
-let currentFulfillment = 'pickup';
+let currentFulfillment = null;
 let currentStep = 1;
 let hasOrderedBefore = null;
-let paymentMethod = 'venmo';
+let paymentMethod = null;
 const VENMO_HANDLE = 'edwardsfamilybakery';
 
 async function init() {
@@ -157,15 +157,17 @@ function updateStickyTotal() {
 
 function setFulfillment(type) {
   currentFulfillment = type;
+  document.getElementById('fulfillmentDetailsField').classList.remove('d-none');
   document.getElementById('addressField').classList.toggle('d-none', type !== 'delivery');
   document.getElementById('cf-date-label').textContent = type === 'delivery' ? 'Delivery Date' : 'Pickup Date';
+  updateContinueState(3);
 }
 
 // ══════════════════════════════════════════
 // STEP 4 — REVIEW & PAYMENT
 // ══════════════════════════════════════════
 
-function setPaymentMethod(method) { paymentMethod = method; }
+function setPaymentMethod(method) { paymentMethod = method; updateContinueState(4); }
 
 function formatDateHuman(dateStr) {
   if (!dateStr) return '';
@@ -224,11 +226,39 @@ function wireLiveValidation() {
   ['cf-first','cf-last','cf-phone'].forEach(id => {
     document.getElementById(id).addEventListener('input', () => updateContinueState(1));
   });
+  document.getElementById('cf-phone').addEventListener('blur', checkForExistingCustomerOnNoPath);
   ['cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
     document.getElementById(id).addEventListener('input', () => updateContinueState(3));
   });
   document.getElementById('rad-pickup').addEventListener('change', () => updateContinueState(3));
   document.getElementById('rad-delivery').addEventListener('change', () => updateContinueState(3));
+}
+
+function checkForExistingCustomerOnNoPath() {
+  const msgEl = document.getElementById('foundExistingMsg');
+  if (hasOrderedBefore !== false) { msgEl.innerHTML = ''; return; } // only relevant on the "No" path
+  const phone = document.getElementById('cf-phone').value.trim();
+  const normed = normPhone(phone);
+  if (!normed) { msgEl.innerHTML = ''; return; }
+  const match = getMergedCustomers(products, orders, customers).find(c => normPhone(c.phone) === normed);
+  if (match) {
+    msgEl.innerHTML = `<span class="text-primary">Looks like we already have a record for this number under ${esc(match.firstName)} ${esc(match.lastName)}. <a href="#" onclick="useFoundExistingCustomer(); return false;">Use that info instead?</a></span>`;
+  } else {
+    msgEl.innerHTML = '';
+  }
+}
+
+function useFoundExistingCustomer() {
+  const phone = document.getElementById('cf-phone').value.trim();
+  const normed = normPhone(phone);
+  const match = getMergedCustomers(products, orders, customers).find(c => normPhone(c.phone) === normed);
+  if (!match) return;
+  document.getElementById('cf-first').value = match.firstName;
+  document.getElementById('cf-last').value = match.lastName;
+  document.getElementById('cf-phone').value = match.phone;
+  document.getElementById('cf-email').value = match.email || '';
+  document.getElementById('foundExistingMsg').innerHTML = `<span class="text-success">Got it — using ${esc(match.firstName)}'s info.</span>`;
+  updateContinueState(1);
 }
 
 function validateStep(step) {
@@ -245,6 +275,7 @@ function validateStep(step) {
     if (!anyItems) return 'Please select at least one item.';
   }
   if (step === 3) {
+    if (!currentFulfillment) return 'Please choose Pickup or Delivery.';
     if (currentFulfillment === 'delivery') {
       const street = document.getElementById('cf-street').value.trim();
       const city = document.getElementById('cf-city').value.trim();
@@ -252,6 +283,9 @@ function validateStep(step) {
       const zip = document.getElementById('cf-zip').value.trim();
       if (!street || !city || !state || !zip) return 'Please fill in your full delivery address.';
     }
+  }
+  if (step === 4) {
+    if (!paymentMethod) return "Please choose how you'll pay.";
   }
   return null;
 }
@@ -279,6 +313,10 @@ function goToStep(step) {
   window.scrollTo(0,0);
 }
 
+function stepCircleClick(step) {
+  if (step < currentStep) goToStep(step); // only completed steps are clickable
+}
+
 function updateStepperUI(step) {
   const labels = ['Your Info', 'Menu', 'Pickup/Delivery', 'Review & Pay'];
   document.getElementById('stepperLabel').textContent = `Step ${step} of 4 — ${labels[step-1]}`;
@@ -295,63 +333,62 @@ function updateStepperUI(step) {
 // ══════════════════════════════════════════
 
 async function submitOrder() {
-  const first = document.getElementById('cf-first').value.trim();
-  const last = document.getElementById('cf-last').value.trim();
-  const phone = document.getElementById('cf-phone').value.trim();
-  const email = document.getElementById('cf-email').value.trim();
-  const date = document.getElementById('cf-date').value;
-  const street = document.getElementById('cf-street').value.trim();
-  const city = document.getElementById('cf-city').value.trim();
-  const state = document.getElementById('cf-state').value.trim();
-  const zip = document.getElementById('cf-zip').value.trim();
-  const notes = document.getElementById('cf-notes').value.trim();
   const errEl = document.getElementById('step4Error');
-  const items = products.filter(p => (cQty[p.id]||0) > 0).map(p => ({ productId: p.id, qty: cQty[p.id] }));
-
-  const { orderData, error } = buildOrderData({
-    first, last, phone, items, fulfillment: currentFulfillment,
-    street, city, state, zip, date, notes,
-    payment: paymentMethod, paymentStatus: 'unpaid', fulfillmentStatus: 'pending',
-    products
-  });
-  if (error) { errEl.textContent = error; return; }
-  errEl.textContent = '';
-
-  const submitBtn = document.querySelector('#step4 button.btn-dark');
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Placing order...';
-
-  const newOrder = { id: 'o' + Date.now(), createdAt: Date.now(), source: 'customer', ...orderData };
-
+  const submitBtn = document.getElementById('step4-submit');
   try {
+    const first = document.getElementById('cf-first').value.trim();
+    const last = document.getElementById('cf-last').value.trim();
+    const phone = document.getElementById('cf-phone').value.trim();
+    const email = document.getElementById('cf-email').value.trim();
+    const date = document.getElementById('cf-date').value;
+    const street = document.getElementById('cf-street').value.trim();
+    const city = document.getElementById('cf-city').value.trim();
+    const state = document.getElementById('cf-state').value.trim();
+    const zip = document.getElementById('cf-zip').value.trim();
+    const notes = document.getElementById('cf-notes').value.trim();
+    const items = products.filter(p => (cQty[p.id]||0) > 0).map(p => ({ productId: p.id, qty: cQty[p.id] }));
+
+    if (!paymentMethod) { errEl.textContent = 'Please choose how you\'ll pay.'; return; }
+
+    const { orderData, error } = buildOrderData({
+      first, last, phone, items, fulfillment: currentFulfillment,
+      street, city, state, zip, date, notes,
+      payment: paymentMethod, paymentStatus: 'unpaid', fulfillmentStatus: 'pending',
+      products
+    });
+    if (error) { errEl.textContent = error; return; }
+    errEl.textContent = '';
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Placing order...';
+
+    const newOrder = { id: 'o' + Date.now(), createdAt: Date.now(), source: 'customer', ...orderData };
     await persistNewOrder(newOrder, customers, email);
+
+    const orderNum = newOrder.id.slice(-6);
+    document.getElementById('confirmMsg').textContent = `Thanks, ${first}!`;
+    document.getElementById('confirmOrderNum').textContent = orderNum;
+
+    if (paymentMethod === 'venmo') {
+      document.getElementById('venmoAmount').textContent = '$' + newOrder.total.toFixed(2);
+      const note = encodeURIComponent(`Edwards Family Bakery, Order #${orderNum}`);
+      document.getElementById('venmoLink').href = `https://venmo.com/${VENMO_HANDLE}?txn=pay&amount=${newOrder.total.toFixed(2)}&note=${note}`;
+      document.getElementById('venmoConfirmCard').classList.remove('d-none');
+      document.getElementById('cashConfirmCard').classList.add('d-none');
+    } else {
+      document.getElementById('cashAmount').textContent = '$' + newOrder.total.toFixed(2);
+      document.getElementById('cashConfirmCard').classList.remove('d-none');
+      document.getElementById('venmoConfirmCard').classList.add('d-none');
+    }
+
+    document.getElementById('wizardScreen').classList.add('d-none');
+    document.getElementById('stickyTotalBar').classList.add('d-none');
+    document.getElementById('confirmScreen').classList.remove('d-none');
+    window.scrollTo(0,0);
   } catch (err) {
-    errEl.textContent = 'Something went wrong submitting your order: ' + err.message;
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Place Order';
-    return;
+    errEl.textContent = 'Something went wrong placing your order: ' + err.message + '. Please try again, or let us know if this keeps happening.';
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Place Order'; }
   }
-
-  const orderNum = newOrder.id.slice(-6);
-  document.getElementById('confirmMsg').textContent = `Thanks, ${first}!`;
-  document.getElementById('confirmOrderNum').textContent = orderNum;
-
-  if (paymentMethod === 'venmo') {
-    document.getElementById('venmoAmount').textContent = '$' + newOrder.total.toFixed(2);
-    const note = encodeURIComponent(`Edwards Family Bakery, Order #${orderNum}`);
-    document.getElementById('venmoLink').href = `https://venmo.com/${VENMO_HANDLE}?txn=pay&amount=${newOrder.total.toFixed(2)}&note=${note}`;
-    document.getElementById('venmoConfirmCard').classList.remove('d-none');
-    document.getElementById('cashConfirmCard').classList.add('d-none');
-  } else {
-    document.getElementById('cashAmount').textContent = '$' + newOrder.total.toFixed(2);
-    document.getElementById('cashConfirmCard').classList.remove('d-none');
-    document.getElementById('venmoConfirmCard').classList.add('d-none');
-  }
-
-  document.getElementById('wizardScreen').classList.add('d-none');
-  document.getElementById('stickyTotalBar').classList.add('d-none');
-  document.getElementById('confirmScreen').classList.remove('d-none');
-  window.scrollTo(0,0);
 }
 
 init();

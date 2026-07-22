@@ -8,6 +8,16 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <style>
+  :root { --bs-primary: #0f8b8d; --bs-primary-rgb: 15,139,141; }
+  .btn-primary {
+    --bs-btn-bg: #0f8b8d; --bs-btn-border-color: #0f8b8d;
+    --bs-btn-hover-bg: #0c7173; --bs-btn-hover-border-color: #0b6a6c;
+    --bs-btn-active-bg: #0a5c5e; --bs-btn-active-border-color: #095356;
+    --bs-btn-disabled-bg: #0f8b8d; --bs-btn-disabled-border-color: #0f8b8d;
+  }
+  .bg-primary { background-color: #0f8b8d !important; }
+  .text-primary { color: #0f8b8d !important; }
+  .border-primary { border-color: #0f8b8d !important; }
   .form-floating > label { color: #6c757d !important; }
   input[type="date"] { color: #adb5bd; text-align: left; }
   input[type="date"]::-webkit-date-and-time-value { text-align: left; }
@@ -29,7 +39,7 @@
   input[type="date"].has-value::-webkit-datetime-edit-year-field { color: #212529; }
   .step-circle { width:32px; height:32px; border-radius:50%; background:#e9ecef; color:#6c757d; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.9rem; flex-shrink:0; transition: background-color .2s, color .2s; }
   .step-circle.step-active { background:#212529; color:#fff; }
-  .step-circle.step-complete { background:#198754; color:#fff; }
+  .step-circle.step-complete { background:#198754; color:#fff; cursor:pointer; }
   .step-line { flex:1 1 auto; height:2px; background:#e9ecef; max-width:40px; }
   .wizard-step { animation: fadeIn .15s ease-in; }
   @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
@@ -59,13 +69,12 @@
 
       <!-- Stepper -->
       <div class="d-flex justify-content-center align-items-center mb-2" id="stepperBar">
-        <div class="step-circle" data-step="1">1</div><div class="step-line"></div>
-        <div class="step-circle" data-step="2">2</div><div class="step-line"></div>
-        <div class="step-circle" data-step="3">3</div><div class="step-line"></div>
-        <div class="step-circle" data-step="4">4</div>
+        <div class="step-circle" data-step="1" onclick="stepCircleClick(1)">1</div><div class="step-line"></div>
+        <div class="step-circle" data-step="2" onclick="stepCircleClick(2)">2</div><div class="step-line"></div>
+        <div class="step-circle" data-step="3" onclick="stepCircleClick(3)">3</div><div class="step-line"></div>
+        <div class="step-circle" data-step="4" onclick="stepCircleClick(4)">4</div>
       </div>
       <div class="text-center small text-muted mb-4" id="stepperLabel">Step 1 of 4 — Your Info</div>
-      <p class="text-center small mb-3"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
 
       <!-- STEP 1: Contact Info -->
       <div id="step1" class="wizard-step">
@@ -99,10 +108,12 @@
             <div class="col form-floating"><input id="cf-phone" class="form-control" type="tel" oninput="formatPhoneInput(this)" placeholder="Phone"/><label for="cf-phone">Phone <span class="text-danger">*</span></label></div>
             <div class="col form-floating"><input id="cf-email" class="form-control" type="email" placeholder="Email"/><label for="cf-email">Email</label></div>
           </div>
+          <div id="foundExistingMsg" class="small mb-2"></div>
         </div>
 
         <div id="step1Error" class="text-danger small mb-2"></div>
         <button class="btn btn-primary w-100" onclick="goToStep(2)" id="step1-continue">Continue</button>
+        <p class="text-center small mt-3"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
       </div>
 
       <!-- STEP 2: Products -->
@@ -114,37 +125,41 @@
           <button class="btn btn-outline-secondary" onclick="goToStep(1)">Back</button>
           <button class="btn btn-primary flex-fill" onclick="goToStep(3)" id="step2-continue">Continue</button>
         </div>
+        <p class="text-center small mt-3"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
       </div>
 
       <!-- STEP 3: Fulfillment -->
       <div id="step3" class="wizard-step d-none">
         <h2 class="h5 mb-3">Pickup or Delivery?</h2>
         <div class="btn-group w-100 mb-3" role="group" aria-label="Pickup or delivery">
-          <input type="radio" class="btn-check" name="fulfillment" id="rad-pickup" checked onclick="setFulfillment('pickup')">
+          <input type="radio" class="btn-check" name="fulfillment" id="rad-pickup" onclick="setFulfillment('pickup')">
           <label class="btn btn-outline-secondary" for="rad-pickup"><i class="bi bi-geo-alt"></i> Pickup</label>
           <input type="radio" class="btn-check" name="fulfillment" id="rad-delivery" onclick="setFulfillment('delivery')">
           <label class="btn btn-outline-secondary" for="rad-delivery"><i class="bi bi-truck"></i> Delivery</label>
         </div>
-        <div id="addressField" class="d-none mb-2">
-          <div class="row g-2 mb-2"><div class="col form-floating"><input id="cf-street" class="form-control" type="text" placeholder="Street Address"/><label for="cf-street">Street Address <span class="text-danger">*</span></label></div></div>
-          <div class="row g-2">
-            <div class="col-6 form-floating"><input id="cf-city" class="form-control" type="text" placeholder="City"/><label for="cf-city">City</label></div>
-            <div class="col-3 form-floating"><input id="cf-state" class="form-control" type="text" maxlength="2" placeholder="State"/><label for="cf-state">State</label></div>
-            <div class="col-3 form-floating"><input id="cf-zip" class="form-control" type="text" placeholder="ZIP"/><label for="cf-zip">ZIP</label></div>
+        <div id="fulfillmentDetailsField" class="d-none">
+          <div id="addressField" class="d-none mb-2">
+            <div class="row g-2 mb-2"><div class="col form-floating"><input id="cf-street" class="form-control" type="text" placeholder="Street Address"/><label for="cf-street">Street Address <span class="text-danger">*</span></label></div></div>
+            <div class="row g-2">
+              <div class="col-6 form-floating"><input id="cf-city" class="form-control" type="text" placeholder="City"/><label for="cf-city">City</label></div>
+              <div class="col-3 form-floating"><input id="cf-state" class="form-control" type="text" maxlength="2" placeholder="State"/><label for="cf-state">State</label></div>
+              <div class="col-3 form-floating"><input id="cf-zip" class="form-control" type="text" placeholder="ZIP"/><label for="cf-zip">ZIP</label></div>
+            </div>
           </div>
+          <div class="row g-2 mb-2 mt-2">
+            <div class="col form-floating"><input id="cf-date" class="form-control" type="date" placeholder="Pickup Date" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-date" id="cf-date-label">Pickup Date</label></div>
+          </div>
+          <div class="row g-2 mb-3"><div class="col form-floating">
+            <textarea id="cf-notes" class="form-control" style="height:80px;" placeholder="Notes"></textarea>
+            <label for="cf-notes">Notes</label>
+          </div></div>
         </div>
-        <div class="row g-2 mb-2 mt-2">
-          <div class="col form-floating"><input id="cf-date" class="form-control" type="date" placeholder="Pickup Date" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-date" id="cf-date-label">Pickup Date</label></div>
-        </div>
-        <div class="row g-2 mb-3"><div class="col form-floating">
-          <textarea id="cf-notes" class="form-control" style="height:80px;" placeholder="Notes"></textarea>
-          <label for="cf-notes">Notes</label>
-        </div></div>
         <div id="step3Error" class="text-danger small mb-2"></div>
         <div class="d-flex gap-2">
           <button class="btn btn-outline-secondary" onclick="goToStep(2)">Back</button>
           <button class="btn btn-primary flex-fill" onclick="goToStep(4)" id="step3-continue">Continue</button>
         </div>
+        <p class="text-center small mt-3"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
       </div>
 
       <!-- STEP 4: Review & Payment -->
@@ -171,7 +186,7 @@
         <div class="mb-3">
           <label class="form-label d-block">How will you pay?</label>
           <div class="btn-group w-100" role="group" aria-label="Payment method">
-            <input type="radio" class="btn-check" name="paymentMethod" id="pay-venmo" checked onclick="setPaymentMethod('venmo')">
+            <input type="radio" class="btn-check" name="paymentMethod" id="pay-venmo" onclick="setPaymentMethod('venmo')">
             <label class="btn btn-outline-secondary" for="pay-venmo"><i class="bi bi-phone"></i> Venmo</label>
             <input type="radio" class="btn-check" name="paymentMethod" id="pay-cash" onclick="setPaymentMethod('cash')">
             <label class="btn btn-outline-secondary" for="pay-cash"><i class="bi bi-cash"></i> Cash</label>
@@ -187,6 +202,7 @@
           <button class="btn btn-outline-secondary" onclick="goToStep(3)">Back</button>
           <button class="btn btn-primary flex-fill" onclick="submitOrder()" id="step4-submit">Place Order</button>
         </div>
+        <p class="text-center small mt-3"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
       </div>
 
     </div>
@@ -218,6 +234,14 @@
     </div>
 
   </div>
+
+  <div class="text-center py-4">
+    <p class="small text-muted mb-1">Follow us on Instagram</p>
+    <a href="https://instagram.com/EdwardsFamilyBakery" target="_blank" class="text-decoration-none text-dark">
+      <i class="bi bi-instagram fs-4"></i> <span class="small">@EdwardsFamilyBakery</span>
+    </a>
+  </div>
+
   <div class="mb-5"></div>
 </div>
 
