@@ -32,6 +32,10 @@
   .btn:disabled, .btn.disabled { background-color: #e9ecef !important; border-color: #dee2e6 !important; color: #adb5bd !important; opacity: 1 !important; }
   #discountApplyBtn:disabled { background-color: transparent !important; border-color: #6c757d !important; color: #adb5bd !important; opacity: 1 !important; }
   */
+  /* TEMPORARY DIAGNOSTIC - prevents any field from being focused/tapped at all,
+     to test whether iOS Safari's "scroll to keep focused field visible" behavior
+     is interfering with our scroll-to-top on step transitions. */
+  input, select, textarea { pointer-events: none !important; }
 </style>
 </head>
 <body>
@@ -42,7 +46,7 @@
 
 <div id="app" class="d-none">
 
-  <div style="position: fixed; top: 50px; right: 10px; z-index: 999999; color: #fff; background: #ff1493; font-weight: bold; font-size: 16px; padding: 4px 10px; border-radius: 6px; pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">v11</div>
+  <div style="position: fixed; top: 50px; right: 10px; z-index: 999999; color: #fff; background: #ff1493; font-weight: bold; font-size: 16px; padding: 4px 10px; border-radius: 6px; pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">v12</div>
   <nav id="pageHeader" class="navbar navbar-dark bg-dark sticky-top">
     <div class="container">
       <img id="logoImg" class="d-none" alt="Edwards Family Bakery"/>
