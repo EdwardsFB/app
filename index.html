@@ -38,7 +38,7 @@
 
 <div id="app">
 
-  <div style="position: fixed; top: 50px; right: 10px; z-index: 999999; color: #fff; background: #ff1493; font-weight: bold; font-size: 16px; padding: 4px 10px; border-radius: 6px; pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">v19</div>
+  <div style="position: fixed; top: 50px; right: 10px; z-index: 999999; color: #fff; background: #ff1493; font-weight: bold; font-size: 16px; padding: 4px 10px; border-radius: 6px; pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">v20</div>
   <nav id="pageHeader" class="navbar navbar-dark bg-dark sticky-top">
     <div class="container">
       <img id="logoImg" class="d-none" alt="Edwards Family Bakery"/>
@@ -94,36 +94,30 @@
         <h2 class="h5 mb-3 d-flex justify-content-between align-items-center">Pickup or Delivery? <span class="small text-muted fw-normal">Step 3 of 4</span></h2>
         <div class="card">
           <div class="card-body">
-                        <p>Dummy filler paragraph 1 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 2 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 3 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 4 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 5 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 6 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 7 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 8 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 9 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 10 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 11 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 12 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 13 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 14 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 15 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 16 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 17 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 18 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 19 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 20 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 21 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 22 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 23 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 24 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 25 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 26 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 27 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 28 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 29 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 30 to force real scroll, matching the height of the product grid step.</p>
+            <div class="btn-group w-100 mb-3" role="group" aria-label="Pickup or delivery">
+              <input type="radio" class="btn-check" name="fulfillment" id="rad-pickup" onclick="setFulfillment('pickup')">
+              <label class="btn btn-outline-secondary" for="rad-pickup"><i class="bi bi-cart4"></i> Pickup</label>
+              <input type="radio" class="btn-check" name="fulfillment" id="rad-delivery" onclick="setFulfillment('delivery')">
+              <label class="btn btn-outline-secondary" for="rad-delivery"><i class="bi bi-truck"></i> Delivery</label>
+            </div>
+            <div id="fulfillmentDetailsField" class="d-none">
+              <div id="addressField" class="d-none mb-2">
+                <div class="row g-2 mb-2"><div class="col form-floating"><input id="cf-street" class="form-control" type="text" placeholder="Street Address" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-street">Street Address <span class="text-danger">*</span></label></div></div>
+                <div class="row g-2">
+                  <div class="col-6 form-floating"><input id="cf-city" class="form-control" type="text" placeholder="City" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-city">City <span class="text-danger">*</span></label></div>
+                  <div class="col-3 form-floating"><input id="cf-state" class="form-control" type="text" maxlength="2" placeholder="State" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-state">State <span class="text-danger">*</span></label></div>
+                  <div class="col-3 form-floating"><input id="cf-zip" class="form-control" type="text" inputmode="numeric" placeholder="ZIP" oninput="formatZipInput(this); this.classList.toggle('has-value', !!this.value);"/><label for="cf-zip">ZIP <span class="text-danger">*</span></label></div>
+                </div>
+              </div>
+              <div class="row g-2 mb-2 mt-2">
+                <div class="col form-floating"><select id="cf-date" class="form-select" onchange="this.classList.toggle('has-value', !!this.value); updateContinueState(3);"><option value="" disabled selected>Select</option></select><label for="cf-date" id="cf-date-label">Pickup Date <span class="text-danger">*</span></label></div>
+              </div>
+              <div class="row g-2"><div class="col form-floating">
+                <textarea id="cf-notes" class="form-control" style="height:80px;" placeholder="Notes"></textarea>
+                <label for="cf-notes">Notes</label>
+              </div></div>
+            </div>
+            <div id="step3Error" class="text-danger small mt-2 mb-0"></div>
           </div>
           <div class="card-footer d-flex gap-2">
             <button class="btn btn-outline-secondary" onclick="goToStep(2)">Back</button>

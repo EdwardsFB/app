@@ -30,6 +30,8 @@ async function init() {
   }
   applyLogo();
   renderProducts();
+  wireLiveValidation();
+  updateContinueState(1);
   document.getElementById('loading').classList.add('d-none');
   document.getElementById('app').classList.remove('d-none');
   window.scrollTo(0, 0);
