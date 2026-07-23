@@ -90,6 +90,12 @@ function checkPhoneForMatch() {
   msg.className = 'small mb-2 text-success';
   msg.textContent = `Welcome back, ${match.firstName}!`;
   updateContinueState(1);
+
+  // We just auto-filled everything for them — dismiss the keyboard rather than
+  // leaving some other field focused (and its text selected) as if it needs editing.
+  if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+    document.activeElement.blur();
+  }
 }
 
 // ══════════════════════════════════════════
@@ -203,7 +209,7 @@ function populateDateOptions(type) {
   const allowedDayNames = allowedDaysStr.split(',').filter(Boolean);
   const dates = getUpcomingDatesForDays(allowedDayNames, 3);
   const select = document.getElementById('cf-date');
-  select.innerHTML = `<option value="" disabled selected></option>` +
+  select.innerHTML = `<option value="" disabled selected>Select</option>` +
     dates.map(d => `<option value="${d}">${esc(formatDateHuman(d))}</option>`).join('');
   select.classList.remove('has-value');
 }
@@ -357,7 +363,11 @@ function goToStep(step) {
   document.getElementById('stickyTotalBar').classList.toggle('d-none', step !== 2);
   if (step === 2) updateStickyTotal();
   if (step === 4) {
-    if (appliedDiscountPct === 0) document.getElementById('discountCodeMsg').textContent = '';
+    if (appliedDiscountPct === 0) {
+      document.getElementById('discountCodeMsg').textContent = '';
+      document.getElementById('discountCodeInput').value = '';
+      document.getElementById('discountApplyBtn').disabled = true;
+    }
     renderReview();
   }
   updateContinueState(step);

@@ -14,7 +14,7 @@
   .form-floating > .form-control.has-value ~ label { transform: scale(.85) translateY(-.5rem) translateX(.15rem); }
   button, .btn { touch-action: manipulation; }
   body { background-color: #212529; }
-  #pageHeader { position: sticky; top: 0; z-index: 1030; background-color: #212529; }
+  #pageHeader { position: sticky; top: 0; z-index: 1030; background-color: #212529; -webkit-transform: translateZ(0); transform: translateZ(0); }
   #cf-date { color: #adb5bd; }
   #discountCodeInput::placeholder { color: #adb5bd; }
   #cf-date.has-value { color: #212529; }
@@ -43,7 +43,7 @@
 
   <div id="pageHeader" class="bg-dark text-white text-center py-4 mb-4">
     <img id="logoImg" class="d-none mb-4" style="max-height:70px;" alt="Edwards Family Bakery"/>
-    <h1 id="brandText" class="h3 mb-1">Edwards Family Bakery</h1>
+    <h1 id="brandText" class="h3 mb-0">Edwards Family Bakery</h1>
     <!-- Tagline removed per request — restore if asked: <p class="mb-0 small text-white-50">Fresh-milled bread and homemade goods, baked weekly.</p> -->
   </div>
 
@@ -116,7 +116,7 @@
                 </div>
               </div>
               <div class="row g-2 mb-2 mt-2">
-                <div class="col form-floating"><select id="cf-date" class="form-select" onchange="this.classList.toggle('has-value', !!this.value); updateContinueState(3);"><option value="" disabled selected></option></select><label for="cf-date" id="cf-date-label">Pickup Date <span class="text-danger">*</span></label></div>
+                <div class="col form-floating"><select id="cf-date" class="form-select" onchange="this.classList.toggle('has-value', !!this.value); updateContinueState(3);"><option value="" disabled selected>Select</option></select><label for="cf-date" id="cf-date-label">Pickup Date <span class="text-danger">*</span></label></div>
               </div>
               <div class="row g-2"><div class="col form-floating">
                 <textarea id="cf-notes" class="form-control" style="height:80px;" placeholder="Notes"></textarea>

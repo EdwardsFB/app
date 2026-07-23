@@ -6,7 +6,7 @@ if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
 let products = [], orders = [], customers = [], settings = {};
 let currentAdminTab = 'home';
 let currentOrderFilter = 'all';
-let editingOrderId = null, editingProductId = null, editingCustomerRecordId = null;
+let editingOrderId = null, editingProductId = null, editingCustomerRecordId = null, editingCustomerOriginalPhone = null;
 let omQty = {}, omOptions = {}, omDiscountPctSelected = 0, omCustomerMode = 'new', omExistingList = [];
 let dragProductId = null;
 let customerSortCol = 'lastName', customerSortDir = 'asc';
@@ -963,6 +963,7 @@ function updateCmSaveState() {
 
 function openCustomerModal(existing) {
   editingCustomerRecordId = existing ? existing.recordId : null;
+  editingCustomerOriginalPhone = existing ? existing.phone : null;
   document.getElementById('customerModalTitle').textContent = existing ? 'Edit Customer' : 'Add Customer';
   document.getElementById('cm-first').value = existing ? existing.firstName : '';
   document.getElementById('cm-last').value = existing ? existing.lastName : '';
@@ -1032,8 +1033,13 @@ async function saveCustomerFromModal() {
       saveBtn.textContent = originalText;
     }
   } else {
-    const key = custKey(data);
-    const existingRec = customers.find(c => custKey(c)===key);
+    // No real record yet — search using the ORIGINAL identity (phone, if we had one),
+    // not the just-edited values. Otherwise renaming someone creates a duplicate instead
+    // of updating them, since the new name won't match anything that already exists.
+    const originalKey = editingCustomerOriginalPhone ? custKey({ phone: editingCustomerOriginalPhone }) : null;
+    const existingRec = originalKey
+      ? customers.find(c => custKey(c) === originalKey)
+      : customers.find(c => custKey(c) === custKey(data));
     if (existingRec) {
       Object.assign(existingRec, data);
       try {
