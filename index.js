@@ -349,6 +349,16 @@ function validateStep(step) {
 }
 
 function goToStep(step) {
+  // TEMPORARY DIAGNOSTIC - stripped down to match the vanilla test exactly (hide all,
+  // show target, scroll) to isolate whether our extra validation/state logic is
+  // interfering with scroll. Validation and Continue-button state are intentionally
+  // disabled in this build - navigation is unrestricted for testing purposes only.
+  document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('d-none'));
+  document.getElementById('step'+step).classList.remove('d-none');
+  currentStep = step;
+  window.scrollTo(0,0);
+  return;
+
   if (step > currentStep) {
     const err = validateStep(currentStep);
     if (err) {
