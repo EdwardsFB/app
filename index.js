@@ -65,7 +65,7 @@ function cancelOrder() {
 
 function lookupSectionHtml() {
   return `
-    <div class="form-floating">
+    <div id="lookupPhoneWrap" class="form-floating">
       <input id="lookupPhone" name="fld-a1" type="tel" autocomplete="off" class="form-control" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value);" onblur="lookupReturningCustomer()" placeholder="Phone Number"/>
       <label for="lookupPhone">Enter your phone number</label>
     </div>
@@ -148,8 +148,9 @@ function lookupReturningCustomer() {
     setFieldValue('cf-zip', parts.zip || '');
   }
 
+  document.getElementById('lookupPhoneWrap').classList.add('d-none');
   msg.className = 'small mt-2 text-success';
-  msg.textContent = `Welcome back, ${match.firstName}! We filled in your info below — feel free to update anything that's changed.`;
+  msg.textContent = `Welcome back, ${match.firstName}!`;
   updateContinueState(1);
 }
 
