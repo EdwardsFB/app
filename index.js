@@ -364,16 +364,14 @@ function goToStep(step) {
   // intentionally skipped to isolate whether that's interfering with scroll.
   // Content rendering (totals, review) still runs normally - that's not what's
   // being tested here.
+  if (step === 4) renderReview();
   document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('d-none'));
   document.getElementById('step'+step).classList.remove('d-none');
-  if (step === 4) renderReview();
   currentStep = step;
   if (document.activeElement && document.activeElement !== document.body) {
     document.activeElement.blur();
   }
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => window.scrollTo(0,0));
-  });
+  window.scrollTo(0,0);
   return;
 
   if (step > currentStep) {
