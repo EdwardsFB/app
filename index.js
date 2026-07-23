@@ -375,7 +375,9 @@ function goToStep(step) {
   }
   updateContinueState(step);
   currentStep = step;
-  window.scrollTo(0,0);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => window.scrollTo(0,0));
+  });
 }
 
 // ══════════════════════════════════════════
@@ -435,7 +437,9 @@ async function submitOrder() {
 
     document.getElementById('wizardScreen').classList.add('d-none');
     document.getElementById('confirmScreen').classList.remove('d-none');
-    window.scrollTo(0,0);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => window.scrollTo(0,0));
+    });
   } catch (err) {
     errEl.textContent = 'Something went wrong placing your order: ' + err.message + '. Please try again, or let us know if this keeps happening.';
     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Place Order'; }
