@@ -473,14 +473,14 @@ window.addEventListener('pageshow', (event) => {
   if (event.persisted) location.reload();
 });
 
-// iOS Safari can otherwise leave a field's virtual keyboard open unnecessarily.
-// Detect when focus actually leaves the form (as opposed to moving to another
-// field) and scroll back to the top in that case.
-document.getElementById('step1').addEventListener('focusout', () => {
+// iOS Safari can otherwise leave content scrolled in the wrong position after a
+// field's virtual keyboard dismisses. Detect when focus actually leaves the form
+// (as opposed to moving to another field) and scroll back to the top in that case.
+document.getElementById('wizardScreen').addEventListener('focusout', () => {
   setTimeout(() => {
     const active = document.activeElement;
     const stillEditing = active && ['INPUT','TEXTAREA','SELECT'].includes(active.tagName);
-    if (!stillEditing) window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!stillEditing) window.scrollTo(0, 0);
   }, 100);
 });
 
