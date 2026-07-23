@@ -364,33 +364,45 @@ function goToStep(step) {
   const currentErrEl = document.getElementById('step'+currentStep+'Error');
   if (currentErrEl) currentErrEl.textContent = '';
 
-  document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('d-none'));
-  document.getElementById('step'+step).classList.remove('d-none');
-  if (step === 2) updateStickyTotal();
-  if (step === 4) {
-    if (appliedDiscountPct === 0) {
-      document.getElementById('discountCodeMsg').textContent = '';
-      document.getElementById('discountCodeInput').value = '';
-      document.getElementById('discountApplyBtn').disabled = true;
-    }
-    renderReview();
-  }
-  updateContinueState(step);
-  currentStep = step;
   const forceScrollTop = () => {
     window.scrollTo(0,0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
-    syncHeaderPadding();
   };
+
+  const showStep = () => {
+    document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('d-none'));
+    document.getElementById('step'+step).classList.remove('d-none');
+    if (step === 2) updateStickyTotal();
+    if (step === 4) {
+      if (appliedDiscountPct === 0) {
+        document.getElementById('discountCodeMsg').textContent = '';
+        document.getElementById('discountCodeInput').value = '';
+        document.getElementById('discountApplyBtn').disabled = true;
+      }
+      renderReview();
+    }
+    updateContinueState(step);
+    currentStep = step;
+    syncHeaderPadding();
+    forceScrollTop();
+    // Re-assert a few more times after the swap too, in case the new step's own
+    // content (e.g. step 3's date dropdown) shifts the page height right afterward.
+    [0, 50, 150, 300].forEach(delay => setTimeout(() => { forceScrollTop(); syncHeaderPadding(); }, delay));
+  };
+
+  // Scroll to the top BEFORE swapping which step is visible — while the current
+  // (possibly very tall) step is still on screen to scroll within. iOS Safari's
+  // momentum scrolling can override a scrollTo() call made while still decelerating
+  // from a prior gesture, and every previous attempt here tried to out-wait that
+  // AFTER the swap, once the document had already gone from tall to short under it.
+  // Confirming we're at 0 first, then swapping only once we're actually there,
+  // removes that interaction entirely instead of racing it.
   forceScrollTop();
-  requestAnimationFrame(forceScrollTop);
-  // iOS Safari's momentum/bounce scrolling can override a programmatic scrollTo while
-  // it's still decelerating from a prior gesture - most likely right here, since step 2
-  // (the product grid) is by far the tallest step and needs the most scrolling to reach
-  // its Continue button. Keep re-asserting the scroll position until well after any
-  // realistic momentum would have settled.
-  [50, 100, 200, 400, 600].forEach(delay => setTimeout(forceScrollTop, delay));
+  requestAnimationFrame(() => {
+    forceScrollTop();
+    setTimeout(showStep, 60);
+  });
 }
 
 // ══════════════════════════════════════════

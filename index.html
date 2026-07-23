@@ -15,6 +15,7 @@
   button, .btn { touch-action: manipulation; }
   html, body { overflow-anchor: none; }
   body { background-color: #f8f9fa; }
+  #notchCover { position: fixed; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); background-color: #212529; z-index: 1031; -webkit-transform: translate3d(0,0,0); transform: translate3d(0,0,0); }
   #pageHeader { position: fixed; top: 0; left: 0; right: 0; z-index: 1030; background-color: #212529; padding-top: 1.1rem; padding-bottom: 1.1rem; -webkit-transform: translate3d(0,0,0); transform: translate3d(0,0,0); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
   #logoImg { max-height: 52px; -webkit-transform: translate3d(0,0,0); transform: translate3d(0,0,0); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
   #brandText { -webkit-transform: translate3d(0,0,0); transform: translate3d(0,0,0); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
@@ -43,6 +44,7 @@
 
 <div id="app" class="d-none">
 
+  <div id="notchCover"></div>
   <div id="pageHeader" class="bg-dark text-white text-center">
     <img id="logoImg" class="d-none" alt="Edwards Family Bakery" onload="syncHeaderPadding()"/>
     <h1 id="brandText" class="h3 mb-0">Edwards Family Bakery</h1>
