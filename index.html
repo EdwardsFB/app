@@ -42,7 +42,7 @@
 
 <div id="app" class="d-none">
 
-  <div style="position: fixed; top: 50px; right: 10px; z-index: 999999; color: #fff; background: #ff1493; font-weight: bold; font-size: 16px; padding: 4px 10px; border-radius: 6px; pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">v09</div>
+  <div style="position: fixed; top: 50px; right: 10px; z-index: 999999; color: #fff; background: #ff1493; font-weight: bold; font-size: 16px; padding: 4px 10px; border-radius: 6px; pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">v10</div>
   <div id="pageHeader" class="sticky-top bg-dark text-white text-center py-4 mb-4">
     <img id="logoImg" class="d-none" alt="Edwards Family Bakery"/>
     <h1 id="brandText" class="h3 mb-0">Edwards Family Bakery</h1>
@@ -85,7 +85,34 @@
         <h2 class="h5 mb-3 d-flex justify-content-between align-items-center">Menu <span class="small text-muted fw-normal">Step 2 of 4</span></h2>
         <div class="card">
           <div class="card-body">
-            <div id="productsList" class="row row-cols-2 row-cols-md-3 g-3 mb-3"></div>
+            <!-- TEMPORARY DIAGNOSTIC: static dummy cards replacing the real product grid -->
+            <div class="row row-cols-2 row-cols-md-3 g-3 mb-3">
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 1</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 2</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 3</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 4</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 5</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 6</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 7</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 8</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 9</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 10</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 11</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 12</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 13</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 14</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 15</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 16</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 17</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 18</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 19</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 20</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 21</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 22</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 23</h5><p class="card-text">Dummy description text.</p></div></div></div>
+              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 24</h5><p class="card-text">Dummy description text.</p></div></div></div>
+            </div>
+            <div id="productsList" class="d-none"></div>
             <div class="card text-white" style="background-color: #212529;">
               <div class="card-body">
                 <div class="d-flex justify-content-between small"><span id="stickyItemCount">0 items</span></div>
@@ -107,7 +134,9 @@
         <h2 class="h5 mb-3 d-flex justify-content-between align-items-center">Pickup or Delivery? <span class="small text-muted fw-normal">Step 3 of 4</span></h2>
         <div class="card">
           <div class="card-body">
-            <div class="btn-group w-100 mb-3" role="group" aria-label="Pickup or delivery">
+            <!-- TEMPORARY DIAGNOSTIC: simple dummy text replacing the real form -->
+            <p>This is short dummy content replacing the real pickup/delivery form, to test whether the form's complexity affects scroll behavior.</p>
+            <div class="btn-group w-100 mb-3 d-none" role="group" aria-label="Pickup or delivery">
               <input type="radio" class="btn-check" name="fulfillment" id="rad-pickup" onclick="setFulfillment('pickup')">
               <label class="btn btn-outline-secondary" for="rad-pickup"><i class="bi bi-cart4"></i> Pickup</label>
               <input type="radio" class="btn-check" name="fulfillment" id="rad-delivery" onclick="setFulfillment('delivery')">

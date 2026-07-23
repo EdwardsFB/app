@@ -105,6 +105,17 @@ function checkPhoneForMatch() {
 // ══════════════════════════════════════════
 
 function renderProducts() {
+  // TEMPORARY DIAGNOSTIC - real product grid replaced with simple static dummy
+  // cards (identical structure to the vanilla test) to isolate whether product
+  // card complexity (interactive qty buttons, deeper DOM nesting) is interfering
+  // with scroll. Cart/checkout functionality is not usable in this build.
+  let dummyHtml = '';
+  for (let i = 1; i <= 24; i++) {
+    dummyHtml += `<div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item ${i}</h5><p class="card-text">Dummy product description text goes here to fill space.</p></div></div></div>`;
+  }
+  document.getElementById('productsList').innerHTML = dummyHtml;
+  return;
+
   const visibleProducts = products.filter(p => p.active !== false);
   cQty = {};
   cOptions = {};
