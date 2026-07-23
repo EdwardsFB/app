@@ -29,6 +29,7 @@ async function init() {
     return;
   }
   applyLogo();
+  syncHeaderPadding();
   renderProducts();
   wireLiveValidation();
   updateContinueState(1);
@@ -377,6 +378,8 @@ function goToStep(step) {
   updateContinueState(step);
   currentStep = step;
   window.scrollTo(0,0);
+  requestAnimationFrame(() => window.scrollTo(0,0));
+  setTimeout(() => window.scrollTo(0,0), 50);
 }
 
 // ══════════════════════════════════════════
@@ -451,9 +454,25 @@ window.addEventListener('pageshow', (event) => {
   if (event.persisted) location.reload();
 });
 
-// iOS Safari can leave the sticky header scrolled out of view after the on-screen
-// keyboard closes. Detect when focus actually leaves the form (as opposed to moving
-// to another field) and scroll back to the top in that case.
+// The header is a fixed-position element (see index.html for why — Bootstrap's own
+// docs recommend this over position:sticky for reliability), so it's pulled out of
+// normal document flow. Keep the page content's top padding in sync with its actual
+// height, which changes as it shrinks/grows on scroll.
+function syncHeaderPadding() {
+  const header = document.getElementById('pageHeader');
+  document.body.style.paddingTop = (header.offsetHeight + 24) + 'px';
+}
+
+window.addEventListener('scroll', () => {
+  document.getElementById('pageHeader').classList.toggle('shrink', window.scrollY > 40);
+  syncHeaderPadding();
+}, { passive: true });
+
+window.addEventListener('resize', syncHeaderPadding);
+
+// iOS Safari can otherwise leave a field's virtual keyboard open unnecessarily.
+// Detect when focus actually leaves the form (as opposed to moving to another
+// field) and scroll back to the top in that case.
 document.getElementById('wizardScreen').addEventListener('focusout', () => {
   setTimeout(() => {
     const active = document.activeElement;

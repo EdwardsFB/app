@@ -14,7 +14,12 @@
   .form-floating > .form-control.has-value ~ label { transform: scale(.85) translateY(-.5rem) translateX(.15rem); }
   button, .btn { touch-action: manipulation; }
   body { background-color: #212529; }
-  #pageHeader { position: sticky; top: 0; z-index: 1030; background-color: #212529; -webkit-transform: translateZ(0); transform: translateZ(0); }
+  #pageHeader { position: fixed; top: 0; left: 0; right: 0; z-index: 1030; background-color: #212529; padding-top: 1.5rem; padding-bottom: 1.5rem; transition: padding .25s ease; }
+  #pageHeader.shrink { padding-top: .6rem; padding-bottom: .6rem; }
+  #logoImg { max-height: 70px; transition: max-height .25s ease; }
+  #pageHeader.shrink #logoImg { max-height: 35px; }
+  #brandText { transition: font-size .25s ease; }
+  #pageHeader.shrink #brandText { font-size: 1.05rem; }
   #cf-date { color: #adb5bd; }
   #discountCodeInput::placeholder { color: #adb5bd; }
   #cf-date.has-value { color: #212529; }
@@ -41,7 +46,7 @@
 
 <div id="app" class="d-none">
 
-  <div id="pageHeader" class="bg-dark text-white text-center py-4 mb-4">
+  <div id="pageHeader" class="bg-dark text-white text-center">
     <img id="logoImg" class="d-none" style="max-height:70px;" alt="Edwards Family Bakery"/>
     <h1 id="brandText" class="h3 mb-0">Edwards Family Bakery</h1>
     <!-- Tagline removed per request — restore if asked: <p class="mb-0 small text-white-50">Fresh-milled bread and homemade goods, baked weekly.</p> -->
