@@ -29,8 +29,9 @@ function updateDebugLive() {
   const live = document.getElementById('debugLive');
   if (!live || !header) return;
   live.textContent =
-    `step=${currentStep} scrollY=${Math.round(window.scrollY)} docScrollTop=${Math.round(document.documentElement.scrollTop)} bodyScrollTop=${Math.round(document.body.scrollTop)}\n` +
-    `headerH=${Math.round(header.offsetHeight)} bodyPadTop=${document.body.style.paddingTop} safeAreaTop=${Math.round(getSafeAreaTop())}px\n` +
+    `step=${currentStep} scrollY=${window.scrollY.toFixed(2)} docScrollTop=${document.documentElement.scrollTop.toFixed(2)} bodyScrollTop=${document.body.scrollTop.toFixed(2)}\n` +
+    `scrollingElement=${document.scrollingElement === document.documentElement ? 'documentElement' : (document.scrollingElement === document.body ? 'body' : 'other/null')}\n` +
+    `headerH=${Math.round(header.offsetHeight)} bodyPadTop=${document.body.style.paddingTop} safeAreaTop=${getSafeAreaTop().toFixed(1)}px\n` +
     `innerW=${window.innerWidth} innerH=${window.innerHeight} orientation=${window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'}` +
     (window.visualViewport ? ` vvH=${Math.round(window.visualViewport.height)} vvOffTop=${Math.round(window.visualViewport.offsetTop)}` : '');
 }
@@ -397,9 +398,12 @@ function goToStep(step) {
 
   const forceScrollTop = (tag) => {
     window.scrollTo(0,0);
+    const afterWindowScrollTo = window.scrollY;
     document.documentElement.scrollTop = 0;
+    const afterDocElSet = window.scrollY;
     document.body.scrollTop = 0;
-    debugLog(`  forceScrollTop[${tag}] -> scrollY=${Math.round(window.scrollY)}`);
+    const afterBodySet = window.scrollY;
+    debugLog(`  [${tag}] afterWindowScrollTo=${afterWindowScrollTo.toFixed(2)} afterDocElSet=${afterDocElSet.toFixed(2)} afterBodySet=${afterBodySet.toFixed(2)} docElScrollTop=${document.documentElement.scrollTop.toFixed(2)} bodyScrollTop=${document.body.scrollTop.toFixed(2)}`);
   };
 
   // Evidence from on-device logging: calling scrollTo(0,0) before the swap had zero
