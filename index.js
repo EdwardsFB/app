@@ -376,6 +376,12 @@ function goToStep(step) {
   updateContinueState(step);
   currentStep = step;
   window.scrollTo(0,0);
+  // A single scrollTo(0,0) doesn't always reliably reach 0 on iOS Safari if there's
+  // residual scroll momentum from the previous step (most likely here, since step 2's
+  // product grid is by far the tallest step). Reassert a few times, spaced well apart
+  // rather than rapid-fire, which on-device testing showed can itself interrupt
+  // Safari's own settling process.
+  [50, 300, 800].forEach(delay => setTimeout(() => window.scrollTo(0,0), delay));
 }
 
 // ══════════════════════════════════════════
