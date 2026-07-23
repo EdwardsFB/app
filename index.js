@@ -402,41 +402,31 @@ function goToStep(step) {
     debugLog(`  forceScrollTop[${tag}] -> scrollY=${Math.round(window.scrollY)}`);
   };
 
-  const showStep = () => {
-    debugLog(`  showStep(${step}) swapping DOM, scrollY before=${Math.round(window.scrollY)}`);
-    document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('d-none'));
-    document.getElementById('step'+step).classList.remove('d-none');
-    if (step === 2) updateStickyTotal();
-    if (step === 4) {
-      if (appliedDiscountPct === 0) {
-        document.getElementById('discountCodeMsg').textContent = '';
-        document.getElementById('discountCodeInput').value = '';
-        document.getElementById('discountApplyBtn').disabled = true;
-      }
-      renderReview();
+  // Evidence from on-device logging: calling scrollTo(0,0) before the swap had zero
+  // effect (695 -> 695 -> 695) while step 2's tall content was still showing, and
+  // calling it 5x rapidly right after the swap got stuck around 61-63px instead of
+  // decaying toward 0 - suspiciously close to Safari's own toolbar height, suggesting
+  // the repeated calls may have been interrupting Safari's own toolbar-reveal
+  // animation before it could finish. Dropped the ineffective pre-swap attempts;
+  // trying one scroll immediately after the swap, then a single patient wait
+  // instead of hammering it.
+  debugLog(`  swapping DOM, scrollY before=${Math.round(window.scrollY)}`);
+  document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('d-none'));
+  document.getElementById('step'+step).classList.remove('d-none');
+  if (step === 2) updateStickyTotal();
+  if (step === 4) {
+    if (appliedDiscountPct === 0) {
+      document.getElementById('discountCodeMsg').textContent = '';
+      document.getElementById('discountCodeInput').value = '';
+      document.getElementById('discountApplyBtn').disabled = true;
     }
-    updateContinueState(step);
-    currentStep = step;
-    syncHeaderPadding();
-    forceScrollTop('after-swap');
-    debugLog(`  showStep(${step}) done, scrollY after=${Math.round(window.scrollY)}`);
-    // Re-assert a few more times after the swap too, in case the new step's own
-    // content (e.g. step 3's date dropdown) shifts the page height right afterward.
-    [0, 50, 150, 300].forEach(delay => setTimeout(() => { forceScrollTop('delay-'+delay); syncHeaderPadding(); }, delay));
-  };
-
-  // Scroll to the top BEFORE swapping which step is visible — while the current
-  // (possibly very tall) step is still on screen to scroll within. iOS Safari's
-  // momentum scrolling can override a scrollTo() call made while still decelerating
-  // from a prior gesture, and every previous attempt here tried to out-wait that
-  // AFTER the swap, once the document had already gone from tall to short under it.
-  // Confirming we're at 0 first, then swapping only once we're actually there,
-  // removes that interaction entirely instead of racing it.
-  forceScrollTop('pre-swap-immediate');
-  requestAnimationFrame(() => {
-    forceScrollTop('pre-swap-raf');
-    setTimeout(showStep, 60);
-  });
+    renderReview();
+  }
+  updateContinueState(step);
+  currentStep = step;
+  syncHeaderPadding();
+  forceScrollTop('immediate');
+  setTimeout(() => { forceScrollTop('delay-700'); syncHeaderPadding(); }, 700);
 }
 
 // ══════════════════════════════════════════
