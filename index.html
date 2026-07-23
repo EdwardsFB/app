@@ -32,7 +32,6 @@
   }
   .wizard-step { animation: fadeIn .15s ease-in; }
   @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-  #stickyTotalBar { z-index:1030; }
   .product-card-img { height:120px; object-fit:cover; background:#e9ecef; }
   .btn:disabled, .btn.disabled { background-color: #e9ecef !important; border-color: #dee2e6 !important; color: #adb5bd !important; opacity: 1 !important; }
   #discountApplyBtn:disabled { background-color: transparent !important; border-color: #6c757d !important; color: #adb5bd !important; opacity: 1 !important; }
@@ -91,6 +90,10 @@
           <div class="card-body">
             <div id="productsList" class="row row-cols-2 row-cols-md-3 g-3"></div>
             <div id="step2Error" class="text-danger small mt-2 mb-0"></div>
+          </div>
+          <div class="card-body border-top bg-primary text-white d-flex justify-content-between align-items-center py-2">
+            <span id="stickyItemCount" class="small">0 items</span>
+            <span id="stickyTotal" class="fw-bold">$0.00</span>
           </div>
           <div class="card-footer d-flex gap-2">
             <button class="btn btn-outline-secondary" onclick="goToStep(1)">Back</button>
@@ -245,11 +248,6 @@
       </div>
     </div>
   </div>
-</div>
-
-<div id="stickyTotalBar" class="d-none position-fixed bottom-0 start-0 end-0 bg-primary text-white py-2 px-3 d-flex justify-content-between align-items-center">
-  <span id="stickyItemCount" class="small">0 items</span>
-  <span id="stickyTotal" class="fw-bold">$0.00</span>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

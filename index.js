@@ -173,23 +173,6 @@ function getSelectedOptionsFor(productId) {
   return Object.keys(opts).map(name => ({ name, price: opts[name] }));
 }
 
-// iOS 26 Safari has ongoing, documented bugs where position:fixed elements near the
-// bottom of the screen don't correctly track the visible area as the toolbar shows/
-// hides during scroll. The visualViewport API reports the actual visible viewport
-// directly, so we position the bar against that instead of trusting CSS alone.
-function positionStickyBar() {
-  const bar = document.getElementById('stickyTotalBar');
-  if (!bar || bar.classList.contains('d-none') || !window.visualViewport) return;
-  const vv = window.visualViewport;
-  const offsetBottom = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
-  bar.style.bottom = offsetBottom + 'px';
-}
-if (window.visualViewport) {
-  window.visualViewport.addEventListener('resize', positionStickyBar);
-  window.visualViewport.addEventListener('scroll', positionStickyBar);
-}
-window.addEventListener('scroll', positionStickyBar, { passive: true });
-
 function updateStickyTotal() {
   let count = 0, total = 0;
   products.forEach(p => {
@@ -383,8 +366,6 @@ function goToStep(step) {
 
   document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('d-none'));
   document.getElementById('step'+step).classList.remove('d-none');
-  document.getElementById('stickyTotalBar').classList.toggle('d-none', step !== 2);
-  if (step === 2) positionStickyBar();
   if (step === 2) updateStickyTotal();
   if (step === 4) {
     if (appliedDiscountPct === 0) {
@@ -397,10 +378,15 @@ function goToStep(step) {
   updateContinueState(step);
   currentStep = step;
   document.getElementById('pageHeader').classList.remove('shrink');
-  window.scrollTo(0,0);
-  syncHeaderPadding();
-  requestAnimationFrame(() => { window.scrollTo(0,0); syncHeaderPadding(); });
-  setTimeout(() => { window.scrollTo(0,0); syncHeaderPadding(); }, 50);
+  const forceScrollTop = () => { window.scrollTo(0,0); syncHeaderPadding(); };
+  forceScrollTop();
+  requestAnimationFrame(forceScrollTop);
+  // iOS Safari's momentum/bounce scrolling can override a programmatic scrollTo while
+  // it's still decelerating from a prior gesture - most likely right here, since step 2
+  // (the product grid) is by far the tallest step and needs the most scrolling to reach
+  // its Continue button. Keep re-asserting the scroll position until well after any
+  // realistic momentum would have settled.
+  [50, 100, 200, 400, 600].forEach(delay => setTimeout(forceScrollTop, delay));
 }
 
 // ══════════════════════════════════════════
@@ -459,7 +445,6 @@ async function submitOrder() {
     }
 
     document.getElementById('wizardScreen').classList.add('d-none');
-    document.getElementById('stickyTotalBar').classList.add('d-none');
     document.getElementById('confirmScreen').classList.remove('d-none');
     window.scrollTo(0,0);
   } catch (err) {
