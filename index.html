@@ -38,7 +38,7 @@
 
 <div id="app">
 
-  <div style="position: fixed; top: 50px; right: 10px; z-index: 999999; color: #fff; background: #ff1493; font-weight: bold; font-size: 16px; padding: 4px 10px; border-radius: 6px; pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">v14</div>
+  <div style="position: fixed; top: 50px; right: 10px; z-index: 999999; color: #fff; background: #ff1493; font-weight: bold; font-size: 16px; padding: 4px 10px; border-radius: 6px; pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">v15</div>
   <nav id="pageHeader" class="navbar navbar-dark bg-dark sticky-top">
     <div class="container">
       <img id="logoImg" class="d-none" alt="Edwards Family Bakery"/>
@@ -56,20 +56,7 @@
         <h2 class="h5 mb-3 d-flex justify-content-between align-items-center">Your Info <span class="small text-muted fw-normal">Step 1 of 4</span></h2>
         <div class="card">
           <div class="card-body">
-            <div class="form-floating mb-2">
-              <input id="cf-phone" name="fld-d4" class="form-control" type="tel" autocomplete="off" placeholder="Phone" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value); updateContinueState(1);" onblur="checkPhoneForMatch()"/>
-              <label for="cf-phone">Phone <span class="text-danger">*</span></label>
-            </div>
-            <div id="phoneMatchMsg" class="small mb-2"></div>
-            <div class="row g-2 mb-2">
-              <div class="col form-floating"><input id="cf-first" name="fld-b2" class="form-control" type="text" autocomplete="off" placeholder="First Name" oninput="this.classList.toggle('has-value', !!this.value); updateContinueState(1);"/><label for="cf-first">First Name <span class="text-danger">*</span></label></div>
-              <div class="col form-floating"><input id="cf-last" name="fld-c3" class="form-control" type="text" autocomplete="off" placeholder="Last Name" oninput="this.classList.toggle('has-value', !!this.value); updateContinueState(1);"/><label for="cf-last">Last Name <span class="text-danger">*</span></label></div>
-            </div>
-            <div class="row g-2">
-              <div class="col form-floating"><input id="cf-email" name="fld-e5" class="form-control" type="email" autocomplete="off" placeholder="Email" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-email">Email</label></div>
-            </div>
-
-            <div id="step1Error" class="text-danger small mt-2 mb-0"></div>
+            <p>Dummy step 1 content. No real fields.</p>
           </div>
           <div class="card-footer">
             <button class="btn btn-primary w-100" onclick="goToStep(2)" id="step1-continue">Continue</button>
@@ -77,148 +64,47 @@
         </div>
       </div>
 
-      <!-- STEP 2: Products -->
       <div id="step2" class="wizard-step d-none">
         <h2 class="h5 mb-3 d-flex justify-content-between align-items-center">Menu <span class="small text-muted fw-normal">Step 2 of 4</span></h2>
         <div class="card">
           <div class="card-body">
-            <!-- TEMPORARY DIAGNOSTIC: static dummy cards replacing the real product grid -->
-            <div class="row row-cols-2 row-cols-md-3 g-3 mb-3">
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 1</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 2</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 3</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 4</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 5</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 6</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 7</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 8</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 9</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 10</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 11</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 12</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 13</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 14</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 15</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 16</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 17</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 18</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 19</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 20</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 21</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 22</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 23</h5><p class="card-text">Dummy description text.</p></div></div></div>
-              <div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item 24</h5><p class="card-text">Dummy description text.</p></div></div></div>
-            </div>
-            <div id="productsList" class="d-none"></div>
-            <div class="card text-white" style="background-color: #212529;">
-              <div class="card-body">
-                <div class="d-flex justify-content-between small"><span id="stickyItemCount">0 items</span></div>
-                <div class="d-flex justify-content-between align-items-center"><span class="h6 mb-0">Total</span><span id="stickyTotal" class="h4 mb-0">$0.00</span></div>
-              </div>
-            </div>
-            <div id="step2Error" class="text-danger small mt-2 mb-0"></div>
+            <div id="productsList" class="row row-cols-2 row-cols-md-3 g-3 mb-3"></div>
           </div>
           <div class="card-footer d-flex gap-2">
             <button class="btn btn-outline-secondary" onclick="goToStep(1)">Back</button>
             <button class="btn btn-primary flex-fill" onclick="goToStep(3)" id="step2-continue">Continue</button>
           </div>
         </div>
-        <p class="text-center small mt-4"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
       </div>
 
-      <!-- STEP 3: Fulfillment -->
       <div id="step3" class="wizard-step d-none">
         <h2 class="h5 mb-3 d-flex justify-content-between align-items-center">Pickup or Delivery? <span class="small text-muted fw-normal">Step 3 of 4</span></h2>
         <div class="card">
           <div class="card-body">
-            <!-- TEMPORARY DIAGNOSTIC: simple dummy text replacing the real form -->
-            <p>This is short dummy content replacing the real pickup/delivery form, to test whether the form's complexity affects scroll behavior.</p>
-            <div class="btn-group w-100 mb-3 d-none" role="group" aria-label="Pickup or delivery">
-              <input type="radio" class="btn-check" name="fulfillment" id="rad-pickup" onclick="setFulfillment('pickup')">
-              <label class="btn btn-outline-secondary" for="rad-pickup"><i class="bi bi-cart4"></i> Pickup</label>
-              <input type="radio" class="btn-check" name="fulfillment" id="rad-delivery" onclick="setFulfillment('delivery')">
-              <label class="btn btn-outline-secondary" for="rad-delivery"><i class="bi bi-truck"></i> Delivery</label>
-            </div>
-            <div id="fulfillmentDetailsField" class="d-none">
-              <div id="addressField" class="d-none mb-2">
-                <div class="row g-2 mb-2"><div class="col form-floating"><input id="cf-street" class="form-control" type="text" placeholder="Street Address" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-street">Street Address <span class="text-danger">*</span></label></div></div>
-                <div class="row g-2">
-                  <div class="col-6 form-floating"><input id="cf-city" class="form-control" type="text" placeholder="City" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-city">City <span class="text-danger">*</span></label></div>
-                  <div class="col-3 form-floating"><input id="cf-state" class="form-control" type="text" maxlength="2" placeholder="State" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-state">State <span class="text-danger">*</span></label></div>
-                  <div class="col-3 form-floating"><input id="cf-zip" class="form-control" type="text" inputmode="numeric" placeholder="ZIP" oninput="formatZipInput(this); this.classList.toggle('has-value', !!this.value);"/><label for="cf-zip">ZIP <span class="text-danger">*</span></label></div>
-                </div>
-              </div>
-              <div class="row g-2 mb-2 mt-2">
-                <div class="col form-floating"><select id="cf-date" class="form-select" onchange="this.classList.toggle('has-value', !!this.value); updateContinueState(3);"><option value="" disabled selected>Select</option></select><label for="cf-date" id="cf-date-label">Pickup Date <span class="text-danger">*</span></label></div>
-              </div>
-              <div class="row g-2"><div class="col form-floating">
-                <textarea id="cf-notes" class="form-control" style="height:80px;" placeholder="Notes"></textarea>
-                <label for="cf-notes">Notes</label>
-              </div></div>
-            </div>
-            <div id="step3Error" class="text-danger small mt-2 mb-0"></div>
+            <p>Dummy step 3 content. No real fields.</p>
           </div>
           <div class="card-footer d-flex gap-2">
             <button class="btn btn-outline-secondary" onclick="goToStep(2)">Back</button>
             <button class="btn btn-primary flex-fill" onclick="goToStep(4)" id="step3-continue">Continue</button>
           </div>
         </div>
-        <p class="text-center small mt-4"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
       </div>
 
-      <!-- STEP 4: Review & Payment -->
       <div id="step4" class="wizard-step d-none">
         <h2 class="h5 mb-3 d-flex justify-content-between align-items-center">Review Order <span class="small text-muted fw-normal">Step 4 of 4</span></h2>
         <div class="card">
           <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h3 class="h6 text-uppercase text-muted mb-0">Items</h3>
-              <a href="#" class="small" onclick="goToStep(2); return false;">Edit</a>
-            </div>
-            <div id="reviewItems"></div>
-          </div>
-          <div class="card-body border-top">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h3 class="h6 text-uppercase text-muted mb-0">Contact & Fulfillment</h3>
-              <a href="#" class="small" onclick="goToStep(1); return false;">Edit</a>
-            </div>
-            <div id="reviewContact" class="small"></div>
-          </div>
-          <div class="card-body border-top">
-            <div class="mb-3">
-              <label class="form-label d-block">Discount Code (optional)</label>
-              <div class="input-group">
-                <input id="discountCodeInput" type="text" class="form-control" style="border-color:#6c757d;" placeholder="Enter code" oninput="this.value = this.value.toUpperCase(); document.getElementById('discountApplyBtn').disabled = !this.value;">
-                <button id="discountApplyBtn" class="btn btn-outline-secondary" type="button" onclick="applyDiscountCode()" disabled>Apply</button>
-              </div>
-              <div id="discountCodeMsg" class="small mt-1"></div>
-            </div>
-            <div class="mb-3">
-              <label class="form-label d-block">Payment Method</label>
-              <div class="btn-group w-100" role="group" aria-label="Payment method">
-                <input type="radio" class="btn-check" name="paymentMethod" id="pay-venmo" onclick="setPaymentMethod('venmo')">
-                <label class="btn btn-outline-secondary" for="pay-venmo"><i class="bi bi-phone"></i> Venmo</label>
-                <input type="radio" class="btn-check" name="paymentMethod" id="pay-cash" onclick="setPaymentMethod('cash')">
-                <label class="btn btn-outline-secondary" for="pay-cash"><i class="bi bi-piggy-bank"></i> Cash</label>
-              </div>
-            </div>
-            <div class="card bg-dark text-white">
-              <div class="card-body">
-                <div class="d-flex justify-content-between small d-none" id="reviewDiscountRow"><span>Discount</span><span id="reviewDiscountAmt">-$0.00</span></div>
-                <div class="d-flex justify-content-between align-items-center"><span class="h6 mb-0">Total</span><span id="reviewTotal" class="h4 mb-0">$0.00</span></div>
-              </div>
-            </div>
-            <div id="step4Error" class="text-danger small mt-2 mb-0"></div>
+            <p>Dummy step 4 content. No real fields.</p>
           </div>
           <div class="card-footer d-flex gap-2">
             <button class="btn btn-outline-secondary" onclick="goToStep(3)">Back</button>
-            <button class="btn btn-primary flex-fill" onclick="submitOrder()" id="step4-submit">Place Order</button>
+            <button class="btn btn-primary flex-fill" onclick="alert('Done!')" id="step4-submit">Place Order</button>
           </div>
         </div>
-        <p class="text-center small mt-4"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
       </div>
 
     </div>
+
 
     <!-- CONFIRMATION -->
     <div id="confirmScreen" class="d-none text-center py-5">
