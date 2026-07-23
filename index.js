@@ -349,12 +349,14 @@ function validateStep(step) {
 }
 
 function goToStep(step) {
-  // TEMPORARY DIAGNOSTIC - stripped down to match the vanilla test exactly (hide all,
-  // show target, scroll) to isolate whether our extra validation/state logic is
-  // interfering with scroll. Validation and Continue-button state are intentionally
-  // disabled in this build - navigation is unrestricted for testing purposes only.
+  // TEMPORARY DIAGNOSTIC - validation and Continue-button disabled-state logic
+  // intentionally skipped to isolate whether that's interfering with scroll.
+  // Content rendering (totals, review) still runs normally - that's not what's
+  // being tested here.
   document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('d-none'));
   document.getElementById('step'+step).classList.remove('d-none');
+  if (step === 2) updateStickyTotal();
+  if (step === 4) renderReview();
   currentStep = step;
   window.scrollTo(0,0);
   return;
