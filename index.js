@@ -8,16 +8,6 @@ let paymentMethod = null;
 let appliedDiscountPct = 0;
 const VENMO_HANDLE = 'edwardsfamilybakery';
 
-// Browsers automatically try to manage/restore scroll position on their own during
-// navigation-like changes (default: 'auto'), and Safari's version of this takes
-// multiple animation frames to finish - competing with our own scrollTo(0,0) calls
-// on step changes the entire time. This is the actual documented fix used by React
-// Router, Vue Router, etc. for this exact class of bug: take that away from the
-// browser entirely so our own scroll calls aren't fighting anything.
-if ('scrollRestoration' in history) {
-  history.scrollRestoration = 'manual';
-}
-
 async function init() {
   // Defend against the browser restoring old form values on reload/back-forward navigation.
   ['cf-phone','cf-first','cf-last','cf-email','cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
@@ -385,7 +375,7 @@ function goToStep(step) {
   }
   updateContinueState(step);
   currentStep = step;
-  document.getElementById('step'+step).scrollIntoView({ block: 'start' });
+  window.scrollTo(0,0);
 }
 
 // ══════════════════════════════════════════
@@ -445,7 +435,7 @@ async function submitOrder() {
 
     document.getElementById('wizardScreen').classList.add('d-none');
     document.getElementById('confirmScreen').classList.remove('d-none');
-    document.getElementById('confirmScreen').scrollIntoView({ block: 'start' });
+    window.scrollTo(0,0);
   } catch (err) {
     errEl.textContent = 'Something went wrong placing your order: ' + err.message + '. Please try again, or let us know if this keeps happening.';
     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Place Order'; }
