@@ -8,6 +8,36 @@ let paymentMethod = null;
 let appliedDiscountPct = 0;
 const VENMO_HANDLE = 'edwardsfamilybakery';
 
+// ══════════════════════════════════════════
+// TEMPORARY DEBUG OVERLAY — remove once the scroll/notch issues are diagnosed
+// ══════════════════════════════════════════
+let debugLogEntries = [];
+function debugLog(msg) {
+  const t = new Date();
+  const ts = String(t.getMinutes()).padStart(2,'0') + ':' + String(t.getSeconds()).padStart(2,'0') + '.' + String(t.getMilliseconds()).padStart(3,'0');
+  debugLogEntries.unshift(`[${ts}] ${msg}`);
+  debugLogEntries = debugLogEntries.slice(0, 60);
+  const el = document.getElementById('debugLog');
+  if (el) el.textContent = debugLogEntries.join('\n');
+}
+function getSafeAreaTop() {
+  const probe = document.getElementById('safeAreaProbe');
+  return probe ? parseFloat(getComputedStyle(probe).paddingTop) || 0 : 0;
+}
+function updateDebugLive() {
+  const header = document.getElementById('pageHeader');
+  const live = document.getElementById('debugLive');
+  if (!live || !header) return;
+  live.textContent =
+    `step=${currentStep} scrollY=${Math.round(window.scrollY)} docScrollTop=${Math.round(document.documentElement.scrollTop)} bodyScrollTop=${Math.round(document.body.scrollTop)}\n` +
+    `headerH=${Math.round(header.offsetHeight)} bodyPadTop=${document.body.style.paddingTop} safeAreaTop=${Math.round(getSafeAreaTop())}px\n` +
+    `innerW=${window.innerWidth} innerH=${window.innerHeight} orientation=${window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'}` +
+    (window.visualViewport ? ` vvH=${Math.round(window.visualViewport.height)} vvOffTop=${Math.round(window.visualViewport.offsetTop)}` : '');
+}
+window.addEventListener('scroll', updateDebugLive, { passive: true });
+window.addEventListener('resize', updateDebugLive);
+setInterval(updateDebugLive, 300);
+
 async function init() {
   // Defend against the browser restoring old form values on reload/back-forward navigation.
   ['cf-phone','cf-first','cf-last','cf-email','cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
@@ -353,6 +383,7 @@ function validateStep(step) {
 }
 
 function goToStep(step) {
+  debugLog(`goToStep(${step}) called, scrollY=${Math.round(window.scrollY)}`);
   if (step > currentStep) {
     const err = validateStep(currentStep);
     if (err) {
@@ -364,13 +395,15 @@ function goToStep(step) {
   const currentErrEl = document.getElementById('step'+currentStep+'Error');
   if (currentErrEl) currentErrEl.textContent = '';
 
-  const forceScrollTop = () => {
+  const forceScrollTop = (tag) => {
     window.scrollTo(0,0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
+    debugLog(`  forceScrollTop[${tag}] -> scrollY=${Math.round(window.scrollY)}`);
   };
 
   const showStep = () => {
+    debugLog(`  showStep(${step}) swapping DOM, scrollY before=${Math.round(window.scrollY)}`);
     document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('d-none'));
     document.getElementById('step'+step).classList.remove('d-none');
     if (step === 2) updateStickyTotal();
@@ -385,10 +418,11 @@ function goToStep(step) {
     updateContinueState(step);
     currentStep = step;
     syncHeaderPadding();
-    forceScrollTop();
+    forceScrollTop('after-swap');
+    debugLog(`  showStep(${step}) done, scrollY after=${Math.round(window.scrollY)}`);
     // Re-assert a few more times after the swap too, in case the new step's own
     // content (e.g. step 3's date dropdown) shifts the page height right afterward.
-    [0, 50, 150, 300].forEach(delay => setTimeout(() => { forceScrollTop(); syncHeaderPadding(); }, delay));
+    [0, 50, 150, 300].forEach(delay => setTimeout(() => { forceScrollTop('delay-'+delay); syncHeaderPadding(); }, delay));
   };
 
   // Scroll to the top BEFORE swapping which step is visible — while the current
@@ -398,9 +432,9 @@ function goToStep(step) {
   // AFTER the swap, once the document had already gone from tall to short under it.
   // Confirming we're at 0 first, then swapping only once we're actually there,
   // removes that interaction entirely instead of racing it.
-  forceScrollTop();
+  forceScrollTop('pre-swap-immediate');
   requestAnimationFrame(() => {
-    forceScrollTop();
+    forceScrollTop('pre-swap-raf');
     setTimeout(showStep, 60);
   });
 }
@@ -482,12 +516,14 @@ window.addEventListener('pageshow', (event) => {
 function syncHeaderPadding() {
   const header = document.getElementById('pageHeader');
   document.body.style.paddingTop = (header.offsetHeight + 24) + 'px';
+  debugLog(`syncHeaderPadding: headerH=${Math.round(header.offsetHeight)} -> bodyPadTop=${document.body.style.paddingTop}`);
 }
 
 window.addEventListener('resize', syncHeaderPadding);
 window.addEventListener('orientationchange', () => {
+  debugLog(`orientationchange fired: innerW=${window.innerWidth} innerH=${window.innerHeight} safeAreaTop=${Math.round(getSafeAreaTop())}px`);
   syncHeaderPadding();
-  setTimeout(syncHeaderPadding, 150); // safe-area insets can lag slightly behind the resize itself
+  setTimeout(() => { syncHeaderPadding(); debugLog(`  +150ms after rotation: safeAreaTop=${Math.round(getSafeAreaTop())}px`); }, 150);
 });
 
 // iOS Safari can otherwise leave a field's virtual keyboard open unnecessarily.
