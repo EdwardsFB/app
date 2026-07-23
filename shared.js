@@ -208,8 +208,8 @@ function getMergedCustomers(products, orders, customers) {
       };
       map.set(k, entry);
     } else {
-      entry.firstName = o.firstName; entry.lastName = o.lastName;
-      if (o.phone) entry.phone = o.phone;
+      if (!entry.recordId) { entry.firstName = o.firstName; entry.lastName = o.lastName; }
+      if (!entry.recordId && o.phone) entry.phone = o.phone;
       if (!entry.recordId && (o.address || o.deliveryAddress)) entry.address = o.address || o.deliveryAddress;
     }
     entry.orderCount += 1;

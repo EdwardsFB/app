@@ -93,9 +93,13 @@ function checkPhoneForMatch() {
 
   // We just auto-filled everything for them — dismiss the keyboard rather than
   // leaving some other field focused (and its text selected) as if it needs editing.
-  if (document.activeElement && document.activeElement.tagName === 'INPUT') {
-    document.activeElement.blur();
-  }
+  // The delay matters: iOS Safari's own focus-jump hasn't necessarily settled yet
+  // at the moment this runs, so blurring immediately can miss it entirely.
+  setTimeout(() => {
+    if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+      document.activeElement.blur();
+    }
+  }, 50);
 }
 
 // ══════════════════════════════════════════
