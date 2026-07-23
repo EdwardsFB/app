@@ -39,7 +39,6 @@ async function init() {
   applyLogo();
   renderProducts();
   wireLiveValidation();
-  updateStepperUI(1);
   updateContinueState(1);
   document.getElementById('loading').classList.add('d-none');
   document.getElementById('app').classList.remove('d-none');
@@ -447,25 +446,9 @@ function goToStep(step) {
   document.getElementById('stickyTotalBar').classList.toggle('d-none', step !== 2);
   if (step === 2) updateStickyTotal();
   if (step === 4) renderReview();
-  updateStepperUI(step);
   updateContinueState(step);
   currentStep = step;
   window.scrollTo(0,0);
-}
-
-function stepCircleClick(step) {
-  if (step < currentStep) goToStep(step); // only completed steps are clickable
-}
-
-function updateStepperUI(step) {
-  const labels = ['Your Info', 'Menu', 'Pickup/Delivery', 'Review & Pay'];
-  document.getElementById('stepperLabel').textContent = `Step ${step} of 4 — ${labels[step-1]}`;
-  document.querySelectorAll('.step-circle').forEach(el => {
-    const s = parseInt(el.dataset.step, 10);
-    el.classList.remove('step-active','step-complete');
-    if (s < step) el.classList.add('step-complete');
-    else if (s === step) el.classList.add('step-active');
-  });
 }
 
 // ══════════════════════════════════════════

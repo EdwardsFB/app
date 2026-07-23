@@ -1201,16 +1201,16 @@ function renderProductionTab() {
 
   container.innerHTML = filterBarHtml + `
     <h4 class="text-muted mb-3">Prep</h4>
-    <div class="row row-cols-2 row-cols-md-3 g-3 mb-4">
+    <div class="card mb-4 shadow-sm"><div class="card-body"><div class="row row-cols-2 row-cols-md-3 g-3">
       ${bakeProducts.map(p => {
         const done = totals[p.id] === 0;
         return `
-        <div class="col"><div class="card h-100 shadow-sm efb-bg-light ${done ? 'border-success' : ''}"><div class="card-body">
+        <div class="col"><div class="card h-100 efb-bg-light ${done ? 'border-success' : ''}"><div class="card-body">
           <div class="fs-5 fw-bold">${esc(p.name)}</div>
           <div class="display-5 fw-bold ${done ? 'text-success' : ''}">${done ? '✓' : totals[p.id]}</div>
         </div></div></div>
       `;}).join('')}
-    </div>
+    </div></div></div>
 
     <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-3">Pickup <span class="badge rounded-pill text-bg-secondary" style="font-size:0.75rem;">${pickups.length}</span></h4>
     ${pickups.length ? `<div class="card mb-3 shadow-sm"><div class="card-body"><div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">${pickups.map(o => orderCard(o)).join('')}</div></div></div>` : ''}
