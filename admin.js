@@ -1139,9 +1139,9 @@ function renderProductionTab() {
   const active = productionDateFilter === 'all' ? allActive : allActive.filter(o => (o.date || '') === productionDateFilter);
 
   const filterBarHtml = distinctDates.length < 2 ? '' : `
-    <div class="d-flex flex-wrap gap-2 mb-4">
-      ${distinctDates.map(d => `<button class="btn btn-sm ${productionDateFilter === d ? 'btn-dark' : 'btn-outline-secondary'}" onclick="setProductionDateFilter('${d}')">${esc(formatProductionDateLabel(d))}</button>`).join('')}
-      <button class="btn btn-sm ${productionDateFilter === 'all' ? 'btn-dark' : 'btn-outline-secondary'}" onclick="setProductionDateFilter('all')">All</button>
+    <div class="btn-group mb-3" id="productionFilterTabs" role="group" aria-label="Filter by date">
+      ${distinctDates.map(d => `<button class="btn btn-outline-secondary ${productionDateFilter === d ? 'active' : ''}" onclick="setProductionDateFilter('${d}')">${esc(formatProductionDateLabel(d))}</button>`).join('')}
+      <button class="btn btn-outline-secondary ${productionDateFilter === 'all' ? 'active' : ''}" onclick="setProductionDateFilter('all')">All</button>
     </div>
   `;
 

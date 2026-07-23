@@ -66,12 +66,9 @@ function cancelOrder() {
 
 function lookupSectionHtml() {
   return `
-    <div class="input-group">
-      <div class="form-floating">
-        <input id="lookupPhone" name="fld-a1" type="tel" autocomplete="off" class="form-control" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value);" placeholder="Phone Number"/>
-        <label for="lookupPhone">Enter your phone number</label>
-      </div>
-      <button class="btn btn-outline-secondary" onclick="lookupReturningCustomer()" aria-label="Find My Info"><i class="bi bi-search"></i></button>
+    <div class="form-floating">
+      <input id="lookupPhone" name="fld-a1" type="tel" autocomplete="off" class="form-control" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value);" onblur="lookupReturningCustomer()" placeholder="Phone Number"/>
+      <label for="lookupPhone">Enter your phone number</label>
     </div>
     <div id="lookupMsg" class="small mt-2"></div>
   `;
@@ -121,7 +118,7 @@ function lookupReturningCustomer() {
   const phone = document.getElementById('lookupPhone').value.trim();
   const msg = document.getElementById('lookupMsg');
   const normed = normPhone(phone);
-  if (!normed) { msg.className = 'small mt-2 text-danger'; msg.textContent = 'Please enter the phone number you used before.'; return; }
+  if (!normed) { msg.textContent = ''; return; }
 
   const match = getMergedCustomers(products, orders, customers).find(c => normPhone(c.phone) === normed);
   document.getElementById('contactFieldsSection').classList.remove('d-none');
