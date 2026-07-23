@@ -4,26 +4,18 @@ let cQty = {};
 let cOptions = {}; // cOptions[productId] = { optionName: price } for currently-checked options
 let currentFulfillment = null;
 let currentStep = 1;
-let hasOrderedBefore = null;
 let paymentMethod = null;
 let appliedDiscountPct = 0;
 const VENMO_HANDLE = 'edwardsfamilybakery';
 
 async function init() {
   // Defend against the browser restoring old form values on reload/back-forward navigation.
-  hasOrderedBefore = null;
-  ['lookupPhone','cf-first','cf-last','cf-phone','cf-email'].forEach(id => {
+  ['cf-phone','cf-first','cf-last','cf-email','cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.value = '';
+    if (el) { el.value = ''; el.classList.remove('has-value'); }
   });
-  document.getElementById('btn-ordered-yes').classList.remove('active');
-  document.getElementById('btn-ordered-no').classList.remove('active');
-  document.getElementById('lookupSection').classList.add('d-none');
-  document.getElementById('contactFieldsSection').classList.add('d-none');
-  const lookupMsgEl = document.getElementById('lookupMsg');
-  if (lookupMsgEl) lookupMsgEl.textContent = '';
-  const foundMsgEl = document.getElementById('foundExistingMsg');
-  if (foundMsgEl) foundMsgEl.innerHTML = '';
+  const phoneMatchMsgEl = document.getElementById('phoneMatchMsg');
+  if (phoneMatchMsgEl) phoneMatchMsgEl.textContent = '';
 
   try {
     const data = await apiGetAll();
@@ -63,79 +55,23 @@ function cancelOrder() {
 // STEP 1 — CONTACT INFO
 // ══════════════════════════════════════════
 
-function lookupSectionHtml() {
-  return `
-    <div id="lookupPhoneWrap" class="form-floating">
-      <input id="lookupPhone" name="fld-a1" type="tel" autocomplete="off" class="form-control" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value);" onblur="lookupReturningCustomer()" placeholder="Phone Number"/>
-      <label for="lookupPhone">Enter your phone number</label>
-    </div>
-    <div id="lookupMsg" class="small mt-2"></div>
-  `;
-}
-
-function contactFieldsHtml() {
-  return `
-    <div class="row g-2 mb-2">
-      <div class="col form-floating"><input id="cf-first" name="fld-b2" class="form-control" type="text" autocomplete="off" placeholder="First Name" oninput="this.classList.toggle('has-value', !!this.value); updateContinueState(1);"/><label for="cf-first">First Name <span class="text-danger">*</span></label></div>
-      <div class="col form-floating"><input id="cf-last" name="fld-c3" class="form-control" type="text" autocomplete="off" placeholder="Last Name" oninput="this.classList.toggle('has-value', !!this.value); updateContinueState(1);"/><label for="cf-last">Last Name <span class="text-danger">*</span></label></div>
-    </div>
-    <div class="row g-2 mb-2">
-      <div class="col form-floating"><input id="cf-phone" name="fld-d4" class="form-control" type="tel" autocomplete="off" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value); updateContinueState(1);" onblur="checkForExistingCustomerOnNoPath()" placeholder="Phone"/><label for="cf-phone">Phone <span class="text-danger">*</span></label></div>
-      <div class="col form-floating"><input id="cf-email" name="fld-e5" class="form-control" type="email" autocomplete="off" placeholder="Email" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-email">Email</label></div>
-    </div>
-    <div id="foundExistingMsg" class="small mb-2"></div>
-  `;
-}
-
-function setOrderedBefore(val) {
-  hasOrderedBefore = val;
-  document.getElementById('btn-ordered-yes').classList.toggle('active', val === true);
-  document.getElementById('btn-ordered-no').classList.toggle('active', val === false);
-  document.getElementById('lookupSection').classList.toggle('d-none', !val);
-
-  // Fully rebuild both sections from scratch every time — a brand new DOM node
-  // can't carry stale autofill state the way clearing an existing one can on Safari.
-  document.getElementById('lookupSection').innerHTML = lookupSectionHtml();
-  document.getElementById('contactFieldsSection').innerHTML = contactFieldsHtml();
-  ['cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
-    const el = document.getElementById(id);
-    el.value = '';
-    el.classList.remove('has-value');
-  });
-
-  document.getElementById('contactFieldsSection').classList.toggle('d-none', !!val);
-  updateContinueState(1);
-}
-
 function setFieldValue(id, value) {
   const el = document.getElementById(id);
   el.value = value || '';
   el.classList.toggle('has-value', !!value);
 }
 
-function lookupReturningCustomer() {
-  const phone = document.getElementById('lookupPhone').value.trim();
-  const msg = document.getElementById('lookupMsg');
+function checkPhoneForMatch() {
+  const phone = document.getElementById('cf-phone').value.trim();
+  const msg = document.getElementById('phoneMatchMsg');
   const normed = normPhone(phone);
   if (!normed) { msg.textContent = ''; return; }
 
   const match = getMergedCustomers(products, orders, customers).find(c => normPhone(c.phone) === normed);
-  document.getElementById('contactFieldsSection').classList.remove('d-none');
-
-  if (!match) {
-    msg.className = 'small mt-2 text-danger';
-    msg.textContent = "We couldn't find a record with that phone number — no problem, just fill in your info below.";
-    setFieldValue('cf-first', '');
-    setFieldValue('cf-last', '');
-    setFieldValue('cf-phone', phone);
-    setFieldValue('cf-email', '');
-    updateContinueState(1);
-    return;
-  }
+  if (!match) { msg.textContent = ''; return; }
 
   setFieldValue('cf-first', match.firstName);
   setFieldValue('cf-last', match.lastName);
-  setFieldValue('cf-phone', match.phone);
   setFieldValue('cf-email', match.email || '');
 
   if (match.address) {
@@ -146,10 +82,11 @@ function lookupReturningCustomer() {
     setFieldValue('cf-city', parts.city || '');
     setFieldValue('cf-state', parts.state || '');
     setFieldValue('cf-zip', parts.zip || '');
+    document.getElementById('rad-delivery').checked = true;
+    setFulfillment('delivery');
   }
 
-  document.getElementById('lookupPhoneWrap').classList.add('d-none');
-  msg.className = 'small mt-2 text-success';
+  msg.className = 'small mb-2 text-success';
   msg.textContent = `Welcome back, ${match.firstName}!`;
   updateContinueState(1);
 }
@@ -372,41 +309,13 @@ function wireLiveValidation() {
   document.getElementById('rad-delivery').addEventListener('change', () => updateContinueState(3));
 }
 
-function checkForExistingCustomerOnNoPath() {
-  const msgEl = document.getElementById('foundExistingMsg');
-  if (hasOrderedBefore !== false) { msgEl.innerHTML = ''; return; } // only relevant on the "No" path
-  const phone = document.getElementById('cf-phone').value.trim();
-  const normed = normPhone(phone);
-  if (!normed) { msgEl.innerHTML = ''; return; }
-  const match = getMergedCustomers(products, orders, customers).find(c => normPhone(c.phone) === normed);
-  if (match) {
-    msgEl.innerHTML = `<span class="text-primary">Looks like we already have a record for this number under ${esc(match.firstName)} ${esc(match.lastName)}. <a href="#" onclick="useFoundExistingCustomer(); return false;">Use that info instead?</a></span>`;
-  } else {
-    msgEl.innerHTML = '';
-  }
-}
-
-function useFoundExistingCustomer() {
-  const phone = document.getElementById('cf-phone').value.trim();
-  const normed = normPhone(phone);
-  const match = getMergedCustomers(products, orders, customers).find(c => normPhone(c.phone) === normed);
-  if (!match) return;
-  setFieldValue('cf-first', match.firstName);
-  setFieldValue('cf-last', match.lastName);
-  setFieldValue('cf-phone', match.phone);
-  setFieldValue('cf-email', match.email || '');
-  document.getElementById('foundExistingMsg').innerHTML = `<span class="text-success">Got it — using ${esc(match.firstName)}'s info.</span>`;
-  updateContinueState(1);
-}
-
 function validateStep(step) {
   if (step === 1) {
-    if (hasOrderedBefore === null) return "Please let us know if you've ordered with us before.";
     const first = document.getElementById('cf-first').value.trim();
     const last = document.getElementById('cf-last').value.trim();
     const phone = document.getElementById('cf-phone').value.trim();
-    if (!first || !last) return 'Please enter your first and last name.';
     if (!phone) return 'Please enter a phone number.';
+    if (!first || !last) return 'Please enter your first and last name.';
   }
   if (step === 2) {
     const anyItems = Object.values(cQty).some(q => q > 0);
