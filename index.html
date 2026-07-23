@@ -13,6 +13,7 @@
   .form-floating > label { color: #6c757d !important; }
   .form-floating > .form-control.has-value ~ label { transform: scale(.85) translateY(-.5rem) translateX(.15rem); }
   button, .btn { touch-action: manipulation; }
+  html, body { overflow-anchor: none; }
   body { background-color: #212529; }
   #pageHeader { position: fixed; top: 0; left: 0; right: 0; z-index: 1030; background-color: #212529; padding-top: 1.1rem; padding-bottom: 1.1rem; -webkit-transform: translate3d(0,0,0); transform: translate3d(0,0,0); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
   #logoImg { max-height: 52px; -webkit-transform: translate3d(0,0,0); transform: translate3d(0,0,0); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
@@ -34,7 +35,7 @@
   #discountApplyBtn:disabled { background-color: transparent !important; border-color: #6c757d !important; color: #adb5bd !important; opacity: 1 !important; }
 </style>
 </head>
-<body class="bg-light">
+<body>
 
 <div id="loading" class="d-flex justify-content-center align-items-center" style="height:100vh;">
   <div class="spinner-border text-secondary" role="status"></div>
@@ -85,12 +86,14 @@
         <h2 class="h5 mb-3 d-flex justify-content-between align-items-center">Menu <span class="small text-muted fw-normal">Step 2 of 4</span></h2>
         <div class="card">
           <div class="card-body">
-            <div id="productsList" class="row row-cols-2 row-cols-md-3 g-3"></div>
+            <div id="productsList" class="row row-cols-2 row-cols-md-3 g-3 mb-3"></div>
+            <div class="card text-white" style="background-color: #212529;">
+              <div class="card-body d-flex justify-content-between align-items-center py-2">
+                <span id="stickyItemCount" class="small">0 items</span>
+                <span id="stickyTotal" class="fw-bold">$0.00</span>
+              </div>
+            </div>
             <div id="step2Error" class="text-danger small mt-2 mb-0"></div>
-          </div>
-          <div class="card-body border-top text-white d-flex justify-content-between align-items-center py-2" style="background-color: #212529;">
-            <span id="stickyItemCount" class="small">0 items</span>
-            <span id="stickyTotal" class="fw-bold">$0.00</span>
           </div>
           <div class="card-footer d-flex gap-2">
             <button class="btn btn-outline-secondary" onclick="goToStep(1)">Back</button>

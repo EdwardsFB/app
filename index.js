@@ -377,7 +377,12 @@ function goToStep(step) {
   }
   updateContinueState(step);
   currentStep = step;
-  const forceScrollTop = () => { window.scrollTo(0,0); syncHeaderPadding(); };
+  const forceScrollTop = () => {
+    window.scrollTo(0,0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    syncHeaderPadding();
+  };
   forceScrollTop();
   requestAnimationFrame(forceScrollTop);
   // iOS Safari's momentum/bounce scrolling can override a programmatic scrollTo while
@@ -468,6 +473,10 @@ function syncHeaderPadding() {
 }
 
 window.addEventListener('resize', syncHeaderPadding);
+window.addEventListener('orientationchange', () => {
+  syncHeaderPadding();
+  setTimeout(syncHeaderPadding, 150); // safe-area insets can lag slightly behind the resize itself
+});
 
 // iOS Safari can otherwise leave a field's virtual keyboard open unnecessarily.
 // Detect when focus actually leaves the form (as opposed to moving to another
