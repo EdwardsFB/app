@@ -371,7 +371,9 @@ function goToStep(step) {
   if (document.activeElement && document.activeElement !== document.body) {
     document.activeElement.blur();
   }
-  window.scrollTo(0,0);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => window.scrollTo(0,0));
+  });
   return;
 
   if (step > currentStep) {
