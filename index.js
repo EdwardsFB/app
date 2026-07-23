@@ -366,6 +366,7 @@ function goToStep(step) {
   // being tested here.
   document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('d-none'));
   document.getElementById('step'+step).classList.remove('d-none');
+  if (step === 4) renderReview();
   currentStep = step;
   if (document.activeElement && document.activeElement !== document.body) {
     document.activeElement.blur();

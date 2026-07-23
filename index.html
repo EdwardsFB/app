@@ -38,7 +38,7 @@
 
 <div id="app">
 
-  <div style="position: fixed; top: 50px; right: 10px; z-index: 999999; color: #fff; background: #ff1493; font-weight: bold; font-size: 16px; padding: 4px 10px; border-radius: 6px; pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">v21</div>
+  <div style="position: fixed; top: 50px; right: 10px; z-index: 999999; color: #fff; background: #ff1493; font-weight: bold; font-size: 16px; padding: 4px 10px; border-radius: 6px; pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">v22</div>
   <nav id="pageHeader" class="navbar navbar-dark bg-dark sticky-top">
     <div class="container">
       <img id="logoImg" class="d-none" alt="Edwards Family Bakery"/>
@@ -147,40 +147,48 @@
         <h2 class="h5 mb-3 d-flex justify-content-between align-items-center">Review Order <span class="small text-muted fw-normal">Step 4 of 4</span></h2>
         <div class="card">
           <div class="card-body">
-                        <p>Dummy filler paragraph 1 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 2 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 3 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 4 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 5 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 6 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 7 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 8 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 9 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 10 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 11 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 12 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 13 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 14 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 15 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 16 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 17 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 18 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 19 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 20 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 21 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 22 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 23 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 24 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 25 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 26 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 27 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 28 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 29 to force real scroll, matching the height of the product grid step.</p>
-            <p>Dummy filler paragraph 30 to force real scroll, matching the height of the product grid step.</p>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h3 class="h6 text-uppercase text-muted mb-0">Items</h3>
+              <a href="#" class="small" onclick="goToStep(2); return false;">Edit</a>
+            </div>
+            <div id="reviewItems"></div>
+          </div>
+          <div class="card-body border-top">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h3 class="h6 text-uppercase text-muted mb-0">Contact & Fulfillment</h3>
+              <a href="#" class="small" onclick="goToStep(1); return false;">Edit</a>
+            </div>
+            <div id="reviewContact" class="small"></div>
+          </div>
+          <div class="card-body border-top">
+            <div class="mb-3">
+              <label class="form-label d-block">Discount Code (optional)</label>
+              <div class="input-group">
+                <input id="discountCodeInput" type="text" class="form-control" style="border-color:#6c757d;" placeholder="Enter code" oninput="this.value = this.value.toUpperCase(); document.getElementById('discountApplyBtn').disabled = !this.value;">
+                <button id="discountApplyBtn" class="btn btn-outline-secondary" type="button" onclick="applyDiscountCode()" disabled>Apply</button>
+              </div>
+              <div id="discountCodeMsg" class="small mt-1"></div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label d-block">Payment Method</label>
+              <div class="btn-group w-100" role="group" aria-label="Payment method">
+                <input type="radio" class="btn-check" name="paymentMethod" id="pay-venmo" onclick="setPaymentMethod('venmo')">
+                <label class="btn btn-outline-secondary" for="pay-venmo"><i class="bi bi-phone"></i> Venmo</label>
+                <input type="radio" class="btn-check" name="paymentMethod" id="pay-cash" onclick="setPaymentMethod('cash')">
+                <label class="btn btn-outline-secondary" for="pay-cash"><i class="bi bi-piggy-bank"></i> Cash</label>
+              </div>
+            </div>
+            <div class="card bg-dark text-white">
+              <div class="card-body">
+                <div class="d-flex justify-content-between small d-none" id="reviewDiscountRow"><span>Discount</span><span id="reviewDiscountAmt">-$0.00</span></div>
+                <div class="d-flex justify-content-between align-items-center"><span class="h6 mb-0">Total</span><span id="reviewTotal" class="h4 mb-0">$0.00</span></div>
+              </div>
+            </div>
+            <div id="step4Error" class="text-danger small mt-2 mb-0"></div>
           </div>
           <div class="card-footer d-flex gap-2">
             <button class="btn btn-outline-secondary" onclick="goToStep(3)">Back</button>
-            <button class="btn btn-primary flex-fill" onclick="alert('Done!')" id="step4-submit">Place Order</button>
+            <button class="btn btn-primary flex-fill" onclick="submitOrder()" id="step4-submit">Place Order</button>
           </div>
         </div>
         <p class="text-center small mt-4"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
