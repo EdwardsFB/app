@@ -173,6 +173,23 @@ function getSelectedOptionsFor(productId) {
   return Object.keys(opts).map(name => ({ name, price: opts[name] }));
 }
 
+// iOS 26 Safari has ongoing, documented bugs where position:fixed elements near the
+// bottom of the screen don't correctly track the visible area as the toolbar shows/
+// hides during scroll. The visualViewport API reports the actual visible viewport
+// directly, so we position the bar against that instead of trusting CSS alone.
+function positionStickyBar() {
+  const bar = document.getElementById('stickyTotalBar');
+  if (!bar || bar.classList.contains('d-none') || !window.visualViewport) return;
+  const vv = window.visualViewport;
+  const offsetBottom = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
+  bar.style.bottom = offsetBottom + 'px';
+}
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', positionStickyBar);
+  window.visualViewport.addEventListener('scroll', positionStickyBar);
+}
+window.addEventListener('scroll', positionStickyBar, { passive: true });
+
 function updateStickyTotal() {
   let count = 0, total = 0;
   products.forEach(p => {
@@ -367,6 +384,7 @@ function goToStep(step) {
   document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('d-none'));
   document.getElementById('step'+step).classList.remove('d-none');
   document.getElementById('stickyTotalBar').classList.toggle('d-none', step !== 2);
+  if (step === 2) positionStickyBar();
   if (step === 2) updateStickyTotal();
   if (step === 4) {
     if (appliedDiscountPct === 0) {
