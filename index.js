@@ -39,11 +39,9 @@ async function init() {
 }
 
 function applyLogo() {
-  const logoSrc = (settings && settings.logoCustomer) || LOGO_DATA_URI;
-  if (!logoSrc) return;
-  document.getElementById('logoImg').src = logoSrc;
-  document.getElementById('logoImg').classList.remove('d-none');
-  document.getElementById('brandText').classList.add('d-none');
+  // TEMPORARY DIAGNOSTIC - logo image disabled to test whether image decoding is
+  // related to the scroll bug. Text-only brand, matching the vanilla test exactly.
+  return;
 }
 
 let cancelModal;
@@ -123,7 +121,7 @@ function renderProducts() {
     return `
     <div class="col">
       <div class="card h-100">
-        <img src="${p.photo || PLACEHOLDER_PHOTO_URI}" class="card-img-top product-card-img" alt="${esc(p.name)}">
+        <div class="product-card-img" style="background:#e9ecef;"></div>
         <div class="card-body p-2 d-flex flex-column">
           <div class="fw-bold small">${esc(p.name)}</div>
           ${p.desc ? `<div class="text-muted" style="font-size:0.75rem;">${esc(p.desc)}</div>` : ''}
