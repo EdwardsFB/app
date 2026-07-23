@@ -8,37 +8,6 @@ let paymentMethod = null;
 let appliedDiscountPct = 0;
 const VENMO_HANDLE = 'edwardsfamilybakery';
 
-// ══════════════════════════════════════════
-// TEMPORARY DEBUG OVERLAY — remove once the scroll/notch issues are diagnosed
-// ══════════════════════════════════════════
-let debugLogEntries = [];
-function debugLog(msg) {
-  const t = new Date();
-  const ts = String(t.getMinutes()).padStart(2,'0') + ':' + String(t.getSeconds()).padStart(2,'0') + '.' + String(t.getMilliseconds()).padStart(3,'0');
-  debugLogEntries.unshift(`[${ts}] ${msg}`);
-  debugLogEntries = debugLogEntries.slice(0, 60);
-  const el = document.getElementById('debugLog');
-  if (el) el.textContent = debugLogEntries.join('\n');
-}
-function getSafeAreaTop() {
-  const probe = document.getElementById('safeAreaProbe');
-  return probe ? parseFloat(getComputedStyle(probe).paddingTop) || 0 : 0;
-}
-function updateDebugLive() {
-  const header = document.getElementById('pageHeader');
-  const live = document.getElementById('debugLive');
-  if (!live || !header) return;
-  live.textContent =
-    `step=${currentStep} scrollY=${window.scrollY.toFixed(2)} docScrollTop=${document.documentElement.scrollTop.toFixed(2)} bodyScrollTop=${document.body.scrollTop.toFixed(2)}\n` +
-    `scrollingElement=${document.scrollingElement === document.documentElement ? 'documentElement' : (document.scrollingElement === document.body ? 'body' : 'other/null')}\n` +
-    `headerH=${Math.round(header.offsetHeight)} bodyPadTop=${document.body.style.paddingTop} safeAreaTop=${getSafeAreaTop().toFixed(1)}px\n` +
-    `innerW=${window.innerWidth} innerH=${window.innerHeight} orientation=${window.innerWidth > window.innerHeight ? 'landscape' : 'portrait'}` +
-    (window.visualViewport ? ` vvH=${Math.round(window.visualViewport.height)} vvOffTop=${Math.round(window.visualViewport.offsetTop)}` : '');
-}
-window.addEventListener('scroll', updateDebugLive, { passive: true });
-window.addEventListener('resize', updateDebugLive);
-setInterval(updateDebugLive, 300);
-
 async function init() {
   // Defend against the browser restoring old form values on reload/back-forward navigation.
   ['cf-phone','cf-first','cf-last','cf-email','cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
@@ -60,8 +29,6 @@ async function init() {
     return;
   }
   applyLogo();
-  syncHeaderPadding();
-  [50, 150, 300].forEach(delay => setTimeout(syncHeaderPadding, delay));
   renderProducts();
   wireLiveValidation();
   updateContinueState(1);
@@ -384,7 +351,6 @@ function validateStep(step) {
 }
 
 function goToStep(step) {
-  debugLog(`goToStep(${step}) called, scrollY=${Math.round(window.scrollY)}`);
   if (step > currentStep) {
     const err = validateStep(currentStep);
     if (err) {
@@ -396,25 +362,6 @@ function goToStep(step) {
   const currentErrEl = document.getElementById('step'+currentStep+'Error');
   if (currentErrEl) currentErrEl.textContent = '';
 
-  const forceScrollTop = (tag) => {
-    window.scrollTo(0,0);
-    const afterWindowScrollTo = window.scrollY;
-    document.documentElement.scrollTop = 0;
-    const afterDocElSet = window.scrollY;
-    document.body.scrollTop = 0;
-    const afterBodySet = window.scrollY;
-    debugLog(`  [${tag}] afterWindowScrollTo=${afterWindowScrollTo.toFixed(2)} afterDocElSet=${afterDocElSet.toFixed(2)} afterBodySet=${afterBodySet.toFixed(2)} docElScrollTop=${document.documentElement.scrollTop.toFixed(2)} bodyScrollTop=${document.body.scrollTop.toFixed(2)}`);
-  };
-
-  // Evidence from on-device logging: calling scrollTo(0,0) before the swap had zero
-  // effect (695 -> 695 -> 695) while step 2's tall content was still showing, and
-  // calling it 5x rapidly right after the swap got stuck around 61-63px instead of
-  // decaying toward 0 - suspiciously close to Safari's own toolbar height, suggesting
-  // the repeated calls may have been interrupting Safari's own toolbar-reveal
-  // animation before it could finish. Dropped the ineffective pre-swap attempts;
-  // trying one scroll immediately after the swap, then a single patient wait
-  // instead of hammering it.
-  debugLog(`  swapping DOM, scrollY before=${Math.round(window.scrollY)}`);
   document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('d-none'));
   document.getElementById('step'+step).classList.remove('d-none');
   if (step === 2) updateStickyTotal();
@@ -428,15 +375,7 @@ function goToStep(step) {
   }
   updateContinueState(step);
   currentStep = step;
-  syncHeaderPadding();
-  forceScrollTop('immediate');
-  // Evidence from on-device logs: leaving scroll alone after one initial call lets it
-  // settle toward 0 on its own (confirmed: 63 -> 0 after a patient wait), but a single
-  // fixed delay isn't consistently long enough (a later run stayed stuck at 23 after
-  // the same 700ms). Space out a few gentle checks over a longer window instead of
-  // picking one delay and hoping - and keep them far enough apart to not reintroduce
-  // the original problem of interrupting Safari's own settling process.
-  [700, 1400, 2200].forEach(delay => setTimeout(() => { forceScrollTop('delay-'+delay); syncHeaderPadding(); }, delay));
+  window.scrollTo(0,0);
 }
 
 // ══════════════════════════════════════════
@@ -508,22 +447,6 @@ async function submitOrder() {
 // before instead of a genuinely fresh page. Force a real reload in that case.
 window.addEventListener('pageshow', (event) => {
   if (event.persisted) location.reload();
-});
-
-// The header is a fixed-position element (see index.html for why — Bootstrap's own
-// docs recommend this over position:sticky for reliability), so it's pulled out of
-// normal document flow. Keep the page content's top padding in sync with its height.
-function syncHeaderPadding() {
-  const header = document.getElementById('pageHeader');
-  document.body.style.paddingTop = (header.offsetHeight + 24) + 'px';
-  debugLog(`syncHeaderPadding: headerH=${Math.round(header.offsetHeight)} -> bodyPadTop=${document.body.style.paddingTop}`);
-}
-
-window.addEventListener('resize', syncHeaderPadding);
-window.addEventListener('orientationchange', () => {
-  debugLog(`orientationchange fired: innerW=${window.innerWidth} innerH=${window.innerHeight} safeAreaTop=${Math.round(getSafeAreaTop())}px`);
-  syncHeaderPadding();
-  setTimeout(() => { syncHeaderPadding(); debugLog(`  +150ms after rotation: safeAreaTop=${Math.round(getSafeAreaTop())}px`); }, 150);
 });
 
 // iOS Safari can otherwise leave a field's virtual keyboard open unnecessarily.
