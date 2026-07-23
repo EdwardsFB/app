@@ -426,7 +426,13 @@ function goToStep(step) {
   currentStep = step;
   syncHeaderPadding();
   forceScrollTop('immediate');
-  setTimeout(() => { forceScrollTop('delay-700'); syncHeaderPadding(); }, 700);
+  // Evidence from on-device logs: leaving scroll alone after one initial call lets it
+  // settle toward 0 on its own (confirmed: 63 -> 0 after a patient wait), but a single
+  // fixed delay isn't consistently long enough (a later run stayed stuck at 23 after
+  // the same 700ms). Space out a few gentle checks over a longer window instead of
+  // picking one delay and hoping - and keep them far enough apart to not reintroduce
+  // the original problem of interrupting Safari's own settling process.
+  [700, 1400, 2200].forEach(delay => setTimeout(() => { forceScrollTop('delay-'+delay); syncHeaderPadding(); }, delay));
 }
 
 // ══════════════════════════════════════════
