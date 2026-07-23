@@ -16,6 +16,7 @@
   body { background-color: #212529; }
   #pageHeader { position: sticky; top: 0; z-index: 1030; background-color: #212529; }
   #cf-date { color: #adb5bd; }
+  #discountCodeInput::placeholder { color: #adb5bd; }
   #cf-date.has-value { color: #212529; }
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
@@ -108,9 +109,9 @@
               <div id="addressField" class="d-none mb-2">
                 <div class="row g-2 mb-2"><div class="col form-floating"><input id="cf-street" class="form-control" type="text" placeholder="Street Address" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-street">Street Address <span class="text-danger">*</span></label></div></div>
                 <div class="row g-2">
-                  <div class="col-6 form-floating"><input id="cf-city" class="form-control" type="text" placeholder="City" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-city">City</label></div>
-                  <div class="col-3 form-floating"><input id="cf-state" class="form-control" type="text" maxlength="2" placeholder="State" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-state">State</label></div>
-                  <div class="col-3 form-floating"><input id="cf-zip" class="form-control" type="text" placeholder="ZIP" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-zip">ZIP</label></div>
+                  <div class="col-6 form-floating"><input id="cf-city" class="form-control" type="text" placeholder="City" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-city">City <span class="text-danger">*</span></label></div>
+                  <div class="col-3 form-floating"><input id="cf-state" class="form-control" type="text" maxlength="2" placeholder="State" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-state">State <span class="text-danger">*</span></label></div>
+                  <div class="col-3 form-floating"><input id="cf-zip" class="form-control" type="text" placeholder="ZIP" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-zip">ZIP <span class="text-danger">*</span></label></div>
                 </div>
               </div>
               <div class="row g-2 mb-2 mt-2">
