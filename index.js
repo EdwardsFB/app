@@ -476,7 +476,7 @@ window.addEventListener('resize', syncHeaderPadding);
 // iOS Safari can otherwise leave a field's virtual keyboard open unnecessarily.
 // Detect when focus actually leaves the form (as opposed to moving to another
 // field) and scroll back to the top in that case.
-document.getElementById('wizardScreen').addEventListener('focusout', () => {
+document.getElementById('step1').addEventListener('focusout', () => {
   setTimeout(() => {
     const active = document.activeElement;
     const stillEditing = active && ['INPUT','TEXTAREA','SELECT'].includes(active.tagName);
