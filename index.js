@@ -75,12 +75,12 @@ function checkPhoneForMatch() {
     const parts = (match.street || match.city || match.state || match.zip)
       ? { street: match.street, city: match.city, state: match.state, zip: match.zip }
       : parseAddress(match.address);
-    setFieldValue('cf-street', parts.street || '');
-    setFieldValue('cf-city', parts.city || '');
-    setFieldValue('cf-state', parts.state || '');
-    setFieldValue('cf-zip', parts.zip || '');
-    document.getElementById('rad-delivery').checked = true;
-    setFulfillment('delivery');
+    ['cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
+      if (document.getElementById(id)) setFieldValue(id, parts[id.replace('cf-','')] || '');
+    });
+    const radDelivery = document.getElementById('rad-delivery');
+    if (radDelivery) radDelivery.checked = true;
+    if (document.getElementById('fulfillmentDetailsField')) setFulfillment('delivery');
   }
 
   msg.className = 'small mb-2 text-success';

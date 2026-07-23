@@ -38,7 +38,7 @@
 
 <div id="app">
 
-  <div style="position: fixed; top: 50px; right: 10px; z-index: 999999; color: #fff; background: #ff1493; font-weight: bold; font-size: 16px; padding: 4px 10px; border-radius: 6px; pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">v16</div>
+  <div style="position: fixed; top: 50px; right: 10px; z-index: 999999; color: #fff; background: #ff1493; font-weight: bold; font-size: 16px; padding: 4px 10px; border-radius: 6px; pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">v17</div>
   <nav id="pageHeader" class="navbar navbar-dark bg-dark sticky-top">
     <div class="container">
       <img id="logoImg" class="d-none" alt="Edwards Family Bakery"/>
@@ -56,7 +56,20 @@
         <h2 class="h5 mb-3 d-flex justify-content-between align-items-center">Your Info <span class="small text-muted fw-normal">Step 1 of 4</span></h2>
         <div class="card">
           <div class="card-body">
-            <p>Dummy step 1 content. No real fields.</p>
+            <div class="form-floating mb-2">
+              <input id="cf-phone" name="fld-d4" class="form-control" type="tel" autocomplete="off" placeholder="Phone" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value); updateContinueState(1);" onblur="checkPhoneForMatch()"/>
+              <label for="cf-phone">Phone <span class="text-danger">*</span></label>
+            </div>
+            <div id="phoneMatchMsg" class="small mb-2"></div>
+            <div class="row g-2 mb-2">
+              <div class="col form-floating"><input id="cf-first" name="fld-b2" class="form-control" type="text" autocomplete="off" placeholder="First Name" oninput="this.classList.toggle('has-value', !!this.value); updateContinueState(1);"/><label for="cf-first">First Name <span class="text-danger">*</span></label></div>
+              <div class="col form-floating"><input id="cf-last" name="fld-c3" class="form-control" type="text" autocomplete="off" placeholder="Last Name" oninput="this.classList.toggle('has-value', !!this.value); updateContinueState(1);"/><label for="cf-last">Last Name <span class="text-danger">*</span></label></div>
+            </div>
+            <div class="row g-2">
+              <div class="col form-floating"><input id="cf-email" name="fld-e5" class="form-control" type="email" autocomplete="off" placeholder="Email" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-email">Email</label></div>
+            </div>
+
+            <div id="step1Error" class="text-danger small mt-2 mb-0"></div>
           </div>
           <div class="card-footer">
             <button class="btn btn-primary w-100" onclick="goToStep(2)" id="step1-continue">Continue</button>
