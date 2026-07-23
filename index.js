@@ -369,6 +369,9 @@ function goToStep(step) {
   if (step === 2) updateStickyTotal();
   if (step === 4) renderReview();
   currentStep = step;
+  if (document.activeElement && document.activeElement !== document.body) {
+    document.activeElement.blur();
+  }
   window.scrollTo(0,0);
   return;
 
