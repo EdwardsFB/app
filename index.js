@@ -377,7 +377,6 @@ function goToStep(step) {
   }
   updateContinueState(step);
   currentStep = step;
-  document.getElementById('pageHeader').classList.remove('shrink');
   const forceScrollTop = () => { window.scrollTo(0,0); syncHeaderPadding(); };
   forceScrollTop();
   requestAnimationFrame(forceScrollTop);
@@ -462,17 +461,11 @@ window.addEventListener('pageshow', (event) => {
 
 // The header is a fixed-position element (see index.html for why — Bootstrap's own
 // docs recommend this over position:sticky for reliability), so it's pulled out of
-// normal document flow. Keep the page content's top padding in sync with its actual
-// height, which changes as it shrinks/grows on scroll.
+// normal document flow. Keep the page content's top padding in sync with its height.
 function syncHeaderPadding() {
   const header = document.getElementById('pageHeader');
   document.body.style.paddingTop = (header.offsetHeight + 24) + 'px';
 }
-
-window.addEventListener('scroll', () => {
-  document.getElementById('pageHeader').classList.toggle('shrink', window.scrollY > 40);
-  syncHeaderPadding();
-}, { passive: true });
 
 window.addEventListener('resize', syncHeaderPadding);
 

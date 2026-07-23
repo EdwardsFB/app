@@ -14,12 +14,9 @@
   .form-floating > .form-control.has-value ~ label { transform: scale(.85) translateY(-.5rem) translateX(.15rem); }
   button, .btn { touch-action: manipulation; }
   body { background-color: #212529; }
-  #pageHeader { position: fixed; top: 0; left: 0; right: 0; z-index: 1030; background-color: #212529; padding-top: 1.5rem; padding-bottom: 1.5rem; transition: padding .25s ease; -webkit-transform: translate3d(0,0,0); transform: translate3d(0,0,0); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
-  #pageHeader.shrink { padding-top: .6rem; padding-bottom: .6rem; }
-  #logoImg { max-height: 70px; transition: max-height .25s ease; -webkit-transform: translate3d(0,0,0); transform: translate3d(0,0,0); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
-  #pageHeader.shrink #logoImg { max-height: 35px; }
-  #brandText { transition: font-size .25s ease; -webkit-transform: translate3d(0,0,0); transform: translate3d(0,0,0); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
-  #pageHeader.shrink #brandText { font-size: 1.05rem; }
+  #pageHeader { position: fixed; top: 0; left: 0; right: 0; z-index: 1030; background-color: #212529; padding-top: 1.5rem; padding-bottom: 1.5rem; -webkit-transform: translate3d(0,0,0); transform: translate3d(0,0,0); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+  #logoImg { max-height: 52px; -webkit-transform: translate3d(0,0,0); transform: translate3d(0,0,0); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+  #brandText { -webkit-transform: translate3d(0,0,0); transform: translate3d(0,0,0); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
   #cf-date { color: #adb5bd; }
   #discountCodeInput::placeholder { color: #adb5bd; }
   #cf-date.has-value { color: #212529; }
@@ -91,7 +88,7 @@
             <div id="productsList" class="row row-cols-2 row-cols-md-3 g-3"></div>
             <div id="step2Error" class="text-danger small mt-2 mb-0"></div>
           </div>
-          <div class="card-body border-top bg-primary text-white d-flex justify-content-between align-items-center py-2">
+          <div class="card-body border-top text-white d-flex justify-content-between align-items-center py-2" style="background-color: #212529;">
             <span id="stickyItemCount" class="small">0 items</span>
             <span id="stickyTotal" class="fw-bold">$0.00</span>
           </div>
