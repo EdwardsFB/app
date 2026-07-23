@@ -8,6 +8,16 @@ let paymentMethod = null;
 let appliedDiscountPct = 0;
 const VENMO_HANDLE = 'edwardsfamilybakery';
 
+// Browsers automatically try to manage/restore scroll position on their own during
+// navigation-like changes (default: 'auto'), and Safari's version of this takes
+// multiple animation frames to finish - competing with our own scrollTo(0,0) calls
+// on step changes the entire time. This is the actual documented fix used by React
+// Router, Vue Router, etc. for this exact class of bug: take that away from the
+// browser entirely so our own scroll calls aren't fighting anything.
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+
 async function init() {
   // Defend against the browser restoring old form values on reload/back-forward navigation.
   ['cf-phone','cf-first','cf-last','cf-email','cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
@@ -376,12 +386,6 @@ function goToStep(step) {
   updateContinueState(step);
   currentStep = step;
   window.scrollTo(0,0);
-  // A single scrollTo(0,0) doesn't always reliably reach 0 on iOS Safari if there's
-  // residual scroll momentum from the previous step (most likely here, since step 2's
-  // product grid is by far the tallest step). Reassert a few times, spaced well apart
-  // rather than rapid-fire, which on-device testing showed can itself interrupt
-  // Safari's own settling process.
-  [50, 300, 800].forEach(delay => setTimeout(() => window.scrollTo(0,0), delay));
 }
 
 // ══════════════════════════════════════════
