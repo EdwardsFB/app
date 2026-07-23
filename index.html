@@ -38,7 +38,7 @@
 
 <div id="app">
 
-  <div style="position: fixed; top: 50px; right: 10px; z-index: 999999; color: #fff; background: #ff1493; font-weight: bold; font-size: 16px; padding: 4px 10px; border-radius: 6px; pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">v20</div>
+  <div style="position: fixed; top: 50px; right: 10px; z-index: 999999; color: #fff; background: #ff1493; font-weight: bold; font-size: 16px; padding: 4px 10px; border-radius: 6px; pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">v21</div>
   <nav id="pageHeader" class="navbar navbar-dark bg-dark sticky-top">
     <div class="container">
       <img id="logoImg" class="d-none" alt="Edwards Family Bakery"/>
@@ -88,6 +88,7 @@
             <button class="btn btn-primary flex-fill" onclick="goToStep(3)" id="step2-continue">Continue</button>
           </div>
         </div>
+        <p class="text-center small mt-4"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
       </div>
 
       <div id="step3" class="wizard-step d-none">
@@ -100,6 +101,21 @@
               <input type="radio" class="btn-check" name="fulfillment" id="rad-delivery" onclick="setFulfillment('delivery')">
               <label class="btn btn-outline-secondary" for="rad-delivery"><i class="bi bi-truck"></i> Delivery</label>
             </div>
+            <p class="text-muted small">Dummy filler content below so this step is scrollable even before choosing Pickup or Delivery, matching the height of the other steps.</p>
+            <p class="text-muted small">Dummy filler line 2.</p>
+            <p class="text-muted small">Dummy filler line 3.</p>
+            <p class="text-muted small">Dummy filler line 4.</p>
+            <p class="text-muted small">Dummy filler line 5.</p>
+            <p class="text-muted small">Dummy filler line 6.</p>
+            <p class="text-muted small">Dummy filler line 7.</p>
+            <p class="text-muted small">Dummy filler line 8.</p>
+            <p class="text-muted small">Dummy filler line 9.</p>
+            <p class="text-muted small">Dummy filler line 10.</p>
+            <p class="text-muted small">Dummy filler line 11.</p>
+            <p class="text-muted small">Dummy filler line 12.</p>
+            <p class="text-muted small">Dummy filler line 13.</p>
+            <p class="text-muted small">Dummy filler line 14.</p>
+            <p class="text-muted small">Dummy filler line 15.</p>
             <div id="fulfillmentDetailsField" class="d-none">
               <div id="addressField" class="d-none mb-2">
                 <div class="row g-2 mb-2"><div class="col form-floating"><input id="cf-street" class="form-control" type="text" placeholder="Street Address" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-street">Street Address <span class="text-danger">*</span></label></div></div>
@@ -124,6 +140,7 @@
             <button class="btn btn-primary flex-fill" onclick="goToStep(4)" id="step3-continue">Continue</button>
           </div>
         </div>
+        <p class="text-center small mt-4"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
       </div>
 
       <div id="step4" class="wizard-step d-none">
@@ -166,6 +183,7 @@
             <button class="btn btn-primary flex-fill" onclick="alert('Done!')" id="step4-submit">Place Order</button>
           </div>
         </div>
+        <p class="text-center small mt-4"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
       </div>
 
     </div>
