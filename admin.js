@@ -1363,7 +1363,7 @@ function renderSettingsTab() {
   function logoSlotHtml(slot) {
     const current = settings[slot.key] || LOGO_DATA_URI || '';
     return `
-      <div class="col">
+      <div style="width:220px;">
         <div class="card h-100 shadow-sm efb-bg-light">
           <div class="card-body">
             <div class="small fw-bold mb-2">${esc(slot.label)}</div>
@@ -1396,7 +1396,7 @@ function renderSettingsTab() {
       <div class="card-body">
         <h5 class="text-muted mb-3">Logos</h5>
         <p class="small text-muted">Each spot has its own logo, in case you ever want them different. Upload once per spot below.</p>
-        <div class="row row-cols-1 row-cols-md-2 g-3">${LOGO_SLOTS.map(logoSlotHtml).join('')}</div>
+        <div class="d-flex flex-wrap gap-3">${LOGO_SLOTS.map(logoSlotHtml).join('')}</div>
       </div>
     </div>
     <div class="card mb-3 shadow-sm">
@@ -1435,13 +1435,28 @@ function removeSettingsLogo(key) {
 }
 
 function renderSettingsDiscountRows() {
-  document.getElementById('settings-discount-list').innerHTML = settingsDiscountCodes.map((d, idx) => `
-    <div class="row g-2 mb-2 align-items-center">
-      <div class="col form-floating"><input id="settings-discount-code-${idx}" class="form-control" placeholder="Code" value="${(d.code||'').replace(/"/g,'&quot;')}" oninput="settingsDiscountCodes[${idx}].code = this.value; updateSettingsDiscountSaveState();"/><label for="settings-discount-code-${idx}">Code <span class="text-danger">*</span></label></div>
-      <div class="col-4 form-floating"><input id="settings-discount-pct-${idx}" class="form-control" type="number" step="1" placeholder="Percent Off" value="${d.discountPct ?? ''}" oninput="settingsDiscountCodes[${idx}].discountPct = parseFloat(this.value)||0; updateSettingsDiscountSaveState();"/><label for="settings-discount-pct-${idx}">Percent Off <span class="text-danger">*</span></label></div>
-      <div class="col-auto"><button type="button" class="btn btn-outline-danger btn-sm" onclick="removeSettingsDiscountRow(${idx})"><i class="bi bi-x-lg"></i></button></div>
+  const listEl = document.getElementById('settings-discount-list');
+  if (!settingsDiscountCodes.length) {
+    listEl.innerHTML = '';
+    updateSettingsDiscountSaveState();
+    return;
+  }
+  listEl.innerHTML = `
+    <div class="table-responsive">
+      <table class="table align-middle">
+        <thead><tr><th>Code</th><th>Percent Off</th><th></th></tr></thead>
+        <tbody>
+          ${settingsDiscountCodes.map((d, idx) => `
+            <tr>
+              <td><input id="settings-discount-code-${idx}" class="form-control" placeholder="Code" value="${(d.code||'').replace(/"/g,'&quot;')}" oninput="settingsDiscountCodes[${idx}].code = this.value; updateSettingsDiscountSaveState();"/></td>
+              <td><input id="settings-discount-pct-${idx}" class="form-control" type="number" step="1" placeholder="Percent Off" value="${d.discountPct ?? ''}" oninput="settingsDiscountCodes[${idx}].discountPct = parseFloat(this.value)||0; updateSettingsDiscountSaveState();"/></td>
+              <td class="text-end"><button type="button" class="btn btn-outline-danger btn-sm" onclick="removeSettingsDiscountRow(${idx})">Delete</button></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
     </div>
-  `).join('');
+  `;
   updateSettingsDiscountSaveState();
 }
 

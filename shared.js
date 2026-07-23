@@ -63,6 +63,10 @@ function formatPhoneInput(el) {
   el.value = formatted;
 }
 
+function formatZipInput(el) {
+  el.value = el.value.replace(/\D/g, '').slice(0, 5);
+}
+
 // ── Phone/customer matching ──
 function normPhone(p) { return String(p == null ? '' : p).replace(/\D/g, ''); }
 function custKey(c) { const np = normPhone(c.phone); return np ? 'p:' + np : 'n:' + ((c.firstName||'')+' '+(c.lastName||'')).trim().toLowerCase(); }

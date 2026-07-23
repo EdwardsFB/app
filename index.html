@@ -30,6 +30,7 @@
   #stickyTotalBar { z-index:1030; }
   .product-card-img { height:120px; object-fit:cover; background:#e9ecef; }
   .btn:disabled, .btn.disabled { background-color: #e9ecef !important; border-color: #dee2e6 !important; color: #adb5bd !important; opacity: 1 !important; }
+  #discountApplyBtn:disabled { background-color: transparent !important; border-color: #6c757d !important; color: #adb5bd !important; opacity: 1 !important; }
 </style>
 </head>
 <body class="bg-light">
@@ -43,7 +44,7 @@
   <div id="pageHeader" class="bg-dark text-white text-center py-4 mb-4">
     <img id="logoImg" class="d-none mb-4" style="max-height:70px;" alt="Edwards Family Bakery"/>
     <h1 id="brandText" class="h3 mb-1">Edwards Family Bakery</h1>
-    <p class="mb-0 small text-white-50">Fresh-milled bread and homemade goods, baked weekly.</p>
+    <!-- Tagline removed per request — restore if asked: <p class="mb-0 small text-white-50">Fresh-milled bread and homemade goods, baked weekly.</p> -->
   </div>
 
   <div class="container" style="max-width: 640px;">
@@ -75,7 +76,7 @@
             <button class="btn btn-primary w-100" onclick="goToStep(2)" id="step1-continue">Continue</button>
           </div>
         </div>
-        <p class="text-start small mt-3"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
+        <p class="text-center small mt-4"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
       </div>
 
       <!-- STEP 2: Products -->
@@ -91,7 +92,7 @@
             <button class="btn btn-primary flex-fill" onclick="goToStep(3)" id="step2-continue">Continue</button>
           </div>
         </div>
-        <p class="text-start small mt-3"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
+        <p class="text-center small mt-4"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
       </div>
 
       <!-- STEP 3: Fulfillment -->
@@ -101,7 +102,7 @@
           <div class="card-body">
             <div class="btn-group w-100 mb-3" role="group" aria-label="Pickup or delivery">
               <input type="radio" class="btn-check" name="fulfillment" id="rad-pickup" onclick="setFulfillment('pickup')">
-              <label class="btn btn-outline-secondary" for="rad-pickup"><i class="bi bi-geo-alt"></i> Pickup</label>
+              <label class="btn btn-outline-secondary" for="rad-pickup"><i class="bi bi-cart4"></i> Pickup</label>
               <input type="radio" class="btn-check" name="fulfillment" id="rad-delivery" onclick="setFulfillment('delivery')">
               <label class="btn btn-outline-secondary" for="rad-delivery"><i class="bi bi-truck"></i> Delivery</label>
             </div>
@@ -111,11 +112,11 @@
                 <div class="row g-2">
                   <div class="col-6 form-floating"><input id="cf-city" class="form-control" type="text" placeholder="City" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-city">City <span class="text-danger">*</span></label></div>
                   <div class="col-3 form-floating"><input id="cf-state" class="form-control" type="text" maxlength="2" placeholder="State" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-state">State <span class="text-danger">*</span></label></div>
-                  <div class="col-3 form-floating"><input id="cf-zip" class="form-control" type="text" placeholder="ZIP" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-zip">ZIP <span class="text-danger">*</span></label></div>
+                  <div class="col-3 form-floating"><input id="cf-zip" class="form-control" type="text" inputmode="numeric" placeholder="ZIP" oninput="formatZipInput(this); this.classList.toggle('has-value', !!this.value);"/><label for="cf-zip">ZIP <span class="text-danger">*</span></label></div>
                 </div>
               </div>
               <div class="row g-2 mb-2 mt-2">
-                <div class="col form-floating"><select id="cf-date" class="form-select" onchange="this.classList.toggle('has-value', !!this.value); updateContinueState(3);"><option value="" disabled selected>Choose a date</option></select><label for="cf-date" id="cf-date-label">Pickup Date <span class="text-danger">*</span></label></div>
+                <div class="col form-floating"><select id="cf-date" class="form-select" onchange="this.classList.toggle('has-value', !!this.value); updateContinueState(3);"><option value="" disabled selected></option></select><label for="cf-date" id="cf-date-label">Pickup Date <span class="text-danger">*</span></label></div>
               </div>
               <div class="row g-2"><div class="col form-floating">
                 <textarea id="cf-notes" class="form-control" style="height:80px;" placeholder="Notes"></textarea>
@@ -129,7 +130,7 @@
             <button class="btn btn-primary flex-fill" onclick="goToStep(4)" id="step3-continue">Continue</button>
           </div>
         </div>
-        <p class="text-start small mt-3"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
+        <p class="text-center small mt-4"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
       </div>
 
       <!-- STEP 4: Review & Payment -->
@@ -154,8 +155,8 @@
             <div class="mb-3">
               <label class="form-label d-block">Discount Code (optional)</label>
               <div class="input-group">
-                <input id="discountCodeInput" type="text" class="form-control" style="border-color:#6c757d;" placeholder="Enter code" oninput="this.value = this.value.toUpperCase()">
-                <button class="btn btn-outline-secondary" type="button" onclick="applyDiscountCode()">Apply</button>
+                <input id="discountCodeInput" type="text" class="form-control" style="border-color:#6c757d;" placeholder="Enter code" oninput="this.value = this.value.toUpperCase(); document.getElementById('discountApplyBtn').disabled = !this.value;">
+                <button id="discountApplyBtn" class="btn btn-outline-secondary" type="button" onclick="applyDiscountCode()" disabled>Apply</button>
               </div>
               <div id="discountCodeMsg" class="small mt-1"></div>
             </div>
@@ -165,7 +166,7 @@
                 <input type="radio" class="btn-check" name="paymentMethod" id="pay-venmo" onclick="setPaymentMethod('venmo')">
                 <label class="btn btn-outline-secondary" for="pay-venmo"><i class="bi bi-phone"></i> Venmo</label>
                 <input type="radio" class="btn-check" name="paymentMethod" id="pay-cash" onclick="setPaymentMethod('cash')">
-                <label class="btn btn-outline-secondary" for="pay-cash"><i class="bi bi-currency-dollar"></i> Cash</label>
+                <label class="btn btn-outline-secondary" for="pay-cash"><i class="bi bi-piggy-bank"></i> Cash</label>
               </div>
             </div>
             <div class="card bg-dark text-white">
@@ -181,7 +182,7 @@
             <button class="btn btn-primary flex-fill" onclick="submitOrder()" id="step4-submit">Place Order</button>
           </div>
         </div>
-        <p class="text-start small mt-3"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
+        <p class="text-center small mt-4"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
       </div>
 
     </div>
@@ -221,6 +222,24 @@
   </div>
 
   <div class="mb-5"></div>
+</div>
+
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalTitle" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="cancelModalTitle">Cancel this order?</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="small text-muted mb-0">Anything you've entered will be lost.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Keep Editing</button>
+        <button class="btn btn-danger" onclick="location.reload()">Cancel Order</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="stickyTotalBar" class="d-none position-fixed bottom-0 start-0 end-0 bg-primary text-white py-2 px-3 d-flex justify-content-between align-items-center">

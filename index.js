@@ -34,7 +34,8 @@ async function init() {
   updateContinueState(1);
   document.getElementById('loading').classList.add('d-none');
   document.getElementById('app').classList.remove('d-none');
-  setTimeout(() => window.scrollTo(0, 0), 50);
+  window.scrollTo(0, 0);
+  [50, 150, 300].forEach(delay => setTimeout(() => window.scrollTo(0, 0), delay));
 }
 
 function applyLogo() {
@@ -45,10 +46,10 @@ function applyLogo() {
   document.getElementById('brandText').classList.add('d-none');
 }
 
+let cancelModal;
 function cancelOrder() {
-  if (confirm('Cancel this order and start over? Anything you\'ve entered will be lost.')) {
-    location.reload();
-  }
+  if (!cancelModal) cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
+  cancelModal.show();
 }
 
 // ══════════════════════════════════════════
@@ -202,8 +203,7 @@ function populateDateOptions(type) {
   const allowedDayNames = allowedDaysStr.split(',').filter(Boolean);
   const dates = getUpcomingDatesForDays(allowedDayNames, 3);
   const select = document.getElementById('cf-date');
-  const label = type === 'delivery' ? 'delivery' : 'pickup';
-  select.innerHTML = `<option value="" disabled selected>Choose a ${label} date</option>` +
+  select.innerHTML = `<option value="" disabled selected></option>` +
     dates.map(d => `<option value="${d}">${esc(formatDateHuman(d))}</option>`).join('');
   select.classList.remove('has-value');
 }
@@ -314,7 +314,7 @@ function validateStep(step) {
     const first = document.getElementById('cf-first').value.trim();
     const last = document.getElementById('cf-last').value.trim();
     const phone = document.getElementById('cf-phone').value.trim();
-    if (!phone) return 'Please enter a phone number.';
+    if (normPhone(phone).length !== 10) return 'Please enter a complete 10-digit phone number.';
     if (!first || !last) return 'Please enter your first and last name.';
   }
   if (step === 2) {
@@ -331,6 +331,7 @@ function validateStep(step) {
       const state = document.getElementById('cf-state').value.trim();
       const zip = document.getElementById('cf-zip').value.trim();
       if (!street || !city || !state || !zip) return 'Please fill in your full delivery address.';
+      if (zip.length !== 5) return 'Please enter a complete 5-digit ZIP code.';
     }
   }
   if (step === 4) {
@@ -355,7 +356,10 @@ function goToStep(step) {
   document.getElementById('step'+step).classList.remove('d-none');
   document.getElementById('stickyTotalBar').classList.toggle('d-none', step !== 2);
   if (step === 2) updateStickyTotal();
-  if (step === 4) renderReview();
+  if (step === 4) {
+    if (appliedDiscountPct === 0) document.getElementById('discountCodeMsg').textContent = '';
+    renderReview();
+  }
   updateContinueState(step);
   currentStep = step;
   window.scrollTo(0,0);
@@ -431,6 +435,17 @@ async function submitOrder() {
 // before instead of a genuinely fresh page. Force a real reload in that case.
 window.addEventListener('pageshow', (event) => {
   if (event.persisted) location.reload();
+});
+
+// iOS Safari can leave the sticky header scrolled out of view after the on-screen
+// keyboard closes. Detect when focus actually leaves the form (as opposed to moving
+// to another field) and scroll back to the top in that case.
+document.getElementById('wizardScreen').addEventListener('focusout', () => {
+  setTimeout(() => {
+    const active = document.activeElement;
+    const stillEditing = active && ['INPUT','TEXTAREA','SELECT'].includes(active.tagName);
+    if (!stillEditing) window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 100);
 });
 
 init();
