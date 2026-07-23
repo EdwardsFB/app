@@ -473,14 +473,26 @@ window.addEventListener('pageshow', (event) => {
   if (event.persisted) location.reload();
 });
 
-// iOS Safari can otherwise leave content scrolled in the wrong position after a
-// field's virtual keyboard dismisses. Detect when focus actually leaves the form
-// (as opposed to moving to another field) and scroll back to the top in that case.
+// iOS 26 Safari has a confirmed, active bug (filed on Apple's own developer
+// forums, thread 800125) where visualViewport.offsetTop doesn't reset to 0 after
+// a keyboard dismisses, leaving fixed/sticky elements misplaced relative to the
+// actual screen. Correct for that offset directly when detected.
+function correctViewportOffset() {
+  if (window.visualViewport && window.visualViewport.offsetTop > 0) {
+    window.scrollBy(0, -window.visualViewport.offsetTop);
+  }
+}
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => setTimeout(correctViewportOffset, 50));
+}
 document.getElementById('wizardScreen').addEventListener('focusout', () => {
   setTimeout(() => {
     const active = document.activeElement;
     const stillEditing = active && ['INPUT','TEXTAREA','SELECT'].includes(active.tagName);
-    if (!stillEditing) window.scrollTo(0, 0);
+    if (!stillEditing) {
+      window.scrollTo(0, 0);
+      correctViewportOffset();
+    }
   }, 100);
 });
 
