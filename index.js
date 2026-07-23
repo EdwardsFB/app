@@ -30,6 +30,7 @@ async function init() {
   }
   applyLogo();
   syncHeaderPadding();
+  [50, 150, 300].forEach(delay => setTimeout(syncHeaderPadding, delay));
   renderProducts();
   wireLiveValidation();
   updateContinueState(1);
@@ -377,9 +378,11 @@ function goToStep(step) {
   }
   updateContinueState(step);
   currentStep = step;
+  document.getElementById('pageHeader').classList.remove('shrink');
   window.scrollTo(0,0);
-  requestAnimationFrame(() => window.scrollTo(0,0));
-  setTimeout(() => window.scrollTo(0,0), 50);
+  syncHeaderPadding();
+  requestAnimationFrame(() => { window.scrollTo(0,0); syncHeaderPadding(); });
+  setTimeout(() => { window.scrollTo(0,0); syncHeaderPadding(); }, 50);
 }
 
 // ══════════════════════════════════════════
