@@ -45,10 +45,20 @@ async function init() {
 
 function applyLogo() {
   const logoSrc = (settings && settings.logoCustomer) || LOGO_DATA_URI;
-  if (!logoSrc) return;
-  document.getElementById('logoImg').src = logoSrc;
-  document.getElementById('logoImg').classList.remove('d-none');
-  document.getElementById('brandText').classList.add('d-none');
+  if (logoSrc) {
+    document.getElementById('logoImg').src = logoSrc;
+    document.getElementById('logoImg').classList.remove('d-none');
+    document.getElementById('brandText').classList.add('d-none');
+  }
+
+  // Order Confirmation Page logo - falls back to the Passcode screen logo until a
+  // dedicated one is uploaded, then to the emoji if neither exists.
+  const confirmLogoSrc = (settings && (settings.logoOrderConfirmation || settings.logoPasscode)) || LOGO_DATA_URI;
+  if (confirmLogoSrc) {
+    document.getElementById('confirmLogo').src = confirmLogoSrc;
+    document.getElementById('confirmLogo').classList.remove('d-none');
+    document.getElementById('confirmEmoji').classList.add('d-none');
+  }
 }
 
 let cancelModal;

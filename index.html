@@ -62,7 +62,7 @@
 
       <!-- STEP 1: Contact Info -->
       <div id="step1" class="wizard-step">
-        <div class="card">
+        <div class="card shadow-sm">
           <div class="card-header d-flex justify-content-between align-items-center">
             <strong>Your Info</strong>
             <span class="small text-muted fw-normal">Step 1 of 4</span>
@@ -88,7 +88,7 @@
 
       <!-- STEP 2: Fulfillment (swapped ahead of Menu) -->
       <div id="step2" class="wizard-step d-none">
-        <div class="card">
+        <div class="card shadow-sm">
           <div class="card-header d-flex justify-content-between align-items-center">
             <strong>Fulfillment</strong>
             <span class="small text-muted fw-normal">Step 2 of 4</span>
@@ -125,7 +125,7 @@
 
       <!-- STEP 3: Menu (swapped after Pickup or Delivery) -->
       <div id="step3" class="wizard-step d-none">
-        <div class="card">
+        <div class="card shadow-sm">
           <div class="card-header d-flex justify-content-between align-items-center">
             <strong>Menu</strong>
             <span class="small text-muted fw-normal">Step 3 of 4</span>
@@ -139,7 +139,7 @@
 
       <!-- STEP 4: Review & Payment -->
       <div id="step4" class="wizard-step d-none">
-        <div class="card">
+        <div class="card shadow-sm">
           <div class="card-header d-flex justify-content-between align-items-center">
             <strong>Review Order</strong>
             <span class="small text-muted fw-normal">Step 4 of 4</span>
@@ -186,7 +186,8 @@
 
     <!-- CONFIRMATION -->
     <div id="confirmScreen" class="d-none text-center py-5">
-      <div class="display-4 mb-3">🍞</div>
+      <img id="confirmLogo" class="mb-3 d-none" style="max-height:70px;" alt="Edwards Family Bakery"/>
+      <div id="confirmEmoji" class="display-4 mb-3">🍞</div>
       <h2>Order Received!</h2>
       <p id="confirmMsg" class="text-muted mb-1"></p>
       <p class="small text-muted">Order # <span id="confirmOrderNum" class="fw-bold"></span></p>
@@ -207,7 +208,7 @@
         </div>
       </div>
 
-      <button class="btn btn-outline-secondary" onclick="location.reload()">Place New Order</button>
+      <button class="btn btn-outline-secondary" onclick="location.reload()">Start New Order</button>
     </div>
 
     <div style="height: 90px;"></div>
@@ -279,7 +280,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="shared.js?v=35"></script>
-<script src="index.js?v=35"></script>
+<script src="shared.js?v=36"></script>
+<script src="index.js?v=36"></script>
 </body>
 </html>

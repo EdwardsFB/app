@@ -1193,7 +1193,7 @@ function renderProductionTab() {
         <div class="card-body d-flex flex-column">
           <div class="d-flex justify-content-between align-items-start">
             <div class="fs-5 fw-bold">${esc(o.firstName)} ${esc(o.lastName)}</div>
-            <a href="#" class="text-secondary fs-4" onclick="openCustomerDetail('${o.id}'); return false;" title="Customer details"><i class="bi bi-person-vcard"></i></a>
+            <a href="#" class="text-secondary fs-4" onclick="openCustomerDetail('${o.id}'); return false;" title="Order details"><i class="bi bi-receipt"></i></a>
           </div>
           ${o.notes ? `<div class="small text-muted fst-italic mt-3 mb-2">${esc(o.notes)}</div>` : ''}
           <ul class="list-group mt-3 mb-3">${itemListItems}</ul>
@@ -1349,6 +1349,7 @@ const LOGO_SLOTS = [
   { key: 'logoAdminMobile', label: 'Admin — Mobile Top Bar' },
   { key: 'logoPasscode', label: 'Passcode Screen' },
   { key: 'logoCustomer', label: 'Customer Order Page' },
+  { key: 'logoOrderConfirmation', label: 'Order Confirmation Page' },
 ];
 
 function renderSettingsTab() {
@@ -1369,14 +1370,16 @@ function renderSettingsTab() {
   function logoSlotHtml(slot) {
     const current = settings[slot.key] || LOGO_DATA_URI || '';
     return `
-      <div style="width:220px;">
+      <div style="width:260px;">
         <div class="card h-100 shadow-sm efb-bg-light">
           <div class="card-body">
             <div class="small fw-bold mb-2">${esc(slot.label)}</div>
             <img id="settings-logo-preview-${slot.key}" src="${current}" style="max-height:60px; display:block; margin-bottom:10px; padding:8px; background: linear-gradient(135deg, #fff 50%, #212529 50%);" alt="${esc(slot.label)} logo"/>
             <input type="file" id="settings-logo-input-${slot.key}" accept="image/*" class="d-none" onchange="handleSettingsLogoUpload(event, '${slot.key}')"/>
-            <button class="btn btn-outline-secondary btn-sm me-2" onclick="document.getElementById('settings-logo-input-${slot.key}').click()">Choose Photo</button>
-            <button class="btn btn-outline-danger btn-sm" onclick="removeSettingsLogo('${slot.key}')">Remove</button>
+            <div class="text-nowrap">
+              <button class="btn btn-outline-secondary btn-sm me-2" onclick="document.getElementById('settings-logo-input-${slot.key}').click()">Select Image</button>
+              <button class="btn btn-outline-danger btn-sm" onclick="removeSettingsLogo('${slot.key}')">Remove</button>
+            </div>
             <div id="settings-logo-status-${slot.key}" class="small text-muted mt-2"></div>
           </div>
         </div>
