@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- build: 2026-07-24T18:30:31Z -->
+<!-- build: 2026-07-24T19:00:46Z -->
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <meta name="theme-color" content="#212529"/>
 <meta name="format-detection" content="telephone=no, date=no, address=no, email=no"/>
 <title>Edwards Family Bakery — Order</title>
@@ -27,12 +27,21 @@
   }
   .product-card-img { height:120px; object-fit:cover; background:#e9ecef; }
   .btn:disabled, .btn.disabled { background-color: #e9ecef !important; border-color: #dee2e6 !important; color: #adb5bd !important; opacity: 1 !important; }
-  #discountApplyBtn:disabled { background-color: transparent !important; border-color: #ced4da !important; color: #adb5bd !important; opacity: 1 !important; }
-  .qty-minus-btn:disabled { background-color: transparent !important; border-color: #ced4da !important; color: #adb5bd !important; opacity: 1 !important; }
+  /* Shared "inert" pattern for all disabled-style buttons: uses pointer-events:none
+     instead of the native disabled attribute, since disabled elements can fail to
+     properly consume touch events on iOS, letting rapid taps register as
+     double-tap-zoom on the page underneath instead. */
+  .btn-inert { pointer-events: none; opacity: 1 !important; }
+  .btn-outline-secondary.btn-inert { background-color: transparent !important; border-color: #ced4da !important; color: #adb5bd !important; }
+  .btn-primary.btn-inert { background-color: #e9ecef !important; border-color: #dee2e6 !important; color: #adb5bd !important; }
   .wizard-step { margin-bottom: 2rem; scroll-margin-top: var(--step-landing-offset, 96px); }
   .header-icon { color: #fff; font-size: 1.15rem; }
   #actionBar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1030; background: #fff; border-top: 1px solid #dee2e6; padding: .6rem 1rem calc(.6rem + env(safe-area-inset-bottom, 0px)); }
   body { background-color: #fafafa; }
+  .radio-card { display: flex; align-items: center; gap: .75rem; padding: .75rem 1rem; border: 1px solid #ced4da; border-radius: .375rem; cursor: pointer; margin-bottom: .5rem; }
+  .radio-card:has(input:checked) { border-color: #0d6efd; background-color: #f0f6ff; }
+  .radio-card input[type="radio"] { width: 1.1em; height: 1.1em; flex-shrink: 0; }
+  .radio-card i { font-size: 1.1rem; }
 </style>
 </head>
 <body>
@@ -85,7 +94,7 @@
             <div id="phoneMatchMsg" class="small mb-2"></div>
             <div class="row g-2 mb-2">
               <div class="col form-floating"><input id="cf-first" name="fld-b2" class="form-control" type="text" autocomplete="off" placeholder="First Name" oninput="this.classList.toggle('has-value', !!this.value); updateActionBar();"/><label for="cf-first">First Name <span class="text-danger">*</span></label></div>
-              <div class="col form-floating"><input id="cf-last" name="fld-c3" class="form-control" type="text" autocomplete="off" placeholder="Last Name" oninput="this.classList.toggle('has-value', !!this.value); updateActionBar();"/><label for="cf-last">Last Name <span class="text-danger">*</span></label></div>
+              <div class="col form-floating"><input id="cf-last" name="fld-c3" class="form-control" type="text" autocomplete="off" placeholder="Last Name" oninput="this.classList.toggle('has-value', !!this.value); updateActionBar();" onblur="checkPhoneForMatch()"/><label for="cf-last">Last Name <span class="text-danger">*</span></label></div>
             </div>
             <div class="row g-2">
               <div class="col form-floating"><input id="cf-email" name="fld-e5" class="form-control" type="email" autocomplete="off" placeholder="Email" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-email">Email</label></div>
@@ -94,12 +103,14 @@
 
           <div class="card-body border-top">
             <h3 class="h6 text-uppercase text-muted mb-2">Pickup or Delivery? <span class="text-danger">*</span></h3>
-            <div class="btn-group w-100 mb-3" role="group" aria-label="Pickup or delivery">
-              <input type="radio" class="btn-check" name="fulfillment" id="rad-pickup" onclick="setFulfillment('pickup')">
-              <label class="btn btn-outline-secondary" for="rad-pickup"><i class="bi bi-cart4"></i> Pickup</label>
-              <input type="radio" class="btn-check" name="fulfillment" id="rad-delivery" onclick="setFulfillment('delivery')">
-              <label class="btn btn-outline-secondary" for="rad-delivery"><i class="bi bi-truck"></i> Delivery</label>
-            </div>
+            <label class="radio-card" for="rad-pickup">
+              <input type="radio" name="fulfillment" id="rad-pickup" onclick="setFulfillment('pickup')">
+              <i class="bi bi-cart4"></i> Pickup
+            </label>
+            <label class="radio-card" for="rad-delivery">
+              <input type="radio" name="fulfillment" id="rad-delivery" onclick="setFulfillment('delivery')">
+              <i class="bi bi-truck"></i> Delivery
+            </label>
             <div id="fulfillmentDetailsField" class="d-none">
               <div id="addressField" class="d-none mb-2">
                 <div class="row g-2 mb-2"><div class="col form-floating"><input id="cf-street" class="form-control" type="text" placeholder="Street Address" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-street">Street Address <span class="text-danger">*</span></label></div></div>
@@ -127,18 +138,20 @@
           <div class="card-body border-top">
             <h3 class="h6 text-uppercase text-muted mb-2">Discount Code</h3>
             <div class="input-group">
-              <input id="discountCodeInput" type="text" class="form-control" style="border-color:#ced4da;" placeholder="Enter code" oninput="this.value = this.value.toUpperCase(); document.getElementById('discountApplyBtn').disabled = !this.value;">
-              <button id="discountApplyBtn" class="btn btn-outline-secondary" style="border-color:#ced4da;" type="button" onclick="applyDiscountCode()" disabled>Apply</button>
+              <input id="discountCodeInput" type="text" class="form-control" style="border-color:#ced4da;" placeholder="Enter code" oninput="this.value = this.value.toUpperCase(); document.getElementById('discountApplyBtn').classList.toggle('btn-inert', !this.value);">
+              <button id="discountApplyBtn" class="btn btn-outline-secondary btn-inert" style="border-color:#ced4da;" type="button" onclick="applyDiscountCode()">Apply</button>
             </div>
             <div id="discountCodeMsg" class="small mt-1 mb-3"></div>
 
             <h3 class="h6 text-uppercase text-muted mb-2">Payment Method <span class="text-danger">*</span></h3>
-            <div class="btn-group w-100" role="group" aria-label="Payment method">
-              <input type="radio" class="btn-check" name="paymentMethod" id="pay-venmo" onclick="setPaymentMethod('venmo')">
-              <label class="btn btn-outline-secondary" for="pay-venmo"><i class="bi bi-phone"></i> Venmo</label>
-              <input type="radio" class="btn-check" name="paymentMethod" id="pay-cash" onclick="setPaymentMethod('cash')">
-              <label class="btn btn-outline-secondary" for="pay-cash"><i class="bi bi-piggy-bank"></i> Cash</label>
-            </div>
+            <label class="radio-card" for="pay-venmo">
+              <input type="radio" name="paymentMethod" id="pay-venmo" onclick="setPaymentMethod('venmo')">
+              <i class="bi bi-phone"></i> Venmo
+            </label>
+            <label class="radio-card" for="pay-cash">
+              <input type="radio" name="paymentMethod" id="pay-cash" onclick="setPaymentMethod('cash')">
+              <i class="bi bi-piggy-bank"></i> Cash
+            </label>
             <div id="reviewDiscountRow" class="d-flex justify-content-between small d-none mt-2"><span>Discount</span><span id="reviewDiscountAmt">-$0.00</span></div>
             <div id="step2Error" class="text-danger small mt-2 mb-0"></div>
           </div>
@@ -189,7 +202,7 @@
     </div>
     <div class="d-flex gap-2" style="max-width: 640px; margin: 0 auto;">
       <button class="btn btn-outline-secondary" onclick="cancelOrder()">Cancel</button>
-      <button class="btn btn-primary flex-fill" onclick="submitOrder()" id="actionBarBtn" disabled>Place Order</button>
+      <button class="btn btn-primary flex-fill btn-inert" onclick="submitOrder()" id="actionBarBtn">Place Order</button>
     </div>
   </div>
 
@@ -215,7 +228,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="shared.js?v=42"></script>
-<script src="index.js?v=42"></script>
+<script src="shared.js?v=43"></script>
+<script src="index.js?v=43"></script>
 </body>
 </html>

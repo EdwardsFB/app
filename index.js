@@ -1,4 +1,4 @@
-// build: 2026-07-24T18:30:31Z
+// build: 2026-07-24T19:00:46Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -80,15 +80,21 @@ function setFieldValue(id, value) {
 
 function checkPhoneForMatch() {
   const phone = document.getElementById('cf-phone').value.trim();
+  const lastName = document.getElementById('cf-last').value.trim();
   const msg = document.getElementById('phoneMatchMsg');
   const normed = normPhone(phone);
-  if (!normed) { msg.textContent = ''; return; }
+  // Require both phone AND last name before even attempting a match - matching on
+  // phone alone risks a typo'd digit landing on a different real customer and
+  // exposing their name, email, and address to a stranger. Last name is required on
+  // every existing order/customer record, so this works for every past customer too.
+  if (normed.length !== 10 || !lastName) { msg.textContent = ''; return; }
 
-  const match = getMergedCustomers(products, orders, customers).find(c => normPhone(c.phone) === normed);
+  const match = getMergedCustomers(products, orders, customers).find(c =>
+    normPhone(c.phone) === normed && (c.lastName || '').trim().toLowerCase() === lastName.toLowerCase()
+  );
   if (!match) { msg.textContent = ''; return; }
 
   setFieldValue('cf-first', match.firstName);
-  setFieldValue('cf-last', match.lastName);
   setFieldValue('cf-email', match.email || '');
 
   if (match.address) {
@@ -145,7 +151,7 @@ function renderProducts() {
           ${p.desc ? `<div class="text-muted" style="font-size:0.75rem;">${esc(p.desc)}</div>` : ''}
           <div class="pt-2">
             <div class="input-group input-group-sm mb-1">
-              <button class="btn btn-outline-secondary qty-minus-btn" style="border-color:#ced4da;" type="button" id="qty-minus-${p.id}" onclick="changeQty('${p.id}', -1)" disabled><i class="bi bi-dash"></i></button>
+              <button class="btn btn-outline-secondary btn-inert" style="border-color:#ced4da;" type="button" id="qty-minus-${p.id}" onclick="changeQty('${p.id}', -1)"><i class="bi bi-dash"></i></button>
               <span class="form-control text-center px-0" id="qty-${p.id}">0</span>
               <button class="btn btn-outline-secondary" style="border-color:#ced4da;" type="button" onclick="changeQty('${p.id}', 1)"><i class="bi bi-plus"></i></button>
             </div>
@@ -170,7 +176,7 @@ function toggleOption(productId, optionName, optionPrice, checked) {
 function changeQty(id, delta) {
   cQty[id] = Math.max(0, (cQty[id]||0) + delta);
   document.getElementById('qty-'+id).textContent = cQty[id];
-  document.getElementById('qty-minus-'+id).disabled = cQty[id] === 0;
+  document.getElementById('qty-minus-'+id).classList.toggle('btn-inert', cQty[id] === 0);
   const optsWrap = document.getElementById('opts-wrap-'+id);
   if (optsWrap) {
     optsWrap.classList.toggle('d-none', cQty[id] === 0);
@@ -311,7 +317,7 @@ function renderReview() {
 // ══════════════════════════════════════════
 
 function updateActionBar() {
-  document.getElementById('actionBarBtn').disabled = !!validateOrder();
+  document.getElementById('actionBarBtn').classList.toggle('btn-inert', !!validateOrder());
 }
 
 function wireLiveValidation() {
@@ -384,7 +390,7 @@ async function submitOrder() {
     if (error) { errEl.textContent = error; return; }
     errEl.textContent = '';
 
-    submitBtn.disabled = true;
+    submitBtn.classList.add('btn-inert');
     submitBtn.textContent = 'Placing order...';
 
     const newOrder = { id: 'o' + Date.now(), createdAt: Date.now(), source: 'customer', ...orderData };
@@ -414,7 +420,7 @@ async function submitOrder() {
     document.getElementById('confirmScreen').scrollIntoView({ block: 'start' });
   } catch (err) {
     errEl.textContent = 'Something went wrong placing your order: ' + err.message + '. Please try again, or let us know if this keeps happening.';
-    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Place Order'; }
+    if (submitBtn) { submitBtn.classList.remove('btn-inert'); submitBtn.textContent = 'Place Order'; }
   }
 }
 
