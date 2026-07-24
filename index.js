@@ -1,4 +1,4 @@
-// build: 2026-07-24T20:22:43Z
+// build: 2026-07-24T20:32:01Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -129,7 +129,7 @@ function checkPhoneForMatch() {
     // choose Pickup or Delivery themselves each time - never auto-selected.
   }
 
-  showToast(`Welcome back, ${match.firstName}! We've filled in your info.`);
+  document.getElementById('phoneMatchMsg').textContent = `Welcome back, ${match.firstName}!`;
   updateActionBar();
   refreshReviewIfVisible();
 }
