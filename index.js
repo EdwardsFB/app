@@ -1,4 +1,4 @@
-// build: 2026-07-24T19:56:16Z
+// build: 2026-07-24T20:09:53Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -127,16 +127,6 @@ function checkPhoneForMatch() {
   showToast(`Welcome back, ${match.firstName}! We've filled in your info.`);
   updateActionBar();
   refreshReviewIfVisible();
-
-  // We just auto-filled everything for them — dismiss the keyboard rather than
-  // leaving some other field focused (and its text selected) as if it needs editing.
-  // The delay matters: iOS Safari's own focus-jump hasn't necessarily settled yet
-  // at the moment this runs, so blurring immediately can miss it entirely.
-  setTimeout(() => {
-    if (document.activeElement && document.activeElement.tagName === 'INPUT') {
-      document.activeElement.blur();
-    }
-  }, 50);
 }
 
 // ══════════════════════════════════════════
