@@ -1,4 +1,4 @@
-// build: 2026-07-24T20:09:53Z
+// build: 2026-07-24T20:22:43Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -64,6 +64,11 @@ function applyLogo() {
 
 function showToast(message) {
   const container = document.getElementById('toastContainer');
+  // position:fixed elements anchored to top:0 can end up rendered above the
+  // actually-visible area while the keyboard is up, due to the same iOS
+  // visualViewport-offset quirk that affected the bottom-anchored action bar.
+  // Account for the current offset directly so the toast stays visible.
+  container.style.top = (window.visualViewport ? window.visualViewport.offsetTop : 0) + 'px';
   const el = document.createElement('div');
   el.className = 'toast align-items-center text-white bg-success border-0';
   el.setAttribute('role', 'alert');
