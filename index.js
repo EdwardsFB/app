@@ -8,12 +8,6 @@ let paymentMethod = null;
 let appliedDiscountPct = 0;
 const VENMO_HANDLE = 'edwardsfamilybakery';
 
-// TEMPORARY DIAGNOSTIC - catches any error that would otherwise fail silently on
-// a phone with no visible console, so it shows up in Web Inspector instead.
-window.addEventListener('error', (e) => {
-  console.error('UNCAUGHT ERROR:', e.message, 'at', e.filename + ':' + e.lineno, e.error && e.error.stack);
-});
-
 async function init() {
   // Defend against the browser restoring old form values on reload/back-forward navigation.
   ['cf-phone','cf-first','cf-last','cf-email','cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
@@ -36,18 +30,21 @@ async function init() {
   }
   applyLogo();
   renderProducts();
+  updateStickyTotal();
+  [2,3,4].forEach(n => document.getElementById('step'+n).classList.add('step-locked'));
   wireLiveValidation();
   updateContinueState(1);
   document.getElementById('loading').classList.add('d-none');
   document.getElementById('app').classList.remove('d-none');
   window.scrollTo(0, 0);
-  [50, 150, 300].forEach(delay => setTimeout(() => window.scrollTo(0, 0), delay));
 }
 
 function applyLogo() {
-  // TEMPORARY DIAGNOSTIC - logo image disabled to test whether image decoding is
-  // related to the scroll bug. Text-only brand, matching the vanilla test exactly.
-  return;
+  const logoSrc = (settings && settings.logoCustomer) || LOGO_DATA_URI;
+  if (!logoSrc) return;
+  document.getElementById('logoImg').src = logoSrc;
+  document.getElementById('logoImg').classList.remove('d-none');
+  document.getElementById('brandText').classList.add('d-none');
 }
 
 let cancelModal;
@@ -111,17 +108,6 @@ function checkPhoneForMatch() {
 // ══════════════════════════════════════════
 
 function renderProducts() {
-  // TEMPORARY DIAGNOSTIC - real product grid replaced with simple static dummy
-  // cards (identical structure to the vanilla test) to isolate whether product
-  // card complexity (interactive qty buttons, deeper DOM nesting) is interfering
-  // with scroll. Cart/checkout functionality is not usable in this build.
-  let dummyHtml = '';
-  for (let i = 1; i <= 24; i++) {
-    dummyHtml += `<div class="col"><div class="card"><div class="card-body"><h5 class="card-title">Item ${i}</h5><p class="card-text">Dummy product description text goes here to fill space.</p></div></div></div>`;
-  }
-  document.getElementById('productsList').innerHTML = dummyHtml;
-  return;
-
   const visibleProducts = products.filter(p => p.active !== false);
   cQty = {};
   cOptions = {};
@@ -138,7 +124,7 @@ function renderProducts() {
     return `
     <div class="col">
       <div class="card h-100">
-        <div class="product-card-img" style="background:#e9ecef;"></div>
+        <img src="${p.photo || PLACEHOLDER_PHOTO_URI}" class="card-img-top product-card-img" alt="${esc(p.name)}">
         <div class="card-body p-2 d-flex flex-column">
           <div class="fw-bold small">${esc(p.name)}</div>
           ${p.desc ? `<div class="text-muted" style="font-size:0.75rem;">${esc(p.desc)}</div>` : ''}
@@ -178,7 +164,7 @@ function changeQty(id, delta) {
     }
   }
   updateStickyTotal();
-  updateContinueState(2);
+  updateContinueState(3);
 }
 
 function getSelectedOptionsFor(productId) {
@@ -239,7 +225,7 @@ function setFulfillment(type) {
   document.getElementById('addressField').classList.toggle('d-none', type !== 'delivery');
   document.getElementById('cf-date-label').innerHTML = (type === 'delivery' ? 'Delivery Date' : 'Pickup Date') + ' <span class="text-danger">*</span>';
   populateDateOptions(type);
-  updateContinueState(3);
+  updateContinueState(2);
 }
 
 // ══════════════════════════════════════════
@@ -328,10 +314,10 @@ function updateContinueState(step) {
 
 function wireLiveValidation() {
   ['cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
-    document.getElementById(id).addEventListener('input', () => updateContinueState(3));
+    document.getElementById(id).addEventListener('input', () => updateContinueState(2));
   });
-  document.getElementById('rad-pickup').addEventListener('change', () => updateContinueState(3));
-  document.getElementById('rad-delivery').addEventListener('change', () => updateContinueState(3));
+  document.getElementById('rad-pickup').addEventListener('change', () => updateContinueState(2));
+  document.getElementById('rad-delivery').addEventListener('change', () => updateContinueState(2));
 }
 
 function validateStep(step) {
@@ -343,10 +329,6 @@ function validateStep(step) {
     if (!first || !last) return 'Please enter your first and last name.';
   }
   if (step === 2) {
-    const anyItems = Object.values(cQty).some(q => q > 0);
-    if (!anyItems) return 'Please select at least one item.';
-  }
-  if (step === 3) {
     if (!currentFulfillment) return 'Please choose Pickup or Delivery.';
     const date = document.getElementById('cf-date').value;
     if (!date) return `Please choose a ${currentFulfillment === 'delivery' ? 'delivery' : 'pickup'} date.`;
@@ -359,6 +341,10 @@ function validateStep(step) {
       if (zip.length !== 5) return 'Please enter a complete 5-digit ZIP code.';
     }
   }
+  if (step === 3) {
+    const anyItems = Object.values(cQty).some(q => q > 0);
+    if (!anyItems) return 'Please select at least one item.';
+  }
   if (step === 4) {
     if (!paymentMethod) return "Please choose how you'll pay.";
   }
@@ -366,36 +352,6 @@ function validateStep(step) {
 }
 
 function goToStep(step) {
-  // TEMPORARY DIAGNOSTIC - validation and Continue-button disabled-state logic
-  // intentionally skipped to isolate whether that's interfering with scroll.
-  // Content rendering (totals, review) still runs normally - that's not what's
-  // being tested here.
-  console.log(`goToStep(${step}) start, scrollY=${window.scrollY}`);
-  if (step === 4) {
-    try { renderReview(); console.log('renderReview() completed OK'); }
-    catch (e) { console.error('renderReview() THREW:', e); }
-  }
-  document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('d-none'));
-  document.getElementById('step'+step).classList.remove('d-none');
-  currentStep = step;
-  console.log(`DOM swapped, scrollY=${window.scrollY}, step${step} height=${document.getElementById('step'+step).offsetHeight}`);
-  if (document.activeElement && document.activeElement !== document.body) {
-    document.activeElement.blur();
-  }
-  window.scrollTo(0,0);
-  console.log(`after scrollTo(0,0), scrollY=${window.scrollY}`);
-  // The live data showed hundreds of corrections firing, each one showing a smoothly
-  // decaying value (230 -> 226 -> 217 -> ... -> 61) that never actually reached 0
-  // even after 2.5s of continuous correction. That's the signature of a feedback loop:
-  // forcing scrollY to exactly 0 likely triggers iOS's own overscroll bounce-settle
-  // animation, which nudges it away from 0, which our listener then "corrects" again,
-  // restarting the cycle. Testing the opposite: call it once, then don't touch it
-  // again, and just observe what happens naturally without our own interference.
-  setTimeout(() => {
-    console.log(`  [+2000ms, untouched] scrollY=${window.scrollY}`);
-  }, 2000);
-  return;
-
   if (step > currentStep) {
     const err = validateStep(currentStep);
     if (err) {
@@ -407,9 +363,6 @@ function goToStep(step) {
   const currentErrEl = document.getElementById('step'+currentStep+'Error');
   if (currentErrEl) currentErrEl.textContent = '';
 
-  document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('d-none'));
-  document.getElementById('step'+step).classList.remove('d-none');
-  if (step === 2) updateStickyTotal();
   if (step === 4) {
     if (appliedDiscountPct === 0) {
       document.getElementById('discountCodeMsg').textContent = '';
@@ -418,11 +371,16 @@ function goToStep(step) {
     }
     renderReview();
   }
-  updateContinueState(step);
+
+  document.getElementById('step'+currentStep).classList.add('step-locked');
+  document.getElementById('step'+step).classList.remove('step-locked');
   currentStep = step;
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => window.scrollTo(0,0));
-  });
+  updateContinueState(step);
+
+  if (document.activeElement && document.activeElement !== document.body) {
+    document.activeElement.blur();
+  }
+  document.getElementById('step'+step).scrollIntoView({ block: 'start' });
 }
 
 // ══════════════════════════════════════════
@@ -482,9 +440,7 @@ async function submitOrder() {
 
     document.getElementById('wizardScreen').classList.add('d-none');
     document.getElementById('confirmScreen').classList.remove('d-none');
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => window.scrollTo(0,0));
-    });
+    document.getElementById('confirmScreen').scrollIntoView({ block: 'start' });
   } catch (err) {
     errEl.textContent = 'Something went wrong placing your order: ' + err.message + '. Please try again, or let us know if this keeps happening.';
     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Place Order'; }
