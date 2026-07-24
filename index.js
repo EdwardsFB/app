@@ -384,25 +384,16 @@ function goToStep(step) {
   }
   window.scrollTo(0,0);
   console.log(`after scrollTo(0,0), scrollY=${window.scrollY}`);
-  // Data from live testing showed scroll position isn't just stuck - it decays toward
-  // 0 over time (iOS momentum settling), but NOT always monotonically - it can reach 0
-  // and then drift away again later. Fixed-delay retries can catch a moment that looks
-  // correct and still miss subsequent drift. React to actual scroll events instead,
-  // for a window after the transition, correcting drift whenever it actually occurs.
-  let correctionActive = true;
-  const scrollCorrector = () => {
-    if (!correctionActive) return;
-    if (window.scrollY !== 0) {
-      window.scrollTo(0, 0);
-      console.log(`  [scroll-event correction] was ${window.scrollY}, forced to 0`);
-    }
-  };
-  window.addEventListener('scroll', scrollCorrector, { passive: true });
+  // The live data showed hundreds of corrections firing, each one showing a smoothly
+  // decaying value (230 -> 226 -> 217 -> ... -> 61) that never actually reached 0
+  // even after 2.5s of continuous correction. That's the signature of a feedback loop:
+  // forcing scrollY to exactly 0 likely triggers iOS's own overscroll bounce-settle
+  // animation, which nudges it away from 0, which our listener then "corrects" again,
+  // restarting the cycle. Testing the opposite: call it once, then don't touch it
+  // again, and just observe what happens naturally without our own interference.
   setTimeout(() => {
-    correctionActive = false;
-    window.removeEventListener('scroll', scrollCorrector);
-    console.log(`  correction window ended, final scrollY=${window.scrollY}`);
-  }, 2500);
+    console.log(`  [+2000ms, untouched] scrollY=${window.scrollY}`);
+  }, 2000);
   return;
 
   if (step > currentStep) {
