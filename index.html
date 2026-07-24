@@ -28,6 +28,11 @@
   .btn:disabled, .btn.disabled { background-color: #e9ecef !important; border-color: #dee2e6 !important; color: #adb5bd !important; opacity: 1 !important; }
   #discountApplyBtn:disabled { background-color: transparent !important; border-color: #6c757d !important; color: #adb5bd !important; opacity: 1 !important; }
   .wizard-step.step-locked { opacity: 0.45; pointer-events: none; }
+  .wizard-step { position: relative; margin-bottom: 2rem; scroll-margin-top: 96px; }
+  .wizard-step.step-locked .card { opacity: 0.3; }
+  .wizard-step.step-locked { pointer-events: none; }
+  .step-lock-overlay { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; }
+  .wizard-step.step-locked .step-lock-overlay { display: flex; }
 </style>
 </head>
 <body>
@@ -38,23 +43,23 @@
 
 <div id="app">
 
-  <div style="position: fixed; top: 50px; right: 10px; z-index: 999999; color: #fff; background: #ff1493; font-weight: bold; font-size: 16px; padding: 4px 10px; border-radius: 6px; pointer-events: none; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">v30-rebuild</div>
-  <nav id="pageHeader" class="navbar navbar-dark bg-dark sticky-top">
-    <div class="container">
-      <img id="logoImg" class="d-none" alt="Edwards Family Bakery"/>
-      <span id="brandText" class="navbar-brand mb-0 h1">Edwards Family Bakery</span>
-    </div>
-  </nav>
+  <div id="pageHeader" class="sticky-top bg-dark text-white text-center py-4">
+    <img id="logoImg" class="d-none" alt="Edwards Family Bakery"/>
+    <h1 id="brandText" class="h3 mb-0">Edwards Family Bakery</h1>
+  </div>
 
-  <div class="container" style="max-width: 640px;">
+  <div class="container" style="max-width: 640px; padding-top: 1.5rem;">
 
     <!-- WIZARD -->
     <div id="wizardScreen">
 
       <!-- STEP 1: Contact Info -->
       <div id="step1" class="wizard-step">
-        <h2 class="h5 mb-3 d-flex justify-content-between align-items-center">Your Info <span class="small text-muted fw-normal">Step 1 of 4</span></h2>
         <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>Your Info</strong>
+            <span class="small text-muted fw-normal">Step 1 of 4</span>
+          </div>
           <div class="card-body">
             <div class="form-floating mb-2">
               <input id="cf-phone" name="fld-d4" class="form-control" type="tel" autocomplete="off" placeholder="Phone" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value); updateContinueState(1);" onblur="checkPhoneForMatch()"/>
@@ -75,12 +80,16 @@
             <button class="btn btn-primary w-100" onclick="goToStep(2)" id="step1-continue">Continue</button>
           </div>
         </div>
+        <div class="step-lock-overlay"><i class="bi bi-lock-fill text-secondary fs-3"></i></div>
       </div>
 
       <!-- STEP 2: Pickup or Delivery (swapped ahead of Menu) -->
       <div id="step2" class="wizard-step">
-        <h2 class="h5 mb-3 d-flex justify-content-between align-items-center">Pickup or Delivery? <span class="small text-muted fw-normal">Step 2 of 4</span></h2>
         <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>Pickup or Delivery?</strong>
+            <span class="small text-muted fw-normal">Step 2 of 4</span>
+          </div>
           <div class="card-body">
             <div class="btn-group w-100 mb-3" role="group" aria-label="Pickup or delivery">
               <input type="radio" class="btn-check" name="fulfillment" id="rad-pickup" onclick="setFulfillment('pickup')">
@@ -112,12 +121,16 @@
             <button class="btn btn-primary flex-fill" onclick="goToStep(3)" id="step2-continue">Continue</button>
           </div>
         </div>
+        <div class="step-lock-overlay"><i class="bi bi-lock-fill text-secondary fs-3"></i></div>
       </div>
 
       <!-- STEP 3: Menu (swapped after Pickup or Delivery) -->
       <div id="step3" class="wizard-step">
-        <h2 class="h5 mb-3 d-flex justify-content-between align-items-center">Menu <span class="small text-muted fw-normal">Step 3 of 4</span></h2>
         <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>Menu</strong>
+            <span class="small text-muted fw-normal">Step 3 of 4</span>
+          </div>
           <div class="card-body">
             <div id="productsList" class="row row-cols-2 row-cols-md-3 g-3 mb-3"></div>
             <div class="card text-white" style="background-color: #212529;">
@@ -133,12 +146,16 @@
             <button class="btn btn-primary flex-fill" onclick="goToStep(4)" id="step3-continue">Continue</button>
           </div>
         </div>
+        <div class="step-lock-overlay"><i class="bi bi-lock-fill text-secondary fs-3"></i></div>
       </div>
 
       <!-- STEP 4: Review & Payment -->
       <div id="step4" class="wizard-step">
-        <h2 class="h5 mb-3 d-flex justify-content-between align-items-center">Review Order <span class="small text-muted fw-normal">Step 4 of 4</span></h2>
         <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>Review Order</strong>
+            <span class="small text-muted fw-normal">Step 4 of 4</span>
+          </div>
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <h3 class="h6 text-uppercase text-muted mb-0">Items</h3>
@@ -184,6 +201,7 @@
             <button class="btn btn-primary flex-fill" onclick="submitOrder()" id="step4-submit">Place Order</button>
           </div>
         </div>
+        <div class="step-lock-overlay"><i class="bi bi-lock-fill text-secondary fs-3"></i></div>
       </div>
 
       <p class="text-center small mt-4"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
@@ -249,7 +267,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="shared.js?v=30"></script>
-<script src="index.js?v=30"></script>
+<script src="shared.js?v=31"></script>
+<script src="index.js?v=31"></script>
 </body>
 </html>
