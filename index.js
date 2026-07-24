@@ -1,4 +1,4 @@
-// build: 2026-07-24T19:38:34Z
+// build: 2026-07-24T19:46:55Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -191,6 +191,7 @@ function toggleOption(productId, optionName, optionPrice, checked) {
 function changeQty(id, delta) {
   cQty[id] = Math.max(0, (cQty[id]||0) + delta);
   document.getElementById('qty-'+id).textContent = cQty[id];
+  document.getElementById('qty-'+id).classList.toggle('qty-active', cQty[id] > 0);
   document.getElementById('qty-minus-'+id).classList.toggle('btn-inert', cQty[id] === 0);
   const optsWrap = document.getElementById('opts-wrap-'+id);
   if (optsWrap) {
@@ -469,5 +470,20 @@ document.getElementById('wizardScreen').addEventListener('focusout', () => {
     if (!stillEditing) correctViewportOffset();
   }, 100);
 });
+
+// position:fixed elements anchored to the bottom don't reliably track the actual
+// visible screen on iOS while the keyboard is open (the layout viewport and the
+// visual viewport diverge, and fixed elements can end up anchored to the wrong one) -
+// rather than fight that, just hide the pinned bar while the keyboard's up, since
+// there's nothing useful to tap on it in that moment anyway. This only toggles CSS
+// visibility and never touches scroll position, so it can't refight the user's swipe.
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', () => {
+    const onConfirmScreen = !document.getElementById('confirmScreen').classList.contains('d-none');
+    if (onConfirmScreen) return;
+    const keyboardLikelyOpen = (window.innerHeight - window.visualViewport.height) > 150;
+    document.getElementById('actionBar').classList.toggle('d-none', keyboardLikelyOpen);
+  });
+}
 
 init();
