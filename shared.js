@@ -1,4 +1,4 @@
-// build: 2026-07-24T20:32:01Z
+// build: 2026-07-24T20:38:34Z
 // ══════════════════════════════════════════
 // Edwards Family Bakery — Shared utilities
 // Used by both index.html (customer) and admin.html (admin)
