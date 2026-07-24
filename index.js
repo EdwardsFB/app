@@ -8,6 +8,12 @@ let paymentMethod = null;
 let appliedDiscountPct = 0;
 const VENMO_HANDLE = 'edwardsfamilybakery';
 
+// TEMPORARY DIAGNOSTIC - catches any error that would otherwise fail silently on
+// a phone with no visible console, so it shows up in Web Inspector instead.
+window.addEventListener('error', (e) => {
+  console.error('UNCAUGHT ERROR:', e.message, 'at', e.filename + ':' + e.lineno, e.error && e.error.stack);
+});
+
 async function init() {
   // Defend against the browser restoring old form values on reload/back-forward navigation.
   ['cf-phone','cf-first','cf-last','cf-email','cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
@@ -364,14 +370,20 @@ function goToStep(step) {
   // intentionally skipped to isolate whether that's interfering with scroll.
   // Content rendering (totals, review) still runs normally - that's not what's
   // being tested here.
-  if (step === 4) renderReview();
+  console.log(`goToStep(${step}) start, scrollY=${window.scrollY}`);
+  if (step === 4) {
+    try { renderReview(); console.log('renderReview() completed OK'); }
+    catch (e) { console.error('renderReview() THREW:', e); }
+  }
   document.querySelectorAll('.wizard-step').forEach(el => el.classList.add('d-none'));
   document.getElementById('step'+step).classList.remove('d-none');
   currentStep = step;
+  console.log(`DOM swapped, scrollY=${window.scrollY}, step${step} height=${document.getElementById('step'+step).offsetHeight}`);
   if (document.activeElement && document.activeElement !== document.body) {
     document.activeElement.blur();
   }
   window.scrollTo(0,0);
+  console.log(`after scrollTo(0,0), scrollY=${window.scrollY}`);
   return;
 
   if (step > currentStep) {
@@ -492,10 +504,7 @@ document.getElementById('wizardScreen').addEventListener('focusout', () => {
   setTimeout(() => {
     const active = document.activeElement;
     const stillEditing = active && ['INPUT','TEXTAREA','SELECT'].includes(active.tagName);
-    if (!stillEditing) {
-      window.scrollTo(0, 0);
-      correctViewportOffset();
-    }
+    if (!stillEditing) correctViewportOffset();
   }, 100);
 });
 
