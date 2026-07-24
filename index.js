@@ -30,10 +30,9 @@ async function init() {
   }
   applyLogo();
   renderProducts();
-  updateStickyTotal();
-  [2,3,4].forEach(n => document.getElementById('step'+n).classList.add('step-locked'));
+  updateOrderTotal();
   wireLiveValidation();
-  updateContinueState(1);
+  updateActionBar();
   document.getElementById('loading').classList.add('d-none');
   document.getElementById('app').classList.remove('d-none');
   window.scrollTo(0, 0);
@@ -95,7 +94,7 @@ function checkPhoneForMatch() {
 
   msg.className = 'small mb-2 text-success';
   msg.textContent = `Welcome back, ${match.firstName}!`;
-  updateContinueState(1);
+  updateActionBar();
 
   // We just auto-filled everything for them — dismiss the keyboard rather than
   // leaving some other field focused (and its text selected) as if it needs editing.
@@ -153,7 +152,7 @@ function toggleOption(productId, optionName, optionPrice, checked) {
   if (!cOptions[productId]) cOptions[productId] = {};
   cOptions[productId][optionName] = checked ? optionPrice : undefined;
   if (!checked) delete cOptions[productId][optionName];
-  updateStickyTotal();
+  updateOrderTotal();
 }
 
 function changeQty(id, delta) {
@@ -168,8 +167,8 @@ function changeQty(id, delta) {
       optsWrap.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
     }
   }
-  updateStickyTotal();
-  updateContinueState(3);
+  updateOrderTotal();
+  updateActionBar();
 }
 
 function getSelectedOptionsFor(productId) {
@@ -177,16 +176,15 @@ function getSelectedOptionsFor(productId) {
   return Object.keys(opts).map(name => ({ name, price: opts[name] }));
 }
 
-function updateStickyTotal() {
-  let count = 0, total = 0;
+function updateOrderTotal() {
+  let total = 0;
   products.forEach(p => {
     const qty = cQty[p.id]||0;
-    count += qty;
     const optionsUnitPrice = getSelectedOptionsFor(p.id).reduce((s,o) => s + o.price, 0);
     total += qty * (p.price + optionsUnitPrice);
   });
-  document.getElementById('stickyItemCount').textContent = `${count} item${count!==1?'s':''}`;
-  document.getElementById('stickyTotal').textContent = '$' + total.toFixed(2);
+  const discountAmt = total * (appliedDiscountPct / 100);
+  document.getElementById('actionBarTotal').textContent = '$' + (total - discountAmt).toFixed(2);
 }
 
 // ══════════════════════════════════════════
@@ -230,14 +228,14 @@ function setFulfillment(type) {
   document.getElementById('addressField').classList.toggle('d-none', type !== 'delivery');
   document.getElementById('cf-date-label').innerHTML = (type === 'delivery' ? 'Delivery Date' : 'Pickup Date') + ' <span class="text-danger">*</span>';
   populateDateOptions(type);
-  updateContinueState(2);
+  updateActionBar();
 }
 
 // ══════════════════════════════════════════
 // STEP 4 — REVIEW & PAYMENT
 // ══════════════════════════════════════════
 
-function setPaymentMethod(method) { paymentMethod = method; updateContinueState(4); }
+function setPaymentMethod(method) { paymentMethod = method; updateActionBar(); }
 
 function formatDateHuman(dateStr) {
   if (!dateStr) return '';
@@ -250,7 +248,7 @@ function applyDiscountCode() {
   const input = document.getElementById('discountCodeInput');
   const msg = document.getElementById('discountCodeMsg');
   const code = input.value.trim().toUpperCase();
-  if (!code) { appliedDiscountPct = 0; msg.className = 'small mt-1 text-danger'; msg.textContent = 'Please enter a code.'; renderReview(); return; }
+  if (!code) { appliedDiscountPct = 0; msg.className = 'small mt-1 text-danger'; msg.textContent = 'Please enter a code.'; renderReview(); updateOrderTotal(); return; }
   const match = (settings.discountCodes || []).find(d => (d.code||'').toUpperCase() === code);
   if (!match) {
     appliedDiscountPct = 0;
@@ -262,6 +260,7 @@ function applyDiscountCode() {
     msg.textContent = `Code applied — ${appliedDiscountPct}% off!`;
   }
   renderReview();
+  updateOrderTotal();
 }
 
 function renderReview() {
@@ -300,29 +299,27 @@ function renderReview() {
   document.getElementById('reviewContact').innerHTML = contactHtml;
 
   const discountAmt = total * (appliedDiscountPct / 100);
-  const finalTotal = total - discountAmt;
   document.getElementById('reviewDiscountRow').classList.toggle('d-none', appliedDiscountPct === 0);
   document.getElementById('reviewDiscountAmt').textContent = '-$' + discountAmt.toFixed(2);
-  document.getElementById('reviewTotal').textContent = '$' + finalTotal.toFixed(2);
 }
 
 // ══════════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════════
 
-function updateContinueState(step) {
-  const err = validateStep(step);
-  const btnId = step === 4 ? 'step4-submit' : 'step'+step+'-continue';
-  const btn = document.getElementById(btnId);
-  if (btn) btn.disabled = !!err;
+function updateActionBar() {
+  const err = validateStep(currentStep);
+  const btn = document.getElementById('actionBarBtn');
+  btn.disabled = !!err;
+  btn.textContent = currentStep === 4 ? 'Place Order' : 'Continue';
 }
 
 function wireLiveValidation() {
   ['cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
-    document.getElementById(id).addEventListener('input', () => updateContinueState(2));
+    document.getElementById(id).addEventListener('input', () => updateActionBar());
   });
-  document.getElementById('rad-pickup').addEventListener('change', () => updateContinueState(2));
-  document.getElementById('rad-delivery').addEventListener('change', () => updateContinueState(2));
+  document.getElementById('rad-pickup').addEventListener('change', () => updateActionBar());
+  document.getElementById('rad-delivery').addEventListener('change', () => updateActionBar());
 }
 
 function validateStep(step) {
@@ -356,19 +353,21 @@ function validateStep(step) {
   return null;
 }
 
-function goToStep(step) {
-  if (step > currentStep) {
-    const err = validateStep(currentStep);
-    if (err) {
-      const errEl = document.getElementById('step'+currentStep+'Error');
-      if (errEl) errEl.textContent = err;
-      return;
-    }
+function continueFlow() {
+  if (currentStep === 4) { submitOrder(); return; }
+
+  const err = validateStep(currentStep);
+  if (err) {
+    const errEl = document.getElementById('step'+currentStep+'Error');
+    if (errEl) errEl.textContent = err;
+    return;
   }
   const currentErrEl = document.getElementById('step'+currentStep+'Error');
   if (currentErrEl) currentErrEl.textContent = '';
 
-  if (step === 4) {
+  currentStep++;
+  document.getElementById('step'+currentStep).classList.remove('d-none');
+  if (currentStep === 4) {
     if (appliedDiscountPct === 0) {
       document.getElementById('discountCodeMsg').textContent = '';
       document.getElementById('discountCodeInput').value = '';
@@ -376,16 +375,12 @@ function goToStep(step) {
     }
     renderReview();
   }
-
-  document.getElementById('step'+currentStep).classList.add('step-locked');
-  document.getElementById('step'+step).classList.remove('step-locked');
-  currentStep = step;
-  updateContinueState(step);
+  updateActionBar();
 
   if (document.activeElement && document.activeElement !== document.body) {
     document.activeElement.blur();
   }
-  document.getElementById('step'+step).scrollIntoView({ block: 'start' });
+  document.getElementById('step'+currentStep).scrollIntoView({ block: 'start' });
 }
 
 // ══════════════════════════════════════════
@@ -394,7 +389,7 @@ function goToStep(step) {
 
 async function submitOrder() {
   const errEl = document.getElementById('step4Error');
-  const submitBtn = document.getElementById('step4-submit');
+  const submitBtn = document.getElementById('actionBarBtn');
   try {
     const first = document.getElementById('cf-first').value.trim();
     const last = document.getElementById('cf-last').value.trim();
@@ -449,6 +444,58 @@ async function submitOrder() {
   } catch (err) {
     errEl.textContent = 'Something went wrong placing your order: ' + err.message + '. Please try again, or let us know if this keeps happening.';
     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Place Order'; }
+  }
+}
+
+// ══════════════════════════════════════════
+// HELP / CONTACT
+// ══════════════════════════════════════════
+
+let helpModal;
+function openHelpModal() {
+  if (!helpModal) helpModal = new bootstrap.Modal(document.getElementById('helpModal'));
+  helpModal.show();
+}
+
+function updateHelpSendState() {
+  const allFilled = ['help-first','help-last','help-phone','help-email','help-message']
+    .every(id => document.getElementById(id).value.trim());
+  document.getElementById('helpSendBtn').disabled = !allFilled;
+}
+
+async function sendHelpMessage() {
+  const btn = document.getElementById('helpSendBtn');
+  const msgEl = document.getElementById('helpMsg');
+  const data = {
+    firstName: document.getElementById('help-first').value.trim(),
+    lastName: document.getElementById('help-last').value.trim(),
+    phone: document.getElementById('help-phone').value.trim(),
+    email: document.getElementById('help-email').value.trim(),
+    message: document.getElementById('help-message').value.trim()
+  };
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  msgEl.textContent = '';
+  try {
+    await apiWrite('contact', 'send', null, data);
+    msgEl.className = 'small mt-2 text-success';
+    msgEl.textContent = "Message sent! We'll get back to you soon.";
+    setTimeout(() => {
+      helpModal.hide();
+      ['help-first','help-last','help-phone','help-email','help-message'].forEach(id => {
+        const el = document.getElementById(id);
+        el.value = '';
+        el.classList.remove('has-value');
+      });
+      msgEl.textContent = '';
+      updateHelpSendState();
+    }, 1500);
+  } catch (err) {
+    msgEl.className = 'small mt-2 text-danger';
+    msgEl.textContent = "Something went wrong sending your message. Please try again, or reach out on Instagram/Facebook instead.";
+    btn.disabled = false;
+  } finally {
+    btn.textContent = 'Send';
   }
 }
 

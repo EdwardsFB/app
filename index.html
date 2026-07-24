@@ -13,7 +13,7 @@
   .form-floating > label { color: #6c757d !important; }
   .form-floating > .form-control.has-value ~ label { transform: scale(.85) translateY(-.5rem) translateX(.15rem); }
   button, .btn { touch-action: manipulation; }
-  #logoImg { max-height: 52px; }
+  #logoImg { max-height: 40px; }
   #cf-date { color: #adb5bd; }
   #discountCodeInput::placeholder { color: #adb5bd; }
   #cf-date.has-value { color: #212529; }
@@ -27,14 +27,9 @@
   .product-card-img { height:120px; object-fit:cover; background:#e9ecef; }
   .btn:disabled, .btn.disabled { background-color: #e9ecef !important; border-color: #dee2e6 !important; color: #adb5bd !important; opacity: 1 !important; }
   #discountApplyBtn:disabled { background-color: transparent !important; border-color: #6c757d !important; color: #adb5bd !important; opacity: 1 !important; }
-  .wizard-step.step-locked { opacity: 0.45; pointer-events: none; }
-  .wizard-step { position: relative; margin-bottom: 2rem; scroll-margin-top: var(--step-landing-offset, 96px); }
-  .wizard-step.step-locked .card-header,
-  .wizard-step.step-locked .card-body,
-  .wizard-step.step-locked .card-footer { opacity: 0.3; }
-  .wizard-step.step-locked { pointer-events: none; }
-  .step-lock-overlay { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; }
-  .wizard-step.step-locked .step-lock-overlay { display: flex; }
+  .wizard-step { margin-bottom: 2rem; scroll-margin-top: var(--step-landing-offset, 96px); }
+  .header-icon { color: #fff; font-size: 1.15rem; }
+  #actionBar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1030; background: #fff; border-top: 1px solid #dee2e6; padding: .6rem 1rem calc(.6rem + env(safe-area-inset-bottom, 0px)); }
 </style>
 </head>
 <body>
@@ -45,9 +40,18 @@
 
 <div id="app">
 
-  <div id="pageHeader" class="sticky-top bg-dark text-white text-center py-4">
-    <img id="logoImg" class="d-none" alt="Edwards Family Bakery"/>
-    <h1 id="brandText" class="h3 mb-0">Edwards Family Bakery</h1>
+  <div id="pageHeader" class="sticky-top bg-dark text-white py-3">
+    <div class="d-flex align-items-center justify-content-between" style="max-width: 640px; margin: 0 auto; padding: 0 1rem;">
+      <div class="d-flex align-items-center">
+        <img id="logoImg" class="d-none" alt="Edwards Family Bakery"/>
+        <h1 id="brandText" class="h5 mb-0">Edwards Family Bakery</h1>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        <a href="https://instagram.com/EdwardsFamilyBakery" target="_blank" class="header-icon" aria-label="Follow us on Instagram"><i class="bi bi-instagram"></i></a>
+        <a href="https://www.facebook.com/profile.php?id=61592002011950" target="_blank" class="header-icon" aria-label="Follow us on Facebook"><i class="bi bi-facebook"></i></a>
+        <button type="button" class="btn btn-link header-icon p-0" style="text-decoration:none;" onclick="openHelpModal()" aria-label="Help / Contact us"><i class="bi bi-question-circle"></i></button>
+      </div>
+    </div>
   </div>
 
   <div class="container" style="max-width: 640px; padding-top: 1.5rem;">
@@ -64,13 +68,13 @@
           </div>
           <div class="card-body">
             <div class="form-floating mb-2">
-              <input id="cf-phone" name="fld-d4" class="form-control" type="tel" autocomplete="off" placeholder="Phone" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value); updateContinueState(1);" onblur="checkPhoneForMatch()"/>
+              <input id="cf-phone" name="fld-d4" class="form-control" type="tel" autocomplete="off" placeholder="Phone" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value); updateActionBar();" onblur="checkPhoneForMatch()"/>
               <label for="cf-phone">Phone <span class="text-danger">*</span></label>
             </div>
             <div id="phoneMatchMsg" class="small mb-2"></div>
             <div class="row g-2 mb-2">
-              <div class="col form-floating"><input id="cf-first" name="fld-b2" class="form-control" type="text" autocomplete="off" placeholder="First Name" oninput="this.classList.toggle('has-value', !!this.value); updateContinueState(1);"/><label for="cf-first">First Name <span class="text-danger">*</span></label></div>
-              <div class="col form-floating"><input id="cf-last" name="fld-c3" class="form-control" type="text" autocomplete="off" placeholder="Last Name" oninput="this.classList.toggle('has-value', !!this.value); updateContinueState(1);"/><label for="cf-last">Last Name <span class="text-danger">*</span></label></div>
+              <div class="col form-floating"><input id="cf-first" name="fld-b2" class="form-control" type="text" autocomplete="off" placeholder="First Name" oninput="this.classList.toggle('has-value', !!this.value); updateActionBar();"/><label for="cf-first">First Name <span class="text-danger">*</span></label></div>
+              <div class="col form-floating"><input id="cf-last" name="fld-c3" class="form-control" type="text" autocomplete="off" placeholder="Last Name" oninput="this.classList.toggle('has-value', !!this.value); updateActionBar();"/><label for="cf-last">Last Name <span class="text-danger">*</span></label></div>
             </div>
             <div class="row g-2">
               <div class="col form-floating"><input id="cf-email" name="fld-e5" class="form-control" type="email" autocomplete="off" placeholder="Email" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-email">Email</label></div>
@@ -78,15 +82,11 @@
 
             <div id="step1Error" class="text-danger small mt-2 mb-0"></div>
           </div>
-          <div class="card-footer">
-            <button class="btn btn-primary w-100" onclick="goToStep(2)" id="step1-continue">Continue</button>
-          </div>
         </div>
-        <div class="step-lock-overlay"><i class="bi bi-lock-fill text-secondary fs-3"></i></div>
       </div>
 
       <!-- STEP 2: Pickup or Delivery (swapped ahead of Menu) -->
-      <div id="step2" class="wizard-step">
+      <div id="step2" class="wizard-step d-none">
         <div class="card">
           <div class="card-header d-flex justify-content-between align-items-center">
             <strong>Pickup or Delivery?</strong>
@@ -109,7 +109,7 @@
                 </div>
               </div>
               <div class="row g-2 mb-2 mt-2">
-                <div class="col form-floating"><select id="cf-date" class="form-select" onchange="this.classList.toggle('has-value', !!this.value); updateContinueState(2);"><option value="" disabled selected>Select</option></select><label for="cf-date" id="cf-date-label">Pickup Date <span class="text-danger">*</span></label></div>
+                <div class="col form-floating"><select id="cf-date" class="form-select" onchange="this.classList.toggle('has-value', !!this.value); updateActionBar();"><option value="" disabled selected>Select</option></select><label for="cf-date" id="cf-date-label">Pickup Date <span class="text-danger">*</span></label></div>
               </div>
               <div class="row g-2"><div class="col form-floating">
                 <textarea id="cf-notes" class="form-control" style="height:80px;" placeholder="Notes"></textarea>
@@ -118,41 +118,25 @@
             </div>
             <div id="step2Error" class="text-danger small mt-2 mb-0"></div>
           </div>
-          <div class="card-footer d-flex gap-2">
-            <button class="btn btn-outline-secondary" onclick="goToStep(1)">Back</button>
-            <button class="btn btn-primary flex-fill" onclick="goToStep(3)" id="step2-continue">Continue</button>
-          </div>
         </div>
-        <div class="step-lock-overlay"><i class="bi bi-lock-fill text-secondary fs-3"></i></div>
       </div>
 
       <!-- STEP 3: Menu (swapped after Pickup or Delivery) -->
-      <div id="step3" class="wizard-step">
+      <div id="step3" class="wizard-step d-none">
         <div class="card">
           <div class="card-header d-flex justify-content-between align-items-center">
             <strong>Menu</strong>
             <span class="small text-muted fw-normal">Step 3 of 4</span>
           </div>
           <div class="card-body">
-            <div id="productsList" class="row row-cols-2 row-cols-md-3 g-3 mb-3"></div>
-            <div class="card text-white" style="background-color: #212529;">
-              <div class="card-body">
-                <div class="d-flex justify-content-between small"><span id="stickyItemCount">0 items</span></div>
-                <div class="d-flex justify-content-between align-items-center"><span class="h6 mb-0">Total</span><span id="stickyTotal" class="h4 mb-0">$0.00</span></div>
-              </div>
-            </div>
+            <div id="productsList" class="row row-cols-2 row-cols-md-3 g-3"></div>
             <div id="step3Error" class="text-danger small mt-2 mb-0"></div>
           </div>
-          <div class="card-footer d-flex gap-2">
-            <button class="btn btn-outline-secondary" onclick="goToStep(2)">Back</button>
-            <button class="btn btn-primary flex-fill" onclick="goToStep(4)" id="step3-continue">Continue</button>
-          </div>
         </div>
-        <div class="step-lock-overlay"><i class="bi bi-lock-fill text-secondary fs-3"></i></div>
       </div>
 
       <!-- STEP 4: Review & Payment -->
-      <div id="step4" class="wizard-step">
+      <div id="step4" class="wizard-step d-none">
         <div class="card">
           <div class="card-header d-flex justify-content-between align-items-center">
             <strong>Review Order</strong>
@@ -161,14 +145,14 @@
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <h3 class="h6 text-uppercase text-muted mb-0">Items</h3>
-              <a href="#" class="small" onclick="goToStep(3); return false;">Edit</a>
+              <a href="#" class="small" onclick="document.getElementById('step3').scrollIntoView({block:'start'}); return false;">Edit</a>
             </div>
             <div id="reviewItems"></div>
           </div>
           <div class="card-body border-top">
             <div class="d-flex justify-content-between align-items-center mb-2">
               <h3 class="h6 text-uppercase text-muted mb-0">Contact & Fulfillment</h3>
-              <a href="#" class="small" onclick="goToStep(1); return false;">Edit</a>
+              <a href="#" class="small" onclick="document.getElementById('step1').scrollIntoView({block:'start'}); return false;">Edit</a>
             </div>
             <div id="reviewContact" class="small"></div>
           </div>
@@ -190,20 +174,10 @@
                 <label class="btn btn-outline-secondary" for="pay-cash"><i class="bi bi-piggy-bank"></i> Cash</label>
               </div>
             </div>
-            <div class="card bg-dark text-white">
-              <div class="card-body">
-                <div class="d-flex justify-content-between small d-none" id="reviewDiscountRow"><span>Discount</span><span id="reviewDiscountAmt">-$0.00</span></div>
-                <div class="d-flex justify-content-between align-items-center"><span class="h6 mb-0">Total</span><span id="reviewTotal" class="h4 mb-0">$0.00</span></div>
-              </div>
-            </div>
+            <div id="reviewDiscountRow" class="d-flex justify-content-between small d-none"><span>Discount</span><span id="reviewDiscountAmt">-$0.00</span></div>
             <div id="step4Error" class="text-danger small mt-2 mb-0"></div>
           </div>
-          <div class="card-footer d-flex gap-2">
-            <button class="btn btn-outline-secondary" onclick="goToStep(3)">Back</button>
-            <button class="btn btn-primary flex-fill" onclick="submitOrder()" id="step4-submit">Place Order</button>
-          </div>
         </div>
-        <div class="step-lock-overlay"><i class="bi bi-lock-fill text-secondary fs-3"></i></div>
       </div>
 
       <p class="text-center small mt-4"><a href="#" class="text-muted text-decoration-none" onclick="cancelOrder(); return false;">Cancel &amp; Start Over</a></p>
@@ -236,18 +210,20 @@
       <button class="btn btn-outline-secondary" onclick="location.reload()">Place New Order</button>
     </div>
 
+    <div style="height: 90px;"></div>
   </div>
 
-  <div class="text-center py-4 d-flex justify-content-center align-items-center gap-4">
-    <a href="https://instagram.com/EdwardsFamilyBakery" target="_blank" style="color:#212529;" aria-label="Follow us on Instagram">
-      <i class="bi bi-instagram" style="font-size: 2rem;"></i>
-    </a>
-    <a href="https://www.facebook.com/profile.php?id=61592002011950" target="_blank" style="color:#212529;" aria-label="Follow us on Facebook">
-      <i class="bi bi-facebook" style="font-size: 2rem;"></i>
-    </a>
+  <div id="actionBar">
+    <div class="d-flex justify-content-between align-items-center mb-2" style="max-width: 640px; margin: 0 auto;">
+      <span class="small text-muted">Total</span>
+      <span id="actionBarTotal" class="h5 mb-0">$0.00</span>
+    </div>
+    <div class="d-flex gap-2" style="max-width: 640px; margin: 0 auto;">
+      <button class="btn btn-outline-secondary" onclick="cancelOrder()">Cancel</button>
+      <button class="btn btn-primary flex-fill" onclick="continueFlow()" id="actionBarBtn">Continue</button>
+    </div>
   </div>
 
-  <div class="mb-5"></div>
 </div>
 
 <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalTitle" aria-hidden="true">
@@ -268,8 +244,42 @@
   </div>
 </div>
 
+<div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalTitle" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="helpModalTitle">Questions or Need Help?</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-2 mb-2">
+          <div class="col form-floating"><input id="help-first" class="form-control" type="text" placeholder="First Name" oninput="this.classList.toggle('has-value', !!this.value); updateHelpSendState();"/><label for="help-first">First Name <span class="text-danger">*</span></label></div>
+          <div class="col form-floating"><input id="help-last" class="form-control" type="text" placeholder="Last Name" oninput="this.classList.toggle('has-value', !!this.value); updateHelpSendState();"/><label for="help-last">Last Name <span class="text-danger">*</span></label></div>
+        </div>
+        <div class="form-floating mb-2">
+          <input id="help-phone" class="form-control" type="tel" placeholder="Phone" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value); updateHelpSendState();"/>
+          <label for="help-phone">Phone <span class="text-danger">*</span></label>
+        </div>
+        <div class="form-floating mb-2">
+          <input id="help-email" class="form-control" type="email" placeholder="Email" oninput="this.classList.toggle('has-value', !!this.value); updateHelpSendState();"/>
+          <label for="help-email">Email <span class="text-danger">*</span></label>
+        </div>
+        <div class="form-floating">
+          <textarea id="help-message" class="form-control" style="height:110px;" placeholder="Message" oninput="this.classList.toggle('has-value', !!this.value); updateHelpSendState();"></textarea>
+          <label for="help-message">Message <span class="text-danger">*</span></label>
+        </div>
+        <div id="helpMsg" class="small mt-2"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        <button class="btn btn-primary" id="helpSendBtn" onclick="sendHelpMessage()" disabled>Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="shared.js?v=32"></script>
-<script src="index.js?v=32"></script>
+<script src="shared.js?v=33"></script>
+<script src="index.js?v=33"></script>
 </body>
 </html>
