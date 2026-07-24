@@ -384,6 +384,10 @@ function goToStep(step) {
   }
   window.scrollTo(0,0);
   console.log(`after scrollTo(0,0), scrollY=${window.scrollY}`);
+  [200, 600, 1200, 2000].forEach(delay => setTimeout(() => {
+    window.scrollTo(0,0);
+    console.log(`  [+${delay}ms retry] scrollY=${window.scrollY}`);
+  }, delay));
   return;
 
   if (step > currentStep) {
