@@ -28,8 +28,10 @@
   .btn:disabled, .btn.disabled { background-color: #e9ecef !important; border-color: #dee2e6 !important; color: #adb5bd !important; opacity: 1 !important; }
   #discountApplyBtn:disabled { background-color: transparent !important; border-color: #6c757d !important; color: #adb5bd !important; opacity: 1 !important; }
   .wizard-step.step-locked { opacity: 0.45; pointer-events: none; }
-  .wizard-step { position: relative; margin-bottom: 2rem; scroll-margin-top: 96px; }
-  .wizard-step.step-locked .card { opacity: 0.3; }
+  .wizard-step { position: relative; margin-bottom: 2rem; scroll-margin-top: var(--step-landing-offset, 96px); }
+  .wizard-step.step-locked .card-header,
+  .wizard-step.step-locked .card-body,
+  .wizard-step.step-locked .card-footer { opacity: 0.3; }
   .wizard-step.step-locked { pointer-events: none; }
   .step-lock-overlay { display: none; position: absolute; inset: 0; align-items: center; justify-content: center; }
   .wizard-step.step-locked .step-lock-overlay { display: flex; }
@@ -267,7 +269,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="shared.js?v=31"></script>
-<script src="index.js?v=31"></script>
+<script src="shared.js?v=32"></script>
+<script src="index.js?v=32"></script>
 </body>
 </html>

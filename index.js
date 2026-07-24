@@ -37,6 +37,11 @@ async function init() {
   document.getElementById('loading').classList.add('d-none');
   document.getElementById('app').classList.remove('d-none');
   window.scrollTo(0, 0);
+  // Measure exactly where step 1 naturally sits (distance from viewport top) right now,
+  // at scroll position 0, and use that same precise number as the landing spot for every
+  // future step transition - guarantees they all match instead of approximating one.
+  const landingOffset = document.getElementById('step1').getBoundingClientRect().top;
+  document.documentElement.style.setProperty('--step-landing-offset', landingOffset + 'px');
 }
 
 function applyLogo() {
