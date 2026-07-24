@@ -1,4 +1,4 @@
-// build: 2026-07-24T19:21:42Z
+// build: 2026-07-24T19:38:34Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -450,13 +450,17 @@ window.addEventListener('pageshow', (event) => {
 // forums, thread 800125) where visualViewport.offsetTop doesn't reset to 0 after
 // a keyboard dismisses, leaving fixed/sticky elements misplaced relative to the
 // actual screen. Correct for that offset directly when detected.
+//
+// This only runs on focusout (keyboard dismissing), not on every visualViewport
+// resize event. An earlier version also listened for resize events generally, but
+// that fired repeatedly during active scrolling while the keyboard was still up -
+// each firing tried to correct the scroll position back toward zero, which fought
+// the user's own swipe gesture in real time instead of just fixing the one-time
+// post-dismissal offset it was meant for.
 function correctViewportOffset() {
   if (window.visualViewport && window.visualViewport.offsetTop > 0) {
     window.scrollBy(0, -window.visualViewport.offsetTop);
   }
-}
-if (window.visualViewport) {
-  window.visualViewport.addEventListener('resize', () => setTimeout(correctViewportOffset, 50));
 }
 document.getElementById('wizardScreen').addEventListener('focusout', () => {
   setTimeout(() => {
