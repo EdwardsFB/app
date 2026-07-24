@@ -1,10 +1,9 @@
-// build: 2026-07-24T16:22:25Z
+// build: 2026-07-24T17:01:56Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
 let cOptions = {}; // cOptions[productId] = { optionName: price } for currently-checked options
 let currentFulfillment = null;
-let currentStep = 1;
 let paymentMethod = null;
 let appliedDiscountPct = 0;
 const VENMO_HANDLE = 'edwardsfamilybakery';
@@ -34,6 +33,7 @@ async function init() {
   updateOrderTotal();
   wireLiveValidation();
   updateActionBar();
+  document.getElementById('actionBar').classList.remove('d-none');
   document.getElementById('loading').classList.add('d-none');
   document.getElementById('app').classList.remove('d-none');
   window.scrollTo(0, 0);
@@ -282,9 +282,7 @@ function applyDiscountCode() {
 // gets built once and stays static. Call this after any change to contact, fulfillment,
 // or item data so the review step (if already visible) always reflects the latest state.
 function refreshReviewIfVisible() {
-  if (!document.getElementById('step2').classList.contains('d-none')) {
-    renderReview();
-  }
+  renderReview();
 }
 
 function renderReview() {
@@ -300,7 +298,7 @@ function renderReview() {
       html += `<div class="d-flex justify-content-between small"><span>${qty}× ${esc(p.name)}${optionsLabel}</span><span>$${sub.toFixed(2)}</span></div>`;
     }
   });
-  document.getElementById('reviewItems').innerHTML = html || '<div class="small text-muted">No items selected</div>';
+  document.getElementById('reviewItems').innerHTML = html || '<div class="small text-muted">No items selected yet</div>';
 
   const discountAmt = total * (appliedDiscountPct / 100);
   document.getElementById('reviewDiscountRow').classList.toggle('d-none', appliedDiscountPct === 0);
@@ -312,15 +310,7 @@ function renderReview() {
 // ══════════════════════════════════════════
 
 function updateActionBar() {
-  const err = validateStep(currentStep);
-  const btn = document.getElementById('actionBarBtn');
-  btn.disabled = !!err;
-  btn.textContent = currentStep === 2 ? 'Place Order' : 'Checkout';
-  // Stays hidden until step 1 (at least one item selected) is actually valid - once
-  // shown, it stays shown (this only ever reveals, never hides itself again).
-  if (currentStep === 1 && !validateStep(1)) {
-    document.getElementById('actionBar').classList.remove('d-none');
-  }
+  document.getElementById('actionBarBtn').disabled = !!validateOrder();
 }
 
 function wireLiveValidation() {
@@ -331,67 +321,34 @@ function wireLiveValidation() {
   document.getElementById('rad-delivery').addEventListener('change', () => updateActionBar());
   document.getElementById('cf-notes').addEventListener('input', () => refreshReviewIfVisible());
   ['cf-first','cf-last','cf-email','cf-phone'].forEach(id => {
-    document.getElementById(id).addEventListener('input', () => refreshReviewIfVisible());
+    document.getElementById(id).addEventListener('input', () => { updateActionBar(); refreshReviewIfVisible(); });
   });
 }
 
-function validateStep(step) {
-  if (step === 1) {
-    const anyItems = Object.values(cQty).some(q => q > 0);
-    if (!anyItems) return 'Please select at least one item.';
-  }
-  if (step === 2) {
-    const first = document.getElementById('cf-first').value.trim();
-    const last = document.getElementById('cf-last').value.trim();
-    const phone = document.getElementById('cf-phone').value.trim();
-    if (normPhone(phone).length !== 10) return 'Please enter a complete 10-digit phone number.';
-    if (!first || !last) return 'Please enter your first and last name.';
+function validateOrder() {
+  const anyItems = Object.values(cQty).some(q => q > 0);
+  if (!anyItems) return 'Please select at least one item from the menu.';
 
-    if (!currentFulfillment) return 'Please choose Pickup or Delivery.';
-    const date = document.getElementById('cf-date').value;
-    if (!date) return `Please choose a ${currentFulfillment === 'delivery' ? 'delivery' : 'pickup'} date.`;
-    if (currentFulfillment === 'delivery') {
-      const street = document.getElementById('cf-street').value.trim();
-      const city = document.getElementById('cf-city').value.trim();
-      const state = document.getElementById('cf-state').value.trim();
-      const zip = document.getElementById('cf-zip').value.trim();
-      if (!street || !city || !state || !zip) return 'Please fill in your full delivery address.';
-      if (zip.length !== 5) return 'Please enter a complete 5-digit ZIP code.';
-    }
+  const first = document.getElementById('cf-first').value.trim();
+  const last = document.getElementById('cf-last').value.trim();
+  const phone = document.getElementById('cf-phone').value.trim();
+  if (normPhone(phone).length !== 10) return 'Please enter a complete 10-digit phone number.';
+  if (!first || !last) return 'Please enter your first and last name.';
 
-    if (!paymentMethod) return "Please choose how you'll pay.";
+  if (!currentFulfillment) return 'Please choose Pickup or Delivery.';
+  const date = document.getElementById('cf-date').value;
+  if (!date) return `Please choose a ${currentFulfillment === 'delivery' ? 'delivery' : 'pickup'} date.`;
+  if (currentFulfillment === 'delivery') {
+    const street = document.getElementById('cf-street').value.trim();
+    const city = document.getElementById('cf-city').value.trim();
+    const state = document.getElementById('cf-state').value.trim();
+    const zip = document.getElementById('cf-zip').value.trim();
+    if (!street || !city || !state || !zip) return 'Please fill in your full delivery address.';
+    if (zip.length !== 5) return 'Please enter a complete 5-digit ZIP code.';
   }
+
+  if (!paymentMethod) return "Please choose how you'll pay.";
   return null;
-}
-
-function continueFlow() {
-  if (currentStep === 2) { submitOrder(); return; }
-
-  const err = validateStep(currentStep);
-  if (err) {
-    const errEl = document.getElementById('step'+currentStep+'Error');
-    if (errEl) errEl.textContent = err;
-    return;
-  }
-  const currentErrEl = document.getElementById('step'+currentStep+'Error');
-  if (currentErrEl) currentErrEl.textContent = '';
-
-  currentStep++;
-  document.getElementById('step'+currentStep).classList.remove('d-none');
-  if (currentStep === 2) {
-    if (appliedDiscountPct === 0) {
-      document.getElementById('discountCodeMsg').textContent = '';
-      document.getElementById('discountCodeInput').value = '';
-      document.getElementById('discountApplyBtn').disabled = true;
-    }
-    renderReview();
-  }
-  updateActionBar();
-
-  if (document.activeElement && document.activeElement !== document.body) {
-    document.activeElement.blur();
-  }
-  document.getElementById('step'+currentStep).scrollIntoView({ block: 'start' });
 }
 
 // ══════════════════════════════════════════
@@ -451,6 +408,7 @@ async function submitOrder() {
 
     document.getElementById('wizardScreen').classList.add('d-none');
     document.getElementById('confirmScreen').classList.remove('d-none');
+    document.getElementById('pageHeader').classList.add('d-none');
     document.getElementById('actionBar').classList.add('d-none');
     document.getElementById('confirmScreen').scrollIntoView({ block: 'start' });
   } catch (err) {

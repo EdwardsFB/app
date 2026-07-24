@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- build: 2026-07-24T16:22:25Z -->
+<!-- build: 2026-07-24T17:01:56Z -->
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -61,27 +61,23 @@
     <!-- WIZARD -->
     <div id="wizardScreen">
 
-      <!-- STEP 1: Contact Info -->
-      <!-- STEP 1: Menu -->
+      <p class="text-center text-muted mb-4">Welcome to Edwards Family Bakery! Fresh-milled bread and homemade goods, baked weekly.</p>
+
       <div id="step1" class="wizard-step">
         <div class="card shadow-sm">
-          <div class="card-header d-flex justify-content-between align-items-center">
+          <div class="card-header">
             <strong>Menu</strong>
-            <span class="small text-muted fw-normal">Step 1 of 2</span>
           </div>
           <div class="card-body">
             <div id="productsList" class="row row-cols-2 row-cols-md-3 g-3"></div>
-            <div id="step1Error" class="text-danger small mt-2 mb-0"></div>
           </div>
         </div>
       </div>
 
-      <!-- STEP 2: Checkout (contact, fulfillment, review, payment - all on one continuous screen) -->
-      <div id="step2" class="wizard-step d-none">
+      <div id="step2" class="wizard-step">
         <div class="card shadow-sm">
-          <div class="card-header d-flex justify-content-between align-items-center">
+          <div class="card-header">
             <strong>Checkout</strong>
-            <span class="small text-muted fw-normal">Step 2 of 2</span>
           </div>
           <div class="card-body">
             <h3 class="h6 text-uppercase text-muted mb-2">Your Info</h3>
@@ -127,11 +123,8 @@
           </div>
 
           <div class="card-body border-top">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h3 class="h6 text-uppercase text-muted mb-0">Items</h3>
-              <a href="#" class="small" onclick="document.getElementById('step1').scrollIntoView({block:'start'}); return false;">Edit</a>
-            </div>
-            <div id="reviewItems"></div>
+            <h3 class="h6 text-uppercase text-muted mb-2">Items</h3>
+            <div id="reviewItems"><div class="small text-muted">No items selected yet</div></div>
           </div>
 
           <div class="card-body border-top">
@@ -182,6 +175,12 @@
       </div>
 
       <button class="btn btn-outline-secondary" onclick="location.reload()">Start New Order</button>
+
+      <div class="d-flex justify-content-center align-items-center mt-5" style="gap: 20px;">
+        <a href="https://instagram.com/EdwardsFamilyBakery" target="_blank" style="color:#212529;" aria-label="Follow us on Instagram"><i class="bi bi-instagram fs-4"></i></a>
+        <a href="https://www.facebook.com/profile.php?id=61592002011950" target="_blank" style="color:#212529;" aria-label="Follow us on Facebook"><i class="bi bi-facebook fs-4"></i></a>
+        <a href="mailto:edwardsfamilybakery@gmail.com" style="color:#212529;" aria-label="Email us"><i class="bi bi-envelope fs-4"></i></a>
+      </div>
     </div>
 
     <div style="height: 90px;"></div>
@@ -194,9 +193,10 @@
     </div>
     <div class="d-flex gap-2" style="max-width: 640px; margin: 0 auto;">
       <button class="btn btn-outline-secondary" onclick="cancelOrder()">Cancel</button>
-      <button class="btn btn-primary flex-fill" onclick="continueFlow()" id="actionBarBtn" disabled>Continue</button>
+      <button class="btn btn-primary flex-fill" onclick="submitOrder()" id="actionBarBtn" disabled>Place Order</button>
     </div>
   </div>
+
 
 </div>
 
@@ -219,7 +219,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="shared.js?v=39"></script>
-<script src="index.js?v=39"></script>
+<script src="shared.js?v=40"></script>
+<script src="index.js?v=40"></script>
 </body>
 </html>
