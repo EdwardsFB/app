@@ -87,14 +87,14 @@ function checkPhoneForMatch() {
     ['cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
       if (document.getElementById(id)) setFieldValue(id, parts[id.replace('cf-','')] || '');
     });
-    const radDelivery = document.getElementById('rad-delivery');
-    if (radDelivery) radDelivery.checked = true;
-    if (document.getElementById('fulfillmentDetailsField')) setFulfillment('delivery');
+    // Address is pre-filled for convenience, but the customer still has to explicitly
+    // choose Pickup or Delivery themselves each time - never auto-selected.
   }
 
   msg.className = 'small mb-2 text-success';
   msg.textContent = `Welcome back, ${match.firstName}!`;
   updateActionBar();
+  refreshReviewIfVisible();
 
   // We just auto-filled everything for them — dismiss the keyboard rather than
   // leaving some other field focused (and its text selected) as if it needs editing.
@@ -153,6 +153,7 @@ function toggleOption(productId, optionName, optionPrice, checked) {
   cOptions[productId][optionName] = checked ? optionPrice : undefined;
   if (!checked) delete cOptions[productId][optionName];
   updateOrderTotal();
+  refreshReviewIfVisible();
 }
 
 function changeQty(id, delta) {
@@ -169,6 +170,7 @@ function changeQty(id, delta) {
   }
   updateOrderTotal();
   updateActionBar();
+  refreshReviewIfVisible();
 }
 
 function getSelectedOptionsFor(productId) {
@@ -229,6 +231,7 @@ function setFulfillment(type) {
   document.getElementById('cf-date-label').innerHTML = (type === 'delivery' ? 'Delivery Date' : 'Pickup Date') + ' <span class="text-danger">*</span>';
   populateDateOptions(type);
   updateActionBar();
+  refreshReviewIfVisible();
 }
 
 // ══════════════════════════════════════════
@@ -261,6 +264,16 @@ function applyDiscountCode() {
   }
   renderReview();
   updateOrderTotal();
+}
+
+// Once step 4 has been reached, it stays visible and editable-from-above forever -
+// unlike the old locked-step design, there's no single "moment" where review data
+// gets built once and stays static. Call this after any change to contact, fulfillment,
+// or item data so the review step (if already visible) always reflects the latest state.
+function refreshReviewIfVisible() {
+  if (!document.getElementById('step4').classList.contains('d-none')) {
+    renderReview();
+  }
 }
 
 function renderReview() {
@@ -312,14 +325,23 @@ function updateActionBar() {
   const btn = document.getElementById('actionBarBtn');
   btn.disabled = !!err;
   btn.textContent = currentStep === 4 ? 'Place Order' : 'Continue';
+  // Stays hidden until step 1's required fields are actually filled in - once shown,
+  // it stays shown (this only ever reveals, never hides itself again).
+  if (currentStep === 1 && !validateStep(1)) {
+    document.getElementById('actionBar').classList.remove('d-none');
+  }
 }
 
 function wireLiveValidation() {
   ['cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
-    document.getElementById(id).addEventListener('input', () => updateActionBar());
+    document.getElementById(id).addEventListener('input', () => { updateActionBar(); refreshReviewIfVisible(); });
   });
   document.getElementById('rad-pickup').addEventListener('change', () => updateActionBar());
   document.getElementById('rad-delivery').addEventListener('change', () => updateActionBar());
+  document.getElementById('cf-notes').addEventListener('input', () => refreshReviewIfVisible());
+  ['cf-first','cf-last','cf-email','cf-phone'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => refreshReviewIfVisible());
+  });
 }
 
 function validateStep(step) {
@@ -492,7 +514,7 @@ async function sendHelpMessage() {
     }, 1500);
   } catch (err) {
     msgEl.className = 'small mt-2 text-danger';
-    msgEl.textContent = "Something went wrong sending your message. Please try again, or reach out on Instagram/Facebook instead.";
+    msgEl.textContent = "Couldn't send: " + err.message + ". Please try again, or reach out on Instagram/Facebook instead.";
     btn.disabled = false;
   } finally {
     btn.textContent = 'Send';
