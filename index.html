@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- build: 2026-07-24T19:00:46Z -->
+<!-- build: 2026-07-24T19:14:31Z -->
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -38,9 +38,8 @@
   .header-icon { color: #fff; font-size: 1.15rem; }
   #actionBar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1030; background: #fff; border-top: 1px solid #dee2e6; padding: .6rem 1rem calc(.6rem + env(safe-area-inset-bottom, 0px)); }
   body { background-color: #fafafa; }
-  .radio-card { display: flex; align-items: center; gap: .75rem; padding: .75rem 1rem; border: 1px solid #ced4da; border-radius: .375rem; cursor: pointer; margin-bottom: .5rem; }
-  .radio-card:has(input:checked) { border-color: #0d6efd; background-color: #f0f6ff; }
-  .radio-card input[type="radio"] { width: 1.1em; height: 1.1em; flex-shrink: 0; }
+  .radio-card { display: flex; align-items: center; gap: .4rem; cursor: pointer; }
+  .radio-card input[type="radio"] { width: 1.2em; height: 1.2em; accent-color: #0d6efd; flex-shrink: 0; }
   .radio-card i { font-size: 1.1rem; }
 </style>
 </head>
@@ -91,7 +90,6 @@
               <input id="cf-phone" name="fld-d4" class="form-control" type="tel" autocomplete="off" placeholder="Phone" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value); updateActionBar();" onblur="checkPhoneForMatch()"/>
               <label for="cf-phone">Phone <span class="text-danger">*</span></label>
             </div>
-            <div id="phoneMatchMsg" class="small mb-2"></div>
             <div class="row g-2 mb-2">
               <div class="col form-floating"><input id="cf-first" name="fld-b2" class="form-control" type="text" autocomplete="off" placeholder="First Name" oninput="this.classList.toggle('has-value', !!this.value); updateActionBar();"/><label for="cf-first">First Name <span class="text-danger">*</span></label></div>
               <div class="col form-floating"><input id="cf-last" name="fld-c3" class="form-control" type="text" autocomplete="off" placeholder="Last Name" oninput="this.classList.toggle('has-value', !!this.value); updateActionBar();" onblur="checkPhoneForMatch()"/><label for="cf-last">Last Name <span class="text-danger">*</span></label></div>
@@ -103,14 +101,16 @@
 
           <div class="card-body border-top">
             <h3 class="h6 text-uppercase text-muted mb-2">Pickup or Delivery? <span class="text-danger">*</span></h3>
-            <label class="radio-card" for="rad-pickup">
-              <input type="radio" name="fulfillment" id="rad-pickup" onclick="setFulfillment('pickup')">
-              <i class="bi bi-cart4"></i> Pickup
-            </label>
-            <label class="radio-card" for="rad-delivery">
-              <input type="radio" name="fulfillment" id="rad-delivery" onclick="setFulfillment('delivery')">
-              <i class="bi bi-truck"></i> Delivery
-            </label>
+            <div class="d-flex gap-4 mb-3">
+              <label class="radio-card" for="rad-pickup">
+                <input type="radio" name="fulfillment" id="rad-pickup" onclick="setFulfillment('pickup')">
+                <i class="bi bi-cart4"></i> Pickup
+              </label>
+              <label class="radio-card" for="rad-delivery">
+                <input type="radio" name="fulfillment" id="rad-delivery" onclick="setFulfillment('delivery')">
+                <i class="bi bi-truck"></i> Delivery
+              </label>
+            </div>
             <div id="fulfillmentDetailsField" class="d-none">
               <div id="addressField" class="d-none mb-2">
                 <div class="row g-2 mb-2"><div class="col form-floating"><input id="cf-street" class="form-control" type="text" placeholder="Street Address" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-street">Street Address <span class="text-danger">*</span></label></div></div>
@@ -144,14 +144,16 @@
             <div id="discountCodeMsg" class="small mt-1 mb-3"></div>
 
             <h3 class="h6 text-uppercase text-muted mb-2">Payment Method <span class="text-danger">*</span></h3>
-            <label class="radio-card" for="pay-venmo">
-              <input type="radio" name="paymentMethod" id="pay-venmo" onclick="setPaymentMethod('venmo')">
-              <i class="bi bi-phone"></i> Venmo
-            </label>
-            <label class="radio-card" for="pay-cash">
-              <input type="radio" name="paymentMethod" id="pay-cash" onclick="setPaymentMethod('cash')">
-              <i class="bi bi-piggy-bank"></i> Cash
-            </label>
+            <div class="d-flex gap-4">
+              <label class="radio-card" for="pay-venmo">
+                <input type="radio" name="paymentMethod" id="pay-venmo" onclick="setPaymentMethod('venmo')">
+                <i class="bi bi-phone"></i> Venmo
+              </label>
+              <label class="radio-card" for="pay-cash">
+                <input type="radio" name="paymentMethod" id="pay-cash" onclick="setPaymentMethod('cash')">
+                <i class="bi bi-piggy-bank"></i> Cash
+              </label>
+            </div>
             <div id="reviewDiscountRow" class="d-flex justify-content-between small d-none mt-2"><span>Discount</span><span id="reviewDiscountAmt">-$0.00</span></div>
             <div id="step2Error" class="text-danger small mt-2 mb-0"></div>
           </div>
@@ -228,7 +230,9 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="shared.js?v=43"></script>
-<script src="index.js?v=43"></script>
+<script src="shared.js?v=44"></script>
+<script src="index.js?v=44"></script>
+<div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080;" id="toastContainer"></div>
+
 </body>
 </html>

@@ -1,4 +1,4 @@
-// build: 2026-07-24T19:00:46Z
+// build: 2026-07-24T19:14:31Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -62,6 +62,23 @@ function applyLogo() {
   }
 }
 
+function showToast(message) {
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast align-items-center text-white bg-success border-0';
+  el.setAttribute('role', 'alert');
+  el.innerHTML = `
+    <div class="d-flex">
+      <div class="toast-body">${esc(message)}</div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  `;
+  container.appendChild(el);
+  const toast = new bootstrap.Toast(el, { delay: 3500 });
+  el.addEventListener('hidden.bs.toast', () => el.remove());
+  toast.show();
+}
+
 let cancelModal;
 function cancelOrder() {
   if (!cancelModal) cancelModal = new bootstrap.Modal(document.getElementById('cancelModal'));
@@ -81,18 +98,17 @@ function setFieldValue(id, value) {
 function checkPhoneForMatch() {
   const phone = document.getElementById('cf-phone').value.trim();
   const lastName = document.getElementById('cf-last').value.trim();
-  const msg = document.getElementById('phoneMatchMsg');
   const normed = normPhone(phone);
   // Require both phone AND last name before even attempting a match - matching on
   // phone alone risks a typo'd digit landing on a different real customer and
   // exposing their name, email, and address to a stranger. Last name is required on
   // every existing order/customer record, so this works for every past customer too.
-  if (normed.length !== 10 || !lastName) { msg.textContent = ''; return; }
+  if (normed.length !== 10 || !lastName) return;
 
   const match = getMergedCustomers(products, orders, customers).find(c =>
     normPhone(c.phone) === normed && (c.lastName || '').trim().toLowerCase() === lastName.toLowerCase()
   );
-  if (!match) { msg.textContent = ''; return; }
+  if (!match) return;
 
   setFieldValue('cf-first', match.firstName);
   setFieldValue('cf-email', match.email || '');
@@ -108,8 +124,7 @@ function checkPhoneForMatch() {
     // choose Pickup or Delivery themselves each time - never auto-selected.
   }
 
-  msg.className = 'small mb-2 text-success';
-  msg.textContent = `Welcome back, ${match.firstName}!`;
+  showToast(`Welcome back, ${match.firstName}! We've filled in your info.`);
   updateActionBar();
   refreshReviewIfVisible();
 
