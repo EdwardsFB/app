@@ -1,4 +1,4 @@
-// build: 2026-07-24T17:01:56Z
+// build: 2026-07-24T18:11:17Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -145,9 +145,9 @@ function renderProducts() {
           ${p.desc ? `<div class="text-muted" style="font-size:0.75rem;">${esc(p.desc)}</div>` : ''}
           <div class="pt-2">
             <div class="input-group input-group-sm mb-1">
-              <button class="btn btn-outline-secondary" type="button" onclick="changeQty('${p.id}', -1)"><i class="bi bi-dash"></i></button>
+              <button class="btn btn-outline-secondary qty-minus-btn" style="border-color:#ced4da;" type="button" id="qty-minus-${p.id}" onclick="changeQty('${p.id}', -1)" disabled><i class="bi bi-dash"></i></button>
               <span class="form-control text-center px-0" id="qty-${p.id}">0</span>
-              <button class="btn btn-outline-secondary" type="button" onclick="changeQty('${p.id}', 1)"><i class="bi bi-plus"></i></button>
+              <button class="btn btn-outline-secondary" style="border-color:#ced4da;" type="button" onclick="changeQty('${p.id}', 1)"><i class="bi bi-plus"></i></button>
             </div>
             <div class="small fw-bold mt-3">$${Number(p.price).toFixed(2)} <span class="text-muted fw-normal">${esc(p.unit||'')}</span></div>
             ${optionsWrapHtml}
@@ -170,6 +170,7 @@ function toggleOption(productId, optionName, optionPrice, checked) {
 function changeQty(id, delta) {
   cQty[id] = Math.max(0, (cQty[id]||0) + delta);
   document.getElementById('qty-'+id).textContent = cQty[id];
+  document.getElementById('qty-minus-'+id).disabled = cQty[id] === 0;
   const optsWrap = document.getElementById('opts-wrap-'+id);
   if (optsWrap) {
     optsWrap.classList.toggle('d-none', cQty[id] === 0);
@@ -298,7 +299,7 @@ function renderReview() {
       html += `<div class="d-flex justify-content-between small"><span>${qty}× ${esc(p.name)}${optionsLabel}</span><span>$${sub.toFixed(2)}</span></div>`;
     }
   });
-  document.getElementById('reviewItems').innerHTML = html || '<div class="small text-muted">No items selected yet</div>';
+  document.getElementById('reviewItems').innerHTML = html || '<div class="small text-muted">Empty</div>';
 
   const discountAmt = total * (appliedDiscountPct / 100);
   document.getElementById('reviewDiscountRow').classList.toggle('d-none', appliedDiscountPct === 0);
