@@ -384,10 +384,25 @@ function goToStep(step) {
   }
   window.scrollTo(0,0);
   console.log(`after scrollTo(0,0), scrollY=${window.scrollY}`);
-  [200, 600, 1200, 2000].forEach(delay => setTimeout(() => {
-    window.scrollTo(0,0);
-    console.log(`  [+${delay}ms retry] scrollY=${window.scrollY}`);
-  }, delay));
+  // Data from live testing showed scroll position isn't just stuck - it decays toward
+  // 0 over time (iOS momentum settling), but NOT always monotonically - it can reach 0
+  // and then drift away again later. Fixed-delay retries can catch a moment that looks
+  // correct and still miss subsequent drift. React to actual scroll events instead,
+  // for a window after the transition, correcting drift whenever it actually occurs.
+  let correctionActive = true;
+  const scrollCorrector = () => {
+    if (!correctionActive) return;
+    if (window.scrollY !== 0) {
+      window.scrollTo(0, 0);
+      console.log(`  [scroll-event correction] was ${window.scrollY}, forced to 0`);
+    }
+  };
+  window.addEventListener('scroll', scrollCorrector, { passive: true });
+  setTimeout(() => {
+    correctionActive = false;
+    window.removeEventListener('scroll', scrollCorrector);
+    console.log(`  correction window ended, final scrollY=${window.scrollY}`);
+  }, 2500);
   return;
 
   if (step > currentStep) {
