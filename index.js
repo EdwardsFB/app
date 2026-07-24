@@ -1,4 +1,4 @@
-// build: 2026-07-24T19:46:55Z
+// build: 2026-07-24T19:56:16Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -447,43 +447,40 @@ window.addEventListener('pageshow', (event) => {
   if (event.persisted) location.reload();
 });
 
-// iOS 26 Safari has a confirmed, active bug (filed on Apple's own developer
-// forums, thread 800125) where visualViewport.offsetTop doesn't reset to 0 after
-// a keyboard dismisses, leaving fixed/sticky elements misplaced relative to the
-// actual screen. Correct for that offset directly when detected.
-//
-// This only runs on focusout (keyboard dismissing), not on every visualViewport
-// resize event. An earlier version also listened for resize events generally, but
-// that fired repeatedly during active scrolling while the keyboard was still up -
-// each firing tried to correct the scroll position back toward zero, which fought
-// the user's own swipe gesture in real time instead of just fixing the one-time
-// post-dismissal offset it was meant for.
 function correctViewportOffset() {
   if (window.visualViewport && window.visualViewport.offsetTop > 0) {
     window.scrollBy(0, -window.visualViewport.offsetTop);
   }
 }
+
+// position:fixed elements anchored to the bottom don't reliably track the actual
+// visible screen on iOS while the keyboard is open - rather than fight that, just
+// hide the pinned bar while the keyboard's up, since there's nothing useful to tap
+// on it in that moment anyway.
+//
+// This is tied to focus state (a field is/isn't focused), not visualViewport height.
+// An earlier version compared viewport height against a threshold, but height can
+// fluctuate slightly during active scrolling even while the keyboard stays up
+// (dynamic browser chrome, etc.), which made the bar flicker back into view
+// mid-swipe instead of staying reliably hidden. Focus state doesn't have that
+// problem - it's a plain yes/no that only changes when focus actually moves.
+document.getElementById('wizardScreen').addEventListener('focusin', (e) => {
+  if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) {
+    document.getElementById('actionBar').classList.add('d-none');
+  }
+});
 document.getElementById('wizardScreen').addEventListener('focusout', () => {
   setTimeout(() => {
     const active = document.activeElement;
     const stillEditing = active && ['INPUT','TEXTAREA','SELECT'].includes(active.tagName);
-    if (!stillEditing) correctViewportOffset();
+    if (stillEditing) return;
+    correctViewportOffset();
+    const stillLoading = !document.getElementById('loading').classList.contains('d-none');
+    const onConfirmScreen = !document.getElementById('confirmScreen').classList.contains('d-none');
+    if (!stillLoading && !onConfirmScreen) {
+      document.getElementById('actionBar').classList.remove('d-none');
+    }
   }, 100);
 });
-
-// position:fixed elements anchored to the bottom don't reliably track the actual
-// visible screen on iOS while the keyboard is open (the layout viewport and the
-// visual viewport diverge, and fixed elements can end up anchored to the wrong one) -
-// rather than fight that, just hide the pinned bar while the keyboard's up, since
-// there's nothing useful to tap on it in that moment anyway. This only toggles CSS
-// visibility and never touches scroll position, so it can't refight the user's swipe.
-if (window.visualViewport) {
-  window.visualViewport.addEventListener('resize', () => {
-    const onConfirmScreen = !document.getElementById('confirmScreen').classList.contains('d-none');
-    if (onConfirmScreen) return;
-    const keyboardLikelyOpen = (window.innerHeight - window.visualViewport.height) > 150;
-    document.getElementById('actionBar').classList.toggle('d-none', keyboardLikelyOpen);
-  });
-}
 
 init();
