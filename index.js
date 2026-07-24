@@ -462,6 +462,7 @@ async function submitOrder() {
 
     document.getElementById('wizardScreen').classList.add('d-none');
     document.getElementById('confirmScreen').classList.remove('d-none');
+    document.getElementById('actionBar').classList.add('d-none');
     document.getElementById('confirmScreen').scrollIntoView({ block: 'start' });
   } catch (err) {
     errEl.textContent = 'Something went wrong placing your order: ' + err.message + '. Please try again, or let us know if this keeps happening.';

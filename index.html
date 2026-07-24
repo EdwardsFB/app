@@ -30,6 +30,7 @@
   .wizard-step { margin-bottom: 2rem; scroll-margin-top: var(--step-landing-offset, 96px); }
   .header-icon { color: #fff; font-size: 1.15rem; }
   #actionBar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1030; background: #fff; border-top: 1px solid #dee2e6; padding: .6rem 1rem calc(.6rem + env(safe-area-inset-bottom, 0px)); }
+  body { background-color: #fafafa; }
 </style>
 </head>
 <body>
@@ -46,7 +47,7 @@
         <img id="logoImg" class="d-none" alt="Edwards Family Bakery"/>
         <h1 id="brandText" class="h5 mb-0">Edwards Family Bakery</h1>
       </div>
-      <div class="d-flex align-items-center gap-4">
+      <div class="d-flex align-items-center" style="gap: 20px;">
         <a href="https://instagram.com/EdwardsFamilyBakery" target="_blank" class="header-icon" aria-label="Follow us on Instagram"><i class="bi bi-instagram"></i></a>
         <a href="https://www.facebook.com/profile.php?id=61592002011950" target="_blank" class="header-icon" aria-label="Follow us on Facebook"><i class="bi bi-facebook"></i></a>
         <button type="button" class="header-icon" style="background:none; border:none; padding:0; margin:0; line-height:1;" onclick="openHelpModal()" aria-label="Help / Contact us"><i class="bi bi-question-circle"></i></button>
@@ -244,7 +245,7 @@
 </div>
 
 <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalTitle" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h1 class="modal-title fs-5" id="helpModalTitle">Questions or Need Help?</h1>
@@ -270,7 +271,7 @@
         <div id="helpMsg" class="small mt-2"></div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
         <button class="btn btn-primary" id="helpSendBtn" onclick="sendHelpMessage()" disabled>Send</button>
       </div>
     </div>
@@ -278,7 +279,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="shared.js?v=34"></script>
-<script src="index.js?v=34"></script>
+<script src="shared.js?v=35"></script>
+<script src="index.js?v=35"></script>
 </body>
 </html>
