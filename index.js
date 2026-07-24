@@ -480,58 +480,6 @@ async function submitOrder() {
   }
 }
 
-// ══════════════════════════════════════════
-// HELP / CONTACT
-// ══════════════════════════════════════════
-
-let helpModal;
-function openHelpModal() {
-  if (!helpModal) helpModal = new bootstrap.Modal(document.getElementById('helpModal'));
-  helpModal.show();
-}
-
-function updateHelpSendState() {
-  const allFilled = ['help-first','help-last','help-phone','help-email','help-message']
-    .every(id => document.getElementById(id).value.trim());
-  document.getElementById('helpSendBtn').disabled = !allFilled;
-}
-
-async function sendHelpMessage() {
-  const btn = document.getElementById('helpSendBtn');
-  const msgEl = document.getElementById('helpMsg');
-  const data = {
-    firstName: document.getElementById('help-first').value.trim(),
-    lastName: document.getElementById('help-last').value.trim(),
-    phone: document.getElementById('help-phone').value.trim(),
-    email: document.getElementById('help-email').value.trim(),
-    message: document.getElementById('help-message').value.trim()
-  };
-  btn.disabled = true;
-  btn.textContent = 'Sending...';
-  msgEl.textContent = '';
-  try {
-    await apiWrite('contact', 'send', null, data);
-    msgEl.className = 'small mt-2 text-success';
-    msgEl.textContent = "Message sent! We'll get back to you soon.";
-    setTimeout(() => {
-      helpModal.hide();
-      ['help-first','help-last','help-phone','help-email','help-message'].forEach(id => {
-        const el = document.getElementById(id);
-        el.value = '';
-        el.classList.remove('has-value');
-      });
-      msgEl.textContent = '';
-      updateHelpSendState();
-    }, 1500);
-  } catch (err) {
-    msgEl.className = 'small mt-2 text-danger';
-    msgEl.textContent = "Couldn't send: " + err.message + ". Please try again, or reach out on Instagram/Facebook instead.";
-    btn.disabled = false;
-  } finally {
-    btn.textContent = 'Send';
-  }
-}
-
 // Safari (and other browsers) can restore this exact page from a back-forward
 // cache when returning to it, which would otherwise show whatever was typed
 // before instead of a genuinely fresh page. Force a real reload in that case.

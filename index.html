@@ -50,7 +50,7 @@
       <div class="d-flex align-items-center" style="gap: 20px;">
         <a href="https://instagram.com/EdwardsFamilyBakery" target="_blank" class="header-icon" aria-label="Follow us on Instagram"><i class="bi bi-instagram"></i></a>
         <a href="https://www.facebook.com/profile.php?id=61592002011950" target="_blank" class="header-icon" aria-label="Follow us on Facebook"><i class="bi bi-facebook"></i></a>
-        <button type="button" class="header-icon" style="background:none; border:none; padding:0; margin:0; line-height:1;" onclick="openHelpModal()" aria-label="Help / Contact us"><i class="bi bi-question-circle"></i></button>
+        <a href="mailto:edwardsfamilybakery@gmail.com" class="header-icon" aria-label="Email us"><i class="bi bi-envelope"></i></a>
       </div>
     </div>
   </div>
@@ -188,23 +188,23 @@
     <div id="confirmScreen" class="d-none text-center py-5">
       <img id="confirmLogo" class="mb-3 d-none" style="max-height:70px;" alt="Edwards Family Bakery"/>
       <div id="confirmEmoji" class="display-4 mb-3">🍞</div>
-      <h2>Order Received!</h2>
-      <p id="confirmMsg" class="text-muted mb-1"></p>
-      <p class="small text-muted">Order # <span id="confirmOrderNum" class="fw-bold"></span></p>
 
-      <div id="venmoConfirmCard" class="card text-start mb-3 d-none">
+      <div class="card shadow-sm text-center mb-3">
         <div class="card-body">
-          <h3 class="h6 text-uppercase text-muted">Complete Payment with Venmo</h3>
-          <p class="mb-2">Total due: <strong id="venmoAmount"></strong></p>
-          <a id="venmoLink" class="btn btn-dark w-100 mb-2" href="#" target="_blank">Pay with Venmo</a>
-          <p class="small text-muted mb-0">Order number will be included in payment note.</p>
-        </div>
-      </div>
+          <h2>Order Received!</h2>
+          <p id="confirmMsg" class="text-muted mb-1"></p>
+          <p class="small text-muted">Order # <span id="confirmOrderNum" class="fw-bold"></span></p>
 
-      <div id="cashConfirmCard" class="card text-start mb-3 d-none">
-        <div class="card-body">
-          <h3 class="h6 text-uppercase text-muted">Pay with Cash</h3>
-          <p class="mb-0">Please have <strong id="cashAmount"></strong> ready at <span id="cashFulfillmentWord">pickup/delivery</span>.</p>
+          <div id="venmoConfirmCard" class="mt-3 d-none">
+            <h3 class="h6 text-uppercase text-muted">Complete Payment with Venmo</h3>
+            <p class="mb-2">Total due: <strong id="venmoAmount"></strong></p>
+            <a id="venmoLink" class="btn btn-dark w-100 mb-2" href="#" target="_blank">Pay with Venmo</a>
+            <p class="small text-muted mb-0">Order number will be included in payment note.</p>
+          </div>
+
+          <div id="cashConfirmCard" class="mt-3 d-none">
+            <p class="mb-0">Please have <strong id="cashAmount"></strong> ready at <span id="cashFulfillmentWord">pickup/delivery</span>.</p>
+          </div>
         </div>
       </div>
 
@@ -245,42 +245,8 @@
   </div>
 </div>
 
-<div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalTitle" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="helpModalTitle">Questions or Need Help?</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row g-2 mb-2">
-          <div class="col form-floating"><input id="help-first" class="form-control" type="text" placeholder="First Name" oninput="this.classList.toggle('has-value', !!this.value); updateHelpSendState();"/><label for="help-first">First Name <span class="text-danger">*</span></label></div>
-          <div class="col form-floating"><input id="help-last" class="form-control" type="text" placeholder="Last Name" oninput="this.classList.toggle('has-value', !!this.value); updateHelpSendState();"/><label for="help-last">Last Name <span class="text-danger">*</span></label></div>
-        </div>
-        <div class="form-floating mb-2">
-          <input id="help-phone" class="form-control" type="tel" placeholder="Phone" oninput="formatPhoneInput(this); this.classList.toggle('has-value', !!this.value); updateHelpSendState();"/>
-          <label for="help-phone">Phone <span class="text-danger">*</span></label>
-        </div>
-        <div class="form-floating mb-2">
-          <input id="help-email" class="form-control" type="email" placeholder="Email" oninput="this.classList.toggle('has-value', !!this.value); updateHelpSendState();"/>
-          <label for="help-email">Email <span class="text-danger">*</span></label>
-        </div>
-        <div class="form-floating">
-          <textarea id="help-message" class="form-control" style="height:110px;" placeholder="Message" oninput="this.classList.toggle('has-value', !!this.value); updateHelpSendState();"></textarea>
-          <label for="help-message">Message <span class="text-danger">*</span></label>
-        </div>
-        <div id="helpMsg" class="small mt-2"></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button class="btn btn-primary" id="helpSendBtn" onclick="sendHelpMessage()" disabled>Send</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="shared.js?v=36"></script>
-<script src="index.js?v=36"></script>
+<script src="shared.js?v=38"></script>
+<script src="index.js?v=38"></script>
 </body>
 </html>
