@@ -281,7 +281,7 @@ function applyDiscountCode() {
 // gets built once and stays static. Call this after any change to contact, fulfillment,
 // or item data so the review step (if already visible) always reflects the latest state.
 function refreshReviewIfVisible() {
-  if (!document.getElementById('step4').classList.contains('d-none')) {
+  if (!document.getElementById('step2').classList.contains('d-none')) {
     renderReview();
   }
 }
@@ -301,26 +301,6 @@ function renderReview() {
   });
   document.getElementById('reviewItems').innerHTML = html || '<div class="small text-muted">No items selected</div>';
 
-  const first = document.getElementById('cf-first').value.trim();
-  const last = document.getElementById('cf-last').value.trim();
-  const phone = document.getElementById('cf-phone').value.trim();
-  const email = document.getElementById('cf-email').value.trim();
-  const date = document.getElementById('cf-date').value;
-  const typeLabel = currentFulfillment === 'delivery' ? 'Delivery' : 'Pickup';
-  const humanDate = formatDateHuman(date);
-
-  let contactHtml = `<div>${esc(first)} ${esc(last)}</div><div>${esc(phone)}</div>`;
-  if (email) contactHtml += `<div>${esc(email)}</div>`;
-  contactHtml += `<div class="mt-2">${typeLabel}${humanDate ? ' on ' + esc(humanDate) : ''}</div>`;
-  if (currentFulfillment === 'delivery') {
-    const street = document.getElementById('cf-street').value.trim();
-    const city = document.getElementById('cf-city').value.trim();
-    const state = document.getElementById('cf-state').value.trim();
-    const zip = document.getElementById('cf-zip').value.trim();
-    contactHtml += `<div>${esc(street)}, ${esc(city)}, ${esc(state)} ${esc(zip)}</div>`;
-  }
-  document.getElementById('reviewContact').innerHTML = contactHtml;
-
   const discountAmt = total * (appliedDiscountPct / 100);
   document.getElementById('reviewDiscountRow').classList.toggle('d-none', appliedDiscountPct === 0);
   document.getElementById('reviewDiscountAmt').textContent = '-$' + discountAmt.toFixed(2);
@@ -334,9 +314,9 @@ function updateActionBar() {
   const err = validateStep(currentStep);
   const btn = document.getElementById('actionBarBtn');
   btn.disabled = !!err;
-  btn.textContent = currentStep === 4 ? 'Place Order' : 'Continue';
-  // Stays hidden until step 1's required fields are actually filled in - once shown,
-  // it stays shown (this only ever reveals, never hides itself again).
+  btn.textContent = currentStep === 2 ? 'Place Order' : 'Checkout';
+  // Stays hidden until step 1 (at least one item selected) is actually valid - once
+  // shown, it stays shown (this only ever reveals, never hides itself again).
   if (currentStep === 1 && !validateStep(1)) {
     document.getElementById('actionBar').classList.remove('d-none');
   }
@@ -356,13 +336,16 @@ function wireLiveValidation() {
 
 function validateStep(step) {
   if (step === 1) {
+    const anyItems = Object.values(cQty).some(q => q > 0);
+    if (!anyItems) return 'Please select at least one item.';
+  }
+  if (step === 2) {
     const first = document.getElementById('cf-first').value.trim();
     const last = document.getElementById('cf-last').value.trim();
     const phone = document.getElementById('cf-phone').value.trim();
     if (normPhone(phone).length !== 10) return 'Please enter a complete 10-digit phone number.';
     if (!first || !last) return 'Please enter your first and last name.';
-  }
-  if (step === 2) {
+
     if (!currentFulfillment) return 'Please choose Pickup or Delivery.';
     const date = document.getElementById('cf-date').value;
     if (!date) return `Please choose a ${currentFulfillment === 'delivery' ? 'delivery' : 'pickup'} date.`;
@@ -374,19 +357,14 @@ function validateStep(step) {
       if (!street || !city || !state || !zip) return 'Please fill in your full delivery address.';
       if (zip.length !== 5) return 'Please enter a complete 5-digit ZIP code.';
     }
-  }
-  if (step === 3) {
-    const anyItems = Object.values(cQty).some(q => q > 0);
-    if (!anyItems) return 'Please select at least one item.';
-  }
-  if (step === 4) {
+
     if (!paymentMethod) return "Please choose how you'll pay.";
   }
   return null;
 }
 
 function continueFlow() {
-  if (currentStep === 4) { submitOrder(); return; }
+  if (currentStep === 2) { submitOrder(); return; }
 
   const err = validateStep(currentStep);
   if (err) {
@@ -399,7 +377,7 @@ function continueFlow() {
 
   currentStep++;
   document.getElementById('step'+currentStep).classList.remove('d-none');
-  if (currentStep === 4) {
+  if (currentStep === 2) {
     if (appliedDiscountPct === 0) {
       document.getElementById('discountCodeMsg').textContent = '';
       document.getElementById('discountCodeInput').value = '';
@@ -420,7 +398,7 @@ function continueFlow() {
 // ══════════════════════════════════════════
 
 async function submitOrder() {
-  const errEl = document.getElementById('step4Error');
+  const errEl = document.getElementById('step2Error');
   const submitBtn = document.getElementById('actionBarBtn');
   try {
     const first = document.getElementById('cf-first').value.trim();

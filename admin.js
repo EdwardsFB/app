@@ -33,6 +33,7 @@ function openCustomerDetail(orderId) {
     ['Email', esc((match && match.email) || '—')],
     ['Address', addressHtml],
     ['Fulfillment', esc(cap(o.fulfillment))],
+    ['Payment Method', esc(cap(o.payment))],
     ['Total Spent', esc('$'+Number(o.total).toFixed(2))],
   ];
 
