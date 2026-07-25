@@ -1,4 +1,4 @@
-// version: v1.0.27 | build: 2026-07-25T20:47:22Z
+// version: v1.0.28 | build: 2026-07-25T20:55:20Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -1357,12 +1357,16 @@ function moveRouteRow(id, dir) {
 function openRouteMap() {
   const deliveries = orders.filter(o => o.fulfillment==='delivery' && o.fulfillmentStatus==='ready' && (o.deliveryAddress||o.address));
   const ordered = routeOrder.map(id => deliveries.find(o=>o.id===id)).filter(Boolean);
-  const addresses = ordered.map(o => encodeURIComponent(formatFullAddress(o.deliveryAddress||o.address)));
+  // Google's own multi-stop links use this path-based format (spaces as +, commas
+  // left as-is) rather than the ?destination=&waypoints= query-parameter style -
+  // that style requires Google to internally convert it to this format, and that
+  // conversion step appears to be where the last stop unreliably fails to resolve.
+  // Building the path format directly bypasses that conversion entirely.
+  const addresses = ordered.map(o =>
+    encodeURIComponent(formatFullAddress(o.deliveryAddress||o.address)).replace(/%20/g, '+').replace(/%2C/g, ',')
+  );
   if (!addresses.length) return;
-  const dest = addresses[addresses.length-1];
-  const waypoints = addresses.slice(0,-1).join('|');
-  let url = `https://www.google.com/maps/dir/?api=1&origin=Current+Location&destination=${dest}`;
-  if (waypoints) url += `&waypoints=${waypoints}`;
+  const url = `https://www.google.com/maps/dir/${addresses.join('/')}`;
   window.open(url, '_blank');
 }
 

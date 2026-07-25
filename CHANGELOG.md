@@ -1,5 +1,9 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.28 — 2026-07-25 (pending testing)
+
+Real breakthrough on the Google Maps "can't find that place" issue. Confirmed via direct testing that deleting the final stop made the remaining route work perfectly - not about any specific address, and not about total stop count, but specifically about the conversion step failing once one more stop is added. Google's own multi-stop links actually use a path-based URL format (addresses as separate path segments, e.g. `/dir/stop1/stop2/stop3`), not the `?destination=&waypoints=` query-parameter style we were generating - that style requires Google to internally convert it to the path format, and that conversion is where this was breaking down. Switched to generating the path-based format directly, bypassing the unreliable conversion step entirely. Needs a real multi-stop test to confirm.
+
 ## v1.0.27 — 2026-07-25 (pending testing, unconfirmed fix)
 
 Investigated "can't find that place" errors on the Google Maps route link, seen on two different, completely valid addresses (both confirmed real via Apple Maps and direct Google search) - both times specifically as the *last* stop, while earlier stops passed as waypoints resolved fine. That consistent pattern (not tied to any specific address) points to the `destination` parameter itself, not bad data. Added an explicit `origin=Current+Location` parameter, matching Google's own documented URL format, which was previously omitted entirely. This is a reasoned attempt based on the pattern observed, not a confirmed fix - needs real-world testing with an actual multi-stop delivery route.
