@@ -1,5 +1,9 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.9 — 2026-07-25 (pending testing)
+
+Audited every modal in the app for the same swipe-bleed-through risk fixed in v1.0.8 for the route modal, instead of just the one reported instance. Applied `modal-dialog-scrollable` consistently to every modal with variable or potentially-long content: Product, Customer, Merge Customers, and Customer Detail/Receipt (`orderModal` and the route modal already had it). Left the two simple "Are you sure?" confirmation dialogs alone, since their content is short and fixed and will never actually overflow.
+
 ## v1.0.8 — 2026-07-25 (pending testing)
 
 - Fixed the delivery route modal letting swipe gestures bleed through to the page behind it - added Bootstrap's `modal-dialog-scrollable`, which was missing.
