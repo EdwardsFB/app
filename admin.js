@@ -1,4 +1,4 @@
-// build: 2026-07-24T20:38:34Z
+// build: 2026-07-24T20:55:35Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -135,7 +135,9 @@ async function refreshData() {
 
 let pmPhotoDataUri = null; // holds the current product-modal photo (base64), or null/'' for no photo
 
-function compressImageFile(file, maxWidth) {
+function compressImageFile(file, maxWidth, format) {
+  format = format || 'image/jpeg';
+  const isPng = format === 'image/png';
   const CELL_LIMIT = 45000; // stay safely under Google Sheets' 50,000-char cell limit
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -152,9 +154,11 @@ function compressImageFile(file, maxWidth) {
           canvas.height = Math.round(img.height * scale);
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          dataUri = canvas.toDataURL('image/jpeg', quality);
+          // PNG is lossless - it has no adjustable quality, so size reduction relies
+          // entirely on shrinking dimensions rather than lowering quality.
+          dataUri = isPng ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', quality);
           if (dataUri.length <= CELL_LIMIT) break;
-          if (quality > 0.4) quality -= 0.15; else width = Math.round(width * 0.8);
+          if (!isPng && quality > 0.4) quality -= 0.15; else width = Math.round(width * 0.8);
         }
         if (dataUri.length > CELL_LIMIT) {
           reject(new Error('This photo is too detailed to compress small enough — try a simpler or smaller source photo.'));
@@ -1429,7 +1433,7 @@ async function handleSettingsLogoUpload(event, key) {
   const statusEl = document.getElementById('settings-logo-status-'+key);
   statusEl.textContent = 'Compressing photo...';
   try {
-    const compressed = await compressImageFile(file, 600);
+    const compressed = await compressImageFile(file, 600, 'image/png');
     settingsLogoUris[key] = compressed;
     document.getElementById('settings-logo-preview-'+key).src = compressed;
     statusEl.textContent = 'Photo ready — click Save Settings to keep it.';
