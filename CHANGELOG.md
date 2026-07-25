@@ -1,5 +1,9 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.21 — 2026-07-25 (pending testing)
+
+Real bug: `admin.html` never had cache-busting on its `shared.js`/`admin.js` script tags, unlike `index.html` which has had it all along. That means browsers could keep serving an old, cached copy of admin's JavaScript indefinitely, even after real updates were deployed - which is almost certainly why the ZZTest flask icon wasn't showing despite the Sheet data being completely correct. Added the same versioned cache-busting to admin.html that index.html already had, synced to the same version number going forward.
+
 ## v1.0.20 — 2026-07-25 (pending testing)
 
 - Admin-manual icon changed to a clipboard-check.
