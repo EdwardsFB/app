@@ -1,4 +1,4 @@
-// version: v1.0.7 | build: 2026-07-25T04:38:29Z
+// version: v1.0.8 | build: 2026-07-25T15:18:02Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -1328,7 +1328,7 @@ function renderRouteModalList() {
   document.getElementById('routeModalList').innerHTML = ordered.map((o,i) => {
     const addrLine = formatFullAddress(o.deliveryAddress||o.address||'');
     return `<div class="d-flex align-items-center gap-2 p-2 border-bottom">
-      <div class="d-flex" style="width:78px; gap:2px;">
+      <div class="btn-group" role="group" aria-label="Reorder" style="width:78px;">
         ${i > 0 ? `<button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="moveRouteRow('${o.id}',-1)"><i class="bi bi-arrow-up"></i></button>` : ''}
         ${i < ordered.length-1 ? `<button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="moveRouteRow('${o.id}',1)"><i class="bi bi-arrow-down"></i></button>` : ''}
       </div>
@@ -1565,7 +1565,7 @@ function renderProductsTab() {
       <tbody id="productsTableBody">
         ${products.map((p,i) => `<tr>
           ${reorderModeOn ? `<td class="text-nowrap">
-            <div class="d-flex" style="width:78px; gap:2px;">
+            <div class="btn-group" role="group" aria-label="Reorder" style="width:78px;">
               ${i > 0 ? `<button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="moveProductRow('${p.id}',-1)"><i class="bi bi-arrow-up"></i></button>` : ''}
               ${i < products.length-1 ? `<button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="moveProductRow('${p.id}',1)"><i class="bi bi-arrow-down"></i></button>` : ''}
             </div>

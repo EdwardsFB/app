@@ -1,5 +1,11 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.8 — 2026-07-25 (pending testing)
+
+- Fixed the delivery route modal letting swipe gestures bleed through to the page behind it - added Bootstrap's `modal-dialog-scrollable`, which was missing.
+- Reorder buttons (route modal and Products table) now use Bootstrap's actual button-group component with the "justified" pattern from their docs, instead of a custom flex container.
+- Test order generator (`Generate_Test_Orders.html`, not part of the deployed site) now uses real addresses borrowed from actual existing customers instead of a hardcoded fake list, and delivery test orders default to "Ready" status most of the time - so a batch of generated orders is immediately useful for testing the Google Maps route feature. Also audited against the current order data structure - no other gaps found.
+
 ## v1.0.7 — 2026-07-25 (pending testing)
 
 Fixed a misread of the original request: v1.0.4 changed the button layout from side-by-side to stacked, which was never asked for - the ask was only to fix how the edge-row single button looked, not to change the middle-row layout. Reverted to side-by-side for normal rows; the edge-row single button now spans the combined width (not height) of both buttons, at normal size.
