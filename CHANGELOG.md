@@ -1,5 +1,14 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.30 — 2026-07-25 (pending testing)
+
+- Removed the "Copy Addresses" button and "Set Delivery Route" button - the route modal itself stays in the code for now, but there's no way to launch it going forward.
+- New copy icon next to each delivery address on the Fulfillment screen - copies that one address to the clipboard, for manually pasting into Apple Maps as an "Add Stop" one at a time (Apple Maps has no bulk-paste, so this supports building a multi-stop route stop by stop: copy address, switch to Apple Maps, paste as a stop, come back, copy the next one, repeat).
+
+## v1.0.29 — 2026-07-25 (pending testing)
+
+Added a "Copy Addresses" button to the delivery route modal - copies all stops, one per line, in the current route order, ready to paste into a dedicated route-planning tool (RouteXL, MapQuest, etc.) as a workaround for Google Maps' unreliable multi-stop link handling. Researched whether Apple Maps could be pasted into directly instead - confirmed across multiple sources that Apple Maps has no bulk-paste or bulk-import feature at all, even though it supports multi-stop routes (up to 15) - every stop has to be added manually one at a time, so this doesn't help for Apple Maps specifically.
+
 ## v1.0.28 — 2026-07-25 (pending testing)
 
 Real breakthrough on the Google Maps "can't find that place" issue. Confirmed via direct testing that deleting the final stop made the remaining route work perfectly - not about any specific address, and not about total stop count, but specifically about the conversion step failing once one more stop is added. Google's own multi-stop links actually use a path-based URL format (addresses as separate path segments, e.g. `/dir/stop1/stop2/stop3`), not the `?destination=&waypoints=` query-parameter style we were generating - that style requires Google to internally convert it to the path format, and that conversion is where this was breaking down. Switched to generating the path-based format directly, bypassing the unreliable conversion step entirely. Needs a real multi-stop test to confirm.

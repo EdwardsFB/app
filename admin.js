@@ -1,4 +1,4 @@
-// version: v1.0.28 | build: 2026-07-25T20:55:20Z
+// version: v1.0.30 | build: 2026-07-25T21:26:08Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -1294,7 +1294,10 @@ function renderFulfillmentTab() {
           </div>
           <div class="mt-3 mb-3">
             <div class="mb-2">${esc(o.phone||'')}</div>
-            ${addr ? `<div class="mb-2"><a href="https://maps.apple.com/?daddr=${encodeURIComponent(addr.street + ', ' + addr.city + ', ' + addr.state + ' ' + addr.zip)}" class="mobile-map-link">${esc(addr.street)}<br>${esc([addr.city, [addr.state, addr.zip].filter(Boolean).join(' ')].filter(Boolean).join(', '))}</a></div>` : ''}
+            ${addr ? `<div class="mb-2 d-flex align-items-start justify-content-between gap-2">
+              <a href="https://maps.apple.com/?daddr=${encodeURIComponent(addr.street + ', ' + addr.city + ', ' + addr.state + ' ' + addr.zip)}" class="mobile-map-link">${esc(addr.street)}<br>${esc([addr.city, [addr.state, addr.zip].filter(Boolean).join(' ')].filter(Boolean).join(', '))}</a>
+              <button type="button" class="btn btn-outline-secondary btn-sm flex-shrink-0" title="Copy address" onclick="copyOrderAddress('${o.id}', this)"><i class="bi bi-clipboard"></i></button>
+            </div>` : ''}
             ${o.notes ? `<div class="small text-muted fst-italic mb-2">${esc(o.notes)}</div>` : ''}
           </div>
           <ul class="list-group mb-3">${itemListItems}</ul>
@@ -1313,7 +1316,6 @@ function renderFulfillmentTab() {
     <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-3">Delivery <span class="badge rounded-pill text-bg-secondary" style="font-size:0.75rem;">${orderedDeliveries.length}</span></h4>
     ${orderedDeliveries.length ? `
       <div class="card mb-3 shadow-sm"><div class="card-body"><div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">${orderedDeliveries.map(o => orderRow(o)).join('')}</div></div></div>
-      <button class="btn btn-dark mt-2 mb-4" onclick="openRouteModal()">Set Delivery Route</button>
     ` : ''}
   `;
 }
@@ -1352,6 +1354,29 @@ function moveRouteRow(id, dir) {
   const [moved] = routeOrder.splice(fromIdx,1);
   routeOrder.splice(toIdx,0,moved);
   renderRouteModalList();
+}
+
+// Copies delivery addresses one per line, in the current route order - the format
+// most dedicated route-planning tools (RouteXL, MapQuest, etc.) expect when
+// pasting in a bulk list of stops.
+// Copies a single order's delivery address to the clipboard, for manually pasting
+// into Apple Maps as an "Add Stop" one at a time (Apple Maps has no bulk-paste).
+// Brief icon-swap feedback on the button itself rather than a toast, since this
+// gets tapped repeatedly in quick succession while building a route stop by stop.
+async function copyOrderAddress(orderId, btnEl) {
+  const o = orders.find(o => o.id === orderId);
+  if (!o) return;
+  const address = formatFullAddress(o.deliveryAddress || o.address || '');
+  if (!address) return;
+  try {
+    await navigator.clipboard.writeText(address);
+    const icon = btnEl.querySelector('i');
+    const originalClass = icon.className;
+    icon.className = 'bi bi-check-lg';
+    setTimeout(() => { icon.className = originalClass; }, 1200);
+  } catch (err) {
+    showToast('Could not copy to clipboard — your browser may be blocking it.', 'bg-danger');
+  }
 }
 
 function openRouteMap() {
