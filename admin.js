@@ -1,4 +1,4 @@
-// version: v1.0.22 | build: 2026-07-25T19:18:14Z
+// version: v1.0.23 | build: 2026-07-25T19:28:18Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -420,7 +420,6 @@ function getOrderSortValue(o, col) {
     case 'customer': return ((o.lastName||'')+' '+(o.firstName||'')).toLowerCase();
     case 'type': return o.fulfillment||'';
     case 'payment': return o.payment||'';
-    case 'date': return o.date||'';
     case 'paymentStatus': return o.paymentStatus||'';
     case 'fulfillmentStatus': return o.fulfillmentStatus||'';
     case 'total': return Number(o.total)||0;
@@ -443,7 +442,7 @@ function renderOrdersList() {
     return av<bv ? (orderSortDir==='asc'?-1:1) : av>bv ? (orderSortDir==='asc'?1:-1) : 0;
   });
 
-  const cols = [['number','#'],['customer','Customer'],['type','Type'],['payment','Payment'],['date','Date'],['paymentStatus','Payment Status'],['fulfillmentStatus','Fulfillment'],['total','Total']];
+  const cols = [['number','#'],['customer','Customer'],['type','Type'],['payment','Payment'],['paymentStatus','Payment Status'],['fulfillmentStatus','Fulfillment'],['total','Total']];
 
   el.innerHTML = `<div class="table-responsive"><table class="table table-striped table-bordered align-middle bg-white">
     <thead><tr>${cols.map(([k,l]) => `<th class="${k==='total'?'text-end':''}" style="cursor:pointer;" onclick="sortOrdersBy('${k}')">${l}${orderSortArrow(k)}</th>`).join('')}<th></th></tr></thead>
@@ -459,7 +458,6 @@ function renderOrdersList() {
           <td>${esc(o.firstName)} ${esc(o.lastName)}</td>
           <td><i class="bi ${o.fulfillment==='delivery' ? 'bi-truck' : 'bi-cart4'}" title="${cap(o.fulfillment)}"></i>&nbsp;&nbsp;&nbsp;${sourceIcon(o.source)}</td>
           <td>${cap(o.payment)}</td>
-          <td>${o.date||'—'}</td>
           <td><select class="form-select form-select-sm" onchange="updatePaymentStatus('${o.id}', this.value)">
                 <option value="unpaid" ${o.paymentStatus==='unpaid'?'selected':''}>Unpaid</option>
                 <option value="paid" ${o.paymentStatus==='paid'?'selected':''}>Paid</option>
@@ -619,7 +617,7 @@ function openOrderModal(id) {
   });
   const fulfillment = order ? order.fulfillment : 'pickup';
 
-  document.getElementById('orderModalTitle').textContent = order ? 'Edit Order' : 'Add Order';
+  document.getElementById('orderModalTitle').textContent = order ? `Edit Order #${order.orderNumber || '???'}` : 'Add Order';
   document.getElementById('om-first').value = order ? order.firstName : '';
   document.getElementById('om-last').value = order ? order.lastName : '';
   document.getElementById('om-phone').value = order ? order.phone : '';

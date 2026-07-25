@@ -1,5 +1,11 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.23 — 2026-07-25 (pending testing)
+
+- Removed the Date column from the Orders table.
+- Edit Order modal title now shows the order number (e.g., "Edit Order #208").
+- Checked the option-checkbox population logic for the Edit Order modal after a reported mismatch (Sliced showing unchecked) - the code correctly reads saved selectedOptions and marks matching checkboxes, so this needs the actual saved data confirmed before treating it as a bug rather than expected unselected test data.
+
 ## v1.0.22 — 2026-07-25 (pending testing)
 
 Found the actual cause of the missing ZZTest icon, after ruling out data, the icon function, and stale rendering one by one via direct console testing: the correct HTML (`<i class="bi bi-flask">`) was genuinely present in the page, but wasn't rendering visually, while every other icon in the same font displayed fine right next to it. Bootstrap's own icon documentation shows `bi-flask` used as an `<svg>` element rather than the icon-font `<i>` pattern used everywhere else in this app, suggesting this specific glyph doesn't work the same way in the font version being used. Swapped to `bi-bug`, a long-established icon in the same font, which should behave the same as every other icon already working correctly.

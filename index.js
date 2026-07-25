@@ -1,4 +1,4 @@
-// version: v1.0.22 | build: 2026-07-25T19:18:14Z
+// version: v1.0.23 | build: 2026-07-25T19:28:18Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
