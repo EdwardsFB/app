@@ -1,4 +1,4 @@
-// build: 2026-07-25T03:37:13Z
+// version: v1.0.3 | build: 2026-07-25T04:16:36Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -9,7 +9,6 @@ let currentAdminTab = 'home';
 let currentOrderFilter = 'all';
 let editingOrderId = null, editingProductId = null, editingCustomerRecordId = null, editingCustomerOriginalPhone = null;
 let omQty = {}, omOptions = {}, omDiscountPctSelected = 0, omCustomerMode = 'new', omExistingList = [];
-let dragProductId = null;
 let customerSortCol = 'lastName', customerSortDir = 'asc';
 let byProductSortCol = 'qty', byProductSortDir = 'desc';
 let routeOrder = [];
@@ -120,14 +119,6 @@ async function loadAndShowApp() {
   const hashTab = location.hash.replace('#','');
   switchTab(validTabs.includes(hashTab) ? hashTab : 'home');
   setTimeout(() => window.scrollTo(0, 0), 50);
-}
-
-async function refreshData() {
-  const data = await apiGetAll();
-  products = data.products || [];
-  orders = data.orders || [];
-  customers = data.customers || [];
-  settings = data.settings || {};
 }
 
 // Simple grey placeholder shown for any product without a real photo yet.
@@ -1281,7 +1272,7 @@ function renderFulfillmentTab() {
   }
   const orderedDeliveries = routeOrder.map(id => deliveries.find(o=>o.id===id)).filter(Boolean);
 
-  function orderRow(o, idx, total) {
+  function orderRow(o) {
     const itemListItems = (o.items||[]).map(i=>{
       const p = products.find(p=>p.id===i.productId);
       const name = i.name || (p && p.name);
@@ -1316,17 +1307,49 @@ function renderFulfillmentTab() {
 
     <h4 class="text-muted d-flex align-items-center gap-2 mb-3 mt-3">Delivery <span class="badge rounded-pill text-bg-secondary" style="font-size:0.75rem;">${orderedDeliveries.length}</span></h4>
     ${orderedDeliveries.length ? `
-      <div class="card mb-3 shadow-sm"><div class="card-body"><div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">${orderedDeliveries.map((o,idx) => orderRow(o, idx, orderedDeliveries.length)).join('')}</div></div></div>
-      <button class="btn btn-dark mt-2 mb-4" onclick="openRouteMap()">Open Route in Google Maps</button>
+      <div class="card mb-3 shadow-sm"><div class="card-body"><div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">${orderedDeliveries.map(o => orderRow(o)).join('')}</div></div></div>
+      <button class="btn btn-dark mt-2 mb-4" onclick="openRouteModal()">Set Delivery Route</button>
     ` : ''}
   `;
 }
 
-function moveRoute(idx, dir) {
-  const newIdx = idx+dir; if (newIdx<0 || newIdx>=routeOrder.length) return;
-  [routeOrder[idx], routeOrder[newIdx]] = [routeOrder[newIdx], routeOrder[idx]];
-  renderFulfillmentTab();
+function openRouteModal() {
+  const deliveries = orders.filter(o => o.fulfillment==='delivery' && o.fulfillmentStatus==='ready' && (o.deliveryAddress||o.address));
+  if (!routeOrder.length || routeOrder.length !== deliveries.length || !deliveries.every(o=>routeOrder.includes(o.id))) {
+    routeOrder = deliveries.map(o=>o.id);
+  }
+  renderRouteModalList();
+  new bootstrap.Modal(document.getElementById('routeModal')).show();
 }
+
+function renderRouteModalList() {
+  const deliveries = orders.filter(o => o.fulfillment==='delivery' && o.fulfillmentStatus==='ready' && (o.deliveryAddress||o.address));
+  const ordered = routeOrder.map(id => deliveries.find(o=>o.id===id)).filter(Boolean);
+  document.getElementById('routeModalList').innerHTML = ordered.map((o,i) => {
+    const addr = parseAddress(o.deliveryAddress||o.address||'');
+    const addrLine = addr ? [addr.street, [addr.city, addr.state].filter(Boolean).join(', ')].filter(Boolean).join(' — ') : '';
+    return `<div class="d-flex align-items-center gap-2 p-2 border-bottom">
+      <div class="text-nowrap">
+        <button type="button" class="btn btn-outline-secondary btn-sm${i===0 ? ' btn-inert' : ''}" onclick="moveRouteRow('${o.id}',-1)"><i class="bi bi-arrow-up"></i></button>
+        <button type="button" class="btn btn-outline-secondary btn-sm${i===ordered.length-1 ? ' btn-inert' : ''}" onclick="moveRouteRow('${o.id}',1)"><i class="bi bi-arrow-down"></i></button>
+      </div>
+      <div>
+        <div class="fw-bold small">${esc(o.firstName)} ${esc(o.lastName)}</div>
+        <div class="small text-muted">${esc(addrLine)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function moveRouteRow(id, dir) {
+  const fromIdx = routeOrder.indexOf(id);
+  const toIdx = fromIdx + dir;
+  if (toIdx < 0 || toIdx >= routeOrder.length) return;
+  const [moved] = routeOrder.splice(fromIdx,1);
+  routeOrder.splice(toIdx,0,moved);
+  renderRouteModalList();
+}
+
 function openRouteMap() {
   const deliveries = orders.filter(o => o.fulfillment==='delivery' && o.fulfillmentStatus==='ready' && (o.deliveryAddress||o.address));
   const ordered = routeOrder.map(id => deliveries.find(o=>o.id===id)).filter(Boolean);
@@ -1541,8 +1564,11 @@ function renderProductsTab() {
     <div class="table-responsive"><table class="table table-striped table-bordered bg-white">
       <thead><tr>${reorderModeOn ? '<th></th>' : ''}<th>Name</th><th>Status</th><th>Description</th><th class="text-end">Price</th><th class="text-end">Cost</th><th>Unit</th><th></th></tr></thead>
       <tbody id="productsTableBody">
-        ${products.map(p => `<tr ${reorderModeOn ? `draggable="true" data-id="${p.id}" ondragstart="onProductDragStart(event,'${p.id}')" ondragover="onProductDragOver(event,'${p.id}')" ondragleave="onProductDragLeave(event)" ondrop="onProductDrop(event,'${p.id}')"` : ''}>
-          ${reorderModeOn ? '<td class="drag-handle text-muted">⠿</td>' : ''}
+        ${products.map((p,i) => `<tr>
+          ${reorderModeOn ? `<td class="text-nowrap">
+            <button type="button" class="btn btn-outline-secondary btn-sm${i===0 ? ' btn-inert' : ''}" onclick="moveProductRow('${p.id}',-1)"><i class="bi bi-arrow-up"></i></button>
+            <button type="button" class="btn btn-outline-secondary btn-sm${i===products.length-1 ? ' btn-inert' : ''}" onclick="moveProductRow('${p.id}',1)"><i class="bi bi-arrow-down"></i></button>
+          </td>` : ''}
           <td>${esc(p.name)}</td>
           <td>${p.active===false ? '<i class="bi bi-x-lg" title="Inactive"></i>' : '<i class="bi bi-check2" title="Active"></i>'}</td>
           <td>${esc(p.desc||'')}</td>
@@ -1554,17 +1580,12 @@ function renderProductsTab() {
   `;
 }
 
-function onProductDragStart(e,id) { dragProductId=id; e.dataTransfer.effectAllowed='move'; }
-function onProductDragOver(e,id) { e.preventDefault(); if (id!==dragProductId) e.currentTarget.classList.add('table-active'); }
-function onProductDragLeave(e) { e.currentTarget.classList.remove('table-active'); }
-async function onProductDrop(e, targetId) {
-  e.preventDefault(); e.currentTarget.classList.remove('table-active');
-  if (!dragProductId || dragProductId===targetId) return;
-  const fromIdx = products.findIndex(p=>p.id===dragProductId);
-  const toIdx = products.findIndex(p=>p.id===targetId);
+async function moveProductRow(id, dir) {
+  const fromIdx = products.findIndex(p=>p.id===id);
+  const toIdx = fromIdx + dir;
+  if (toIdx < 0 || toIdx >= products.length) return;
   const [moved] = products.splice(fromIdx,1);
   products.splice(toIdx,0,moved);
-  dragProductId = null;
   renderProductsTab();
   const reorderData = products.map((p,i) => ({ id:p.id, sortOrder:i }));
   await apiWrite('products','reorder',null,reorderData);

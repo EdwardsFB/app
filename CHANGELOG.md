@@ -1,0 +1,69 @@
+# Edwards Family Bakery — Changelog
+
+## v1.0.3 — 2026-07-25 (pending testing)
+
+Replaced HTML5 drag-and-drop with up/down arrow buttons in both places it was used, after confirming native drag doesn't fire from finger touch on iOS Safari (it only works via a Bluetooth mouse, trackpad, or Apple Pencil) - a real reliability problem given both features are meant to be used on a phone, often on the go.
+
+- Products table reordering (Products tab): drag handles → up/down arrow buttons.
+- Delivery route ordering (new in v1.0.2): drag handles → up/down arrow buttons.
+- Removed all now-dead drag-related code (`onProductDrag*`, `onRouteDrag*`, `dragProductId`, `dragRouteId`, `.drag-handle` CSS).
+
+## v1.0.2 — 2026-07-25
+
+Finished the delivery route feature flagged as half-built in v1.0.1's audit.
+
+- New "Set Delivery Route" button on the Fulfillment tab (replaces the old direct "Open Route in Google Maps" button).
+- Opens a modal listing all ready-for-delivery orders, reorderable by drag-and-drop (same interaction pattern as the Products table's manual reordering).
+- "Open Route in Google Maps" now lives inside that modal, launching with stops in whatever order was just set.
+- Removed `moveRoute()` (the old, never-wired-up up/down reorder logic) in favor of the new drag-based approach.
+
+## v1.0.1 — 2026-07-25
+
+Code hardening pass — no user-facing feature changes, just cleanup and consistency fixes found during a full audit.
+
+- Removed a duplicated `theme-color` meta tag in `admin.html`.
+- Removed dead CSS (`.btn:disabled` rule, no longer used anywhere after the `.btn-inert` pattern replaced native `disabled` attributes app-wide).
+- Removed a dead/unused function (`refreshData()` in admin.js — fully superseded by `refreshAndRenderTab()`).
+- Fixed inconsistent spacing: the confirmation screen's emoji fallback now matches its logo's spacing exactly (they're mutually exclusive, so they should look identical whichever one shows); the Passcode screen logo now matches the admin sidebar logo's top margin.
+- **Found but not fixed — needs a decision:** `moveRoute()` in admin.js (delivery route reordering) is fully implemented but has no button wired to it anywhere in the UI. Right now deliveries render in whatever order they were first added, with no way to manually reorder them for an efficient route. Worth deciding whether to finish this (add up/down buttons) or remove the unused logic.
+- Verified clean: no missing closing tags, no unused CSS classes elsewhere, no orphaned functions elsewhere, no leftover diagnostic comments, all button/spacing patterns for Edit/Delete pairs and card sections are consistent, all logo sizes are contextually appropriate.
+
+## v1.0 — 2026-07-25
+
+
+First complete release. Full admin + customer ordering system, ready for real use.
+
+### Customer ordering page (`index.html` / `index.js`)
+- Single-page ordering flow: Menu first, then a continuous Checkout section (contact info, pickup/delivery, cart review, discount code, payment method) — no multi-step wizard, everything visible and editable at once.
+- Pinned bottom bar with running total, Cancel, and Place Order — hides automatically while the keyboard is open.
+- Returning-customer lookup by phone + last name together (never phone alone), auto-fills contact/address info without auto-selecting Pickup or Delivery.
+- Venmo or Cash payment, with a dedicated Order Confirmation screen after placing an order.
+- Static, instant-loading header (logo + welcome text) separate from the live menu/checkout data, which loads behind a spinner.
+- iOS-specific fixes: keyboard/viewport correction, double-tap-zoom prevention on interactive buttons, safe-area padding.
+
+### Admin (`admin.html` / `admin.js`)
+- Home dashboard, Orders, Production, Fulfillment, Customers, Products, and Settings tabs.
+- Manual order entry with new/existing customer lookup.
+- Product management with photos, options/upcharges, drag-to-reorder.
+- Settings: pickup/delivery days, five separate logo slots (admin sidebar, admin mobile, passcode screen, customer order page, order confirmation page), discount codes.
+- Passcode-gated access.
+
+### Backend (Google Apps Script + Google Sheets)
+- Sheets tabs: Products, Orders, Customers, Settings.
+- `doPost`/`doGet` API for reading/writing all data.
+- Header-row and ID-column protection (Orders, Products, Customers, Settings tabs) via `onEdit` trigger, toggleable with `disableProtection()` / `enableProtection()`.
+- Contact-form email support (`MailApp.sendEmail`) - currently unused by the frontend but available.
+
+### Infrastructure
+- Hosted on GitHub Pages, static files only.
+- Every file carries a `version:` and `build:` header comment for tracking.
+- Cache-busting version query parameters on script tags, bumped with every release.
+
+---
+
+## Future releases
+
+Add new entries above this line as changes ship, e.g.:
+
+## v1.1 — YYYY-MM-DD
+- ...
