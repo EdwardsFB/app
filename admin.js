@@ -1,4 +1,4 @@
-// version: v1.0.26 | build: 2026-07-25T20:39:06Z
+// version: v1.0.27 | build: 2026-07-25T20:47:22Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -1361,7 +1361,7 @@ function openRouteMap() {
   if (!addresses.length) return;
   const dest = addresses[addresses.length-1];
   const waypoints = addresses.slice(0,-1).join('|');
-  let url = `https://www.google.com/maps/dir/?api=1&destination=${dest}`;
+  let url = `https://www.google.com/maps/dir/?api=1&origin=Current+Location&destination=${dest}`;
   if (waypoints) url += `&waypoints=${waypoints}`;
   window.open(url, '_blank');
 }

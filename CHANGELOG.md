@@ -1,5 +1,9 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.27 — 2026-07-25 (pending testing, unconfirmed fix)
+
+Investigated "can't find that place" errors on the Google Maps route link, seen on two different, completely valid addresses (both confirmed real via Apple Maps and direct Google search) - both times specifically as the *last* stop, while earlier stops passed as waypoints resolved fine. That consistent pattern (not tied to any specific address) points to the `destination` parameter itself, not bad data. Added an explicit `origin=Current+Location` parameter, matching Google's own documented URL format, which was previously omitted entirely. This is a reasoned attempt based on the pattern observed, not a confirmed fix - needs real-world testing with an actual multi-stop delivery route.
+
 ## v1.0.26 — 2026-07-25 (pending testing)
 
 Fixed a harmless but real Bootstrap console warning (aria-hidden/focus conflict on modal close) app-wide, in both admin and the customer app, with a single shared fix rather than patching one modal at a time. Investigated a "can't find that place" Google Maps error for a real address (confirmed valid via Apple Maps) - likely a gap in Google's own geocoding data for a newer address, not a bug in how the app builds the route link; awaiting a direct Google Maps test to confirm.
