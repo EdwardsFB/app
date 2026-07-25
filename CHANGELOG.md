@@ -1,5 +1,9 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.7 — 2026-07-25 (pending testing)
+
+Fixed a misread of the original request: v1.0.4 changed the button layout from side-by-side to stacked, which was never asked for - the ask was only to fix how the edge-row single button looked, not to change the middle-row layout. Reverted to side-by-side for normal rows; the edge-row single button now spans the combined width (not height) of both buttons, at normal size.
+
 ## v1.0.6 — 2026-07-25 (pending testing)
 
 - "This cannot be undone" now on its own line in the order delete confirmation.

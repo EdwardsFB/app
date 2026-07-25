@@ -1,4 +1,4 @@
-// version: v1.0.6 | build: 2026-07-25T04:34:14Z
+// version: v1.0.7 | build: 2026-07-25T04:38:29Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -1328,9 +1328,9 @@ function renderRouteModalList() {
   document.getElementById('routeModalList').innerHTML = ordered.map((o,i) => {
     const addrLine = formatFullAddress(o.deliveryAddress||o.address||'');
     return `<div class="d-flex align-items-center gap-2 p-2 border-bottom">
-      <div class="d-flex flex-column" style="width:38px; height:62px; gap:2px;">
-        ${i > 0 ? `<button type="button" class="btn btn-outline-secondary btn-sm flex-fill p-0" onclick="moveRouteRow('${o.id}',-1)"><i class="bi bi-arrow-up"></i></button>` : ''}
-        ${i < ordered.length-1 ? `<button type="button" class="btn btn-outline-secondary btn-sm flex-fill p-0" onclick="moveRouteRow('${o.id}',1)"><i class="bi bi-arrow-down"></i></button>` : ''}
+      <div class="d-flex" style="width:78px; gap:2px;">
+        ${i > 0 ? `<button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="moveRouteRow('${o.id}',-1)"><i class="bi bi-arrow-up"></i></button>` : ''}
+        ${i < ordered.length-1 ? `<button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="moveRouteRow('${o.id}',1)"><i class="bi bi-arrow-down"></i></button>` : ''}
       </div>
       <div>
         <div class="fw-bold small">${esc(o.firstName)} ${esc(o.lastName)}</div>
@@ -1565,9 +1565,9 @@ function renderProductsTab() {
       <tbody id="productsTableBody">
         ${products.map((p,i) => `<tr>
           ${reorderModeOn ? `<td class="text-nowrap">
-            <div class="d-flex flex-column" style="width:38px; height:62px; gap:2px;">
-              ${i > 0 ? `<button type="button" class="btn btn-outline-secondary btn-sm flex-fill p-0" onclick="moveProductRow('${p.id}',-1)"><i class="bi bi-arrow-up"></i></button>` : ''}
-              ${i < products.length-1 ? `<button type="button" class="btn btn-outline-secondary btn-sm flex-fill p-0" onclick="moveProductRow('${p.id}',1)"><i class="bi bi-arrow-down"></i></button>` : ''}
+            <div class="d-flex" style="width:78px; gap:2px;">
+              ${i > 0 ? `<button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="moveProductRow('${p.id}',-1)"><i class="bi bi-arrow-up"></i></button>` : ''}
+              ${i < products.length-1 ? `<button type="button" class="btn btn-outline-secondary btn-sm flex-fill" onclick="moveProductRow('${p.id}',1)"><i class="bi bi-arrow-down"></i></button>` : ''}
             </div>
           </td>` : ''}
           <td>${esc(p.name)}</td>
