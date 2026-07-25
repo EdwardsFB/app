@@ -1,4 +1,4 @@
-// version: v1.0.10 | build: 2026-07-25T15:28:41Z
+// version: v1.0.11 | build: 2026-07-25T15:39:25Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -1265,8 +1265,8 @@ function renderFulfillmentTab() {
 
   if (!ready.length) { container.innerHTML = '<div class="text-center"><div class="alert alert-info d-inline-block" role="alert">No orders ready for pickup or delivery</div></div>'; return; }
 
-  const pickups = ready.filter(o => o.fulfillment === 'pickup');
-  const deliveries = ready.filter(o => o.fulfillment === 'delivery');
+  const pickups = ready.filter(o => o.fulfillment === 'pickup').sort((a,b) => (a.date||'').localeCompare(b.date||''));
+  const deliveries = ready.filter(o => o.fulfillment === 'delivery').sort((a,b) => (a.date||'').localeCompare(b.date||''));
   if (!routeOrder.length || routeOrder.length !== deliveries.length || !deliveries.every(o=>routeOrder.includes(o.id))) {
     routeOrder = deliveries.map(o=>o.id);
   }

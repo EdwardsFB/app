@@ -1,5 +1,10 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.11 — 2026-07-25 (pending testing)
+
+- Pickup and Delivery cards on the Fulfillment tab now sort by date, soonest first (previously unsorted). Delivery route order still respects any manually-set route once you've used "Set Delivery Route" - date sorting only determines the initial/default order.
+- Full write-vs-read data flow audit across the whole app, prompted by the `sortOrder` bug - traced every meaningful field to check for the same "written but never consumed" pattern, plus checked for status-value casing mismatches between files. One minor finding: orders are tagged with a `source` field (customer vs admin-entered) that's correctly saved but never displayed anywhere - not broken, just currently unused; flagged as a decision, not fixed unprompted.
+
 ## v1.0.10 — 2026-07-25 (pending testing)
 
 Real, significant bug: reordering products saved `sortOrder` to the backend correctly, but nothing anywhere - not the customer menu, not even admin's own product list on a fresh load - actually sorted by it. The reorder only appeared to work within the same admin session because the in-memory list was mutated directly; a fresh load anywhere just showed raw backend order. Added a shared sort-by-`sortOrder` step applied at every point products get loaded, in both the customer app and admin, so the saved order now actually takes effect everywhere. If you don't already have a `sortOrder` column on your Products sheet, you'll need to add one for this to persist correctly, matching the pattern from earlier tonight.
