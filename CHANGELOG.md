@@ -1,5 +1,9 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.26 — 2026-07-25 (pending testing)
+
+Fixed a harmless but real Bootstrap console warning (aria-hidden/focus conflict on modal close) app-wide, in both admin and the customer app, with a single shared fix rather than patching one modal at a time. Investigated a "can't find that place" Google Maps error for a real address (confirmed valid via Apple Maps) - likely a gap in Google's own geocoding data for a newer address, not a bug in how the app builds the route link; awaiting a direct Google Maps test to confirm.
+
 ## v1.0.25 — 2026-07-25 (pending testing)
 
 Edit Product modal title now shows the product's ID (e.g., "Edit Product — p05"), matching the same pattern already used for Order # in the Edit Order modal.

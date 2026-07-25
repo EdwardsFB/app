@@ -1,4 +1,4 @@
-// version: v1.0.25 | build: 2026-07-25T20:14:31Z
+// version: v1.0.26 | build: 2026-07-25T20:39:06Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -62,6 +62,15 @@ function setReorderMode(on) {
 // INIT
 // ══════════════════════════════════════════
 async function init() {
+  // Fixes a known Bootstrap 5 quirk: closing a modal can leave focus on an element
+  // inside it (like the close button) at the exact moment the modal gets marked
+  // aria-hidden, which the browser flags as a conflict. Blurring first avoids it.
+  // Listens at the document level so it covers every modal, including ones created
+  // inline (like the route modal) rather than only the ones initialized below.
+  document.addEventListener('hide.bs.modal', (e) => {
+    if (e.target.contains(document.activeElement)) document.activeElement.blur();
+  });
+
   orderModal = new bootstrap.Modal(document.getElementById('orderModal'));
   productModal = new bootstrap.Modal(document.getElementById('productModal'));
   customerModal = new bootstrap.Modal(document.getElementById('customerModal'));

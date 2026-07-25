@@ -1,4 +1,4 @@
-// version: v1.0.25 | build: 2026-07-25T20:14:31Z
+// version: v1.0.26 | build: 2026-07-25T20:39:06Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -9,6 +9,13 @@ let appliedDiscountPct = 0;
 const VENMO_HANDLE = 'edwardsfamilybakery';
 
 async function init() {
+  // Fixes a known Bootstrap 5 quirk: closing a modal can leave focus on an element
+  // inside it at the exact moment the modal gets marked aria-hidden, which the
+  // browser flags as a conflict. Blurring first avoids it.
+  document.addEventListener('hide.bs.modal', (e) => {
+    if (e.target.contains(document.activeElement)) document.activeElement.blur();
+  });
+
   // Defend against the browser restoring old form values on reload/back-forward navigation.
   ['cf-phone','cf-first','cf-last','cf-email','cf-street','cf-city','cf-state','cf-zip'].forEach(id => {
     const el = document.getElementById(id);
