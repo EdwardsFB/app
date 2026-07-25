@@ -1,4 +1,4 @@
-// build: 2026-07-24T20:55:35Z
+// build: 2026-07-25T02:52:38Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -408,8 +408,7 @@ async function submitOrder() {
     await persistNewOrder(newOrder, customers, email);
 
     const orderNum = getOrderNumber(newOrder, [...orders, newOrder]);
-    document.getElementById('confirmMsg').textContent = `Thanks, ${first}!`;
-    document.getElementById('confirmOrderNum').textContent = orderNum;
+    document.getElementById('confirmHeadline').textContent = `Thanks, ${first}!`;
 
     if (paymentMethod === 'venmo') {
       document.getElementById('venmoAmount').textContent = '$' + newOrder.total.toFixed(2);
@@ -428,6 +427,7 @@ async function submitOrder() {
     document.getElementById('confirmScreen').classList.remove('d-none');
     document.getElementById('pageHeader').classList.add('d-none');
     document.getElementById('actionBar').classList.add('d-none');
+    document.getElementById('confirmFooter').classList.remove('d-none');
     document.getElementById('confirmScreen').scrollIntoView({ block: 'start' });
   } catch (err) {
     errEl.textContent = 'Something went wrong placing your order: ' + err.message + '. Please try again, or let us know if this keeps happening.';
