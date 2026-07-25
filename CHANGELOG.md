@@ -1,5 +1,13 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.16 — 2026-07-25 (pending testing + one-time migration)
+
+Order numbers are now permanent and stored, not recalculated live. Previously, an order's displayed number was its live chronological position - meaning deleting any order would silently shift every later order's number. Now, each order gets a permanent number assigned once at creation (server-side, avoiding race conditions between simultaneous orders) and never recalculated, so a reference like "order #193" stays accurate forever, matching how real invoice numbering works.
+
+Requires a one-time setup: add an `orderNumber` column to the Orders sheet, then run the new `migrateOrderNumbersAndSource` function once from the Apps Script editor. That function does two things in one pass: assigns every existing order its current number (matching what's displayed today), and corrects the `source` field for orders that predate the July 18 migration from the old tracker - some had been incorrectly tagged "customer" instead of "old-tracker-v3". Everything at or before order #193 gets corrected to "old-tracker-v3"; everything after gets "admin-manual".
+
+Also added a fourth source icon (an archive box) for old-tracker-migrated orders, which previously showed no icon at all. (Also covers spacing/UI tweaks from v1.0.13-15 not separately logged here.)
+
 ## v1.0.12 — 2026-07-25 (pending testing)
 
 Surfaced the `source` field flagged as unused in the last audit. The Orders table's Type column now shows a second small icon next to the fulfillment icon (truck/cart), indicating how the order was created: a person icon for customer-placed, a pencil for manually entered in admin, and a flask for ZZTest tool orders. Older orders saved before this field existed show no icon rather than a guess.

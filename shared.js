@@ -1,4 +1,4 @@
-// version: v1.0.13 | build: 2026-07-25T15:54:24Z
+// version: v1.0.16 | build: 2026-07-25T17:18:33Z
 // ══════════════════════════════════════════
 // Edwards Family Bakery — Shared utilities
 // Used by both index.html (customer) and admin.html (admin)
@@ -41,18 +41,6 @@ function sortProductsByOrder(list) {
   return [...list].sort((a, b) => (a.sortOrder ?? Infinity) - (b.sortOrder ?? Infinity));
 }
 
-function getOrderNumberMap(allOrders) {
-  const sorted = [...allOrders].sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
-  const map = new Map();
-  sorted.forEach((o,i) => map.set(o.id, i+1));
-  return map;
-}
-
-function getOrderNumber(order, allOrders) {
-  const n = getOrderNumberMap(allOrders).get(order.id);
-  return n === undefined ? '???' : String(n).padStart(3, '0');
-}
-
 function getProductOptions(product) {
   if (!product || !Array.isArray(product.options)) return [];
   return product.options;
@@ -70,6 +58,7 @@ function sourceIcon(source) {
   if (source === 'customer') return '<i class="bi bi-person" title="Placed by customer"></i>';
   if (source === 'admin-manual') return '<i class="bi bi-pencil-square" title="Entered manually in admin"></i>';
   if (source === 'test') return '<i class="bi bi-flask" title="Test order (ZZTest tool)"></i>';
+  if (source === 'old-tracker-v3') return '<i class="bi bi-archive" title="Migrated from the old tracker"></i>';
   return '';
 }
 
@@ -169,8 +158,9 @@ function buildOrderData({ first, last, phone, items, fulfillment, street, city, 
 // Persists a brand-new order to the server and keeps the customer record in sync.
 // Caller owns local array mutation + UI update timing (optimistic vs wait-then-show).
 async function persistNewOrder(newOrder, customers, email) {
-  await apiWrite('orders', 'add', null, newOrder);
+  const result = await apiWrite('orders', 'add', null, newOrder);
   try { await upsertCustomerFromOrder(customers, newOrder, email); } catch (err) { console.error('Could not sync customer record', err); }
+  return result.orderNumber;
 }
 
 // Creates or updates a real customer record to reflect this order's info.

@@ -1,4 +1,4 @@
-// version: v1.0.13 | build: 2026-07-25T15:54:24Z
+// version: v1.0.16 | build: 2026-07-25T17:18:33Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -406,8 +406,6 @@ function renderOrdersTab() {
   renderOrdersList();
 }
 
-// getOrderNumberMap now lives in shared.js so index.js can use the same numbering
-
 let orderSortCol = 'createdAt', orderSortDir = 'desc';
 function sortOrdersBy(col) {
   if (orderSortCol===col) orderSortDir = orderSortDir==='asc'?'desc':'asc';
@@ -415,9 +413,9 @@ function sortOrdersBy(col) {
   renderOrdersList();
 }
 function orderSortArrow(col) { return orderSortCol===col ? (orderSortDir==='asc'?' ▲':' ▼') : ''; }
-function getOrderSortValue(o, col, numberMap) {
+function getOrderSortValue(o, col) {
   switch(col) {
-    case 'number': return numberMap.get(o.id);
+    case 'number': return Number(o.orderNumber) || 0;
     case 'customer': return ((o.lastName||'')+' '+(o.firstName||'')).toLowerCase();
     case 'type': return o.fulfillment||'';
     case 'payment': return o.payment||'';
@@ -438,10 +436,9 @@ function renderOrdersList() {
 
   const el = document.getElementById('ordersList');
   if (!list.length) { el.innerHTML = '<div class="text-center text-muted py-5">No orders here.</div>'; return; }
-  const numberMap = getOrderNumberMap(orders);
 
   list.sort((a,b) => {
-    const av = getOrderSortValue(a, orderSortCol, numberMap), bv = getOrderSortValue(b, orderSortCol, numberMap);
+    const av = getOrderSortValue(a, orderSortCol), bv = getOrderSortValue(b, orderSortCol);
     return av<bv ? (orderSortDir==='asc'?-1:1) : av>bv ? (orderSortDir==='asc'?1:-1) : 0;
   });
 
@@ -457,9 +454,9 @@ function renderOrdersList() {
           return name ? `${i.qty}× ${name}${opts ? ' ('+opts+')' : ''}` : '';
         }).filter(Boolean).join(', ');
         return `<tr title="${esc(itemStr)}">
-          <td>#${String(numberMap.get(o.id)).padStart(3,'0')}</td>
+          <td>#${o.orderNumber ? String(o.orderNumber).padStart(3,'0') : '???'}</td>
           <td>${esc(o.firstName)} ${esc(o.lastName)}</td>
-          <td><i class="bi ${o.fulfillment==='delivery' ? 'bi-truck' : 'bi-cart4'}" title="${cap(o.fulfillment)}"></i> ${sourceIcon(o.source)}</td>
+          <td><i class="bi ${o.fulfillment==='delivery' ? 'bi-truck' : 'bi-cart4'}" title="${cap(o.fulfillment)}"></i>&nbsp;&nbsp;&nbsp;${sourceIcon(o.source)}</td>
           <td>${cap(o.payment)}</td>
           <td>${o.date||'—'}</td>
           <td><select class="form-select form-select-sm" onchange="updatePaymentStatus('${o.id}', this.value)">
@@ -494,7 +491,7 @@ async function updateFulfillmentStatus(id, val) {
 }
 function deleteOrder(id) {
   const o = orders.find(o=>o.id===id);
-  openConfirm(`Delete Order #${o ? getOrderNumber(o, orders) : ''}?<br>This cannot be undone.`, async () => {
+  openConfirm(`Delete Order #${o && o.orderNumber ? o.orderNumber : ''}?<br>This cannot be undone.`, async () => {
     await apiWrite('orders','delete',id,null);
     orders = orders.filter(o=>o.id!==id);
     renderOrdersTab();
@@ -801,7 +798,7 @@ async function saveOrderFromModal() {
       orders[idx] = { ...orders[idx], ...orderData };
     } else {
       const newOrder = { id:'o'+Date.now(), createdAt:Date.now(), source:'admin-manual', ...orderData };
-      await persistNewOrder(newOrder, customers);
+      newOrder.orderNumber = await persistNewOrder(newOrder, customers);
       orders.push(newOrder);
     }
     orderModal.hide();

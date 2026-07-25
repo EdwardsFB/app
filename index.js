@@ -1,4 +1,4 @@
-// version: v1.0.13 | build: 2026-07-25T15:54:24Z
+// version: v1.0.16 | build: 2026-07-25T17:18:33Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -409,9 +409,7 @@ async function submitOrder() {
     submitBtn.textContent = 'Placing order...';
 
     const newOrder = { id: 'o' + Date.now(), createdAt: Date.now(), source: 'customer', ...orderData };
-    await persistNewOrder(newOrder, customers, email);
-
-    const orderNum = getOrderNumber(newOrder, [...orders, newOrder]);
+    const orderNum = await persistNewOrder(newOrder, customers, email);
     document.getElementById('confirmHeadline').textContent = `Thanks, ${first}!`;
 
     if (paymentMethod === 'venmo') {
