@@ -1,5 +1,10 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.19 — 2026-07-25 (pending testing)
+
+- Fixed icon vertical alignment in the Orders table's Type column - added explicit `vertical-align: middle` to icon elements themselves, since the cell's own centering alone didn't account for different icons having slightly different internal positioning within their glyph.
+- Admin-manual icon changed from a pencil to a person-badge, to visually distinguish it more clearly from the customer icon.
+
 ## v1.0.18 — 2026-07-25 (pending testing)
 
 - Real bug: the date-sort fix applied to the Fulfillment tab's Pickup/Delivery sections in v1.0.11 was never applied to the Production tab, which has its own separate, differently-scoped `pickups`/`deliveries` variables. Fixed - both tabs now sort consistently, soonest date first, including when viewing "All" dates on Production.
