@@ -1,4 +1,4 @@
-// version: v1.0.23 | build: 2026-07-25T19:28:18Z
+// version: v1.0.24 | build: 2026-07-25T19:36:05Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -1577,15 +1577,24 @@ function renderProductsTab() {
   `;
 }
 
-async function moveProductRow(id, dir) {
+let productReorderWriteTimer = null;
+function moveProductRow(id, dir) {
   const fromIdx = products.findIndex(p=>p.id===id);
   const toIdx = fromIdx + dir;
   if (toIdx < 0 || toIdx >= products.length) return;
   const [moved] = products.splice(fromIdx,1);
   products.splice(toIdx,0,moved);
   renderProductsTab();
-  const reorderData = products.map((p,i) => ({ id:p.id, sortOrder:i }));
-  await apiWrite('products','reorder',null,reorderData);
+
+  // Debounce the save — rapid clicks (the normal way to use these arrows) collapse
+  // into a single request with the final order, instead of firing overlapping
+  // requests that can arrive out of order and let an earlier click's now-stale
+  // snapshot overwrite a later click's more correct one.
+  clearTimeout(productReorderWriteTimer);
+  productReorderWriteTimer = setTimeout(async () => {
+    const reorderData = products.map((p,i) => ({ id:p.id, sortOrder:i }));
+    await apiWrite('products','reorder',null,reorderData);
+  }, 500);
 }
 
 function openProductModal(id) {
