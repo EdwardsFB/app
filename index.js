@@ -1,4 +1,4 @@
-// version: v1.0.9 | build: 2026-07-25T15:20:43Z
+// version: v1.0.10 | build: 2026-07-25T15:28:41Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -19,7 +19,7 @@ async function init() {
 
   try {
     const data = await apiGetAll();
-    products = data.products || [];
+    products = sortProductsByOrder(data.products || []);
     orders = data.orders || [];
     customers = data.customers || [];
     settings = data.settings || {};

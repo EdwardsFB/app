@@ -1,4 +1,4 @@
-// version: v1.0.9 | build: 2026-07-25T15:20:43Z
+// version: v1.0.10 | build: 2026-07-25T15:28:41Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -101,7 +101,7 @@ async function loadAndShowApp() {
   document.getElementById('loading').classList.remove('d-none');
   try {
     const data = await apiGetAll();
-    products = data.products || [];
+    products = sortProductsByOrder(data.products || []);
     orders = data.orders || [];
     customers = data.customers || [];
     settings = data.settings || {};
@@ -253,7 +253,7 @@ async function refreshAndRenderTab(tab, renderFn) {
   renderFn(); // show existing data immediately so navigation feels instant
   try {
     const fresh = await apiGetAll();
-    products = fresh.products || products;
+    products = sortProductsByOrder(fresh.products || products);
     // Merge fresh orders, but keep the LOCAL version of any order that still has an
     // unsaved debounced write in flight — otherwise a refetch landing mid-typing/clicking
     // can silently revert changes that haven't reached the server yet.
@@ -936,7 +936,7 @@ async function performMerge() {
 
     // Re-fetch from the actual Sheet rather than trust local state, so the UI reflects true server data
     const fresh = await apiGetAll();
-    products = fresh.products || [];
+    products = sortProductsByOrder(fresh.products || []);
     orders = fresh.orders || [];
     customers = fresh.customers || [];
   } catch (err) {

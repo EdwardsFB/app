@@ -1,5 +1,9 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.10 — 2026-07-25 (pending testing)
+
+Real, significant bug: reordering products saved `sortOrder` to the backend correctly, but nothing anywhere - not the customer menu, not even admin's own product list on a fresh load - actually sorted by it. The reorder only appeared to work within the same admin session because the in-memory list was mutated directly; a fresh load anywhere just showed raw backend order. Added a shared sort-by-`sortOrder` step applied at every point products get loaded, in both the customer app and admin, so the saved order now actually takes effect everywhere. If you don't already have a `sortOrder` column on your Products sheet, you'll need to add one for this to persist correctly, matching the pattern from earlier tonight.
+
 ## v1.0.9 — 2026-07-25 (pending testing)
 
 Audited every modal in the app for the same swipe-bleed-through risk fixed in v1.0.8 for the route modal, instead of just the one reported instance. Applied `modal-dialog-scrollable` consistently to every modal with variable or potentially-long content: Product, Customer, Merge Customers, and Customer Detail/Receipt (`orderModal` and the route modal already had it). Left the two simple "Are you sure?" confirmation dialogs alone, since their content is short and fixed and will never actually overflow.
