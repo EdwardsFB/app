@@ -1,4 +1,4 @@
-// build: 2026-07-25T02:52:38Z
+// build: 2026-07-25T03:05:20Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -216,6 +216,8 @@ function updateOrderTotal() {
   });
   const discountAmt = total * (appliedDiscountPct / 100);
   document.getElementById('actionBarTotal').textContent = '$' + (total - discountAmt).toFixed(2);
+  document.getElementById('actionBarDiscountRow').classList.toggle('d-none', appliedDiscountPct === 0);
+  document.getElementById('actionBarDiscountAmt').textContent = '-$' + discountAmt.toFixed(2);
 }
 
 // ══════════════════════════════════════════
@@ -293,6 +295,12 @@ function applyDiscountCode() {
   }
   renderReview();
   updateOrderTotal();
+  // Clicking Apply blurs the input it's paired with (keyboard dismissing), which can
+  // trigger the keyboard-dismiss viewport correction and overcorrect past this
+  // section. Bring it back into view explicitly once that settling has finished.
+  setTimeout(() => {
+    document.getElementById('discountCodeInput').scrollIntoView({ block: 'center' });
+  }, 200);
 }
 
 // Once step 4 has been reached, it stays visible and editable-from-above forever -
@@ -317,10 +325,6 @@ function renderReview() {
     }
   });
   document.getElementById('reviewItems').innerHTML = html || '<div class="small text-muted">Empty</div>';
-
-  const discountAmt = total * (appliedDiscountPct / 100);
-  document.getElementById('reviewDiscountRow').classList.toggle('d-none', appliedDiscountPct === 0);
-  document.getElementById('reviewDiscountAmt').textContent = '-$' + discountAmt.toFixed(2);
 }
 
 // ══════════════════════════════════════════
