@@ -1,4 +1,4 @@
-// version: v1.0.12 | build: 2026-07-25T15:50:13Z
+// version: v1.0.13 | build: 2026-07-25T15:54:24Z
 // ══════════════════════════════════════════
 // Edwards Family Bakery — Shared utilities
 // Used by both index.html (customer) and admin.html (admin)
@@ -67,9 +67,9 @@ function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 // Small icon distinguishing how an order was created - shows nothing for older
 // orders saved before this field existed, rather than guessing.
 function sourceIcon(source) {
-  if (source === 'customer') return '<i class="bi bi-person text-muted" title="Placed by customer"></i>';
-  if (source === 'admin-manual') return '<i class="bi bi-pencil-square text-muted" title="Entered manually in admin"></i>';
-  if (source === 'test') return '<i class="bi bi-flask text-muted" title="Test order (ZZTest tool)"></i>';
+  if (source === 'customer') return '<i class="bi bi-person" title="Placed by customer"></i>';
+  if (source === 'admin-manual') return '<i class="bi bi-pencil-square" title="Entered manually in admin"></i>';
+  if (source === 'test') return '<i class="bi bi-flask" title="Test order (ZZTest tool)"></i>';
   return '';
 }
 
