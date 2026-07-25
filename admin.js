@@ -1,4 +1,4 @@
-// version: v1.0.3 | build: 2026-07-25T04:16:36Z
+// version: v1.0.6 | build: 2026-07-25T04:34:14Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -276,7 +276,7 @@ async function refreshAndRenderTab(tab, renderFn) {
 // GENERIC CONFIRM MODAL
 // ══════════════════════════════════════════
 function openConfirm(message, callback) {
-  document.getElementById('confirmModalMsg').textContent = message;
+  document.getElementById('confirmModalMsg').innerHTML = message;
   confirmCallback = callback;
   confirmModalEl.show();
 }
@@ -494,7 +494,7 @@ async function updateFulfillmentStatus(id, val) {
 }
 function deleteOrder(id) {
   const o = orders.find(o=>o.id===id);
-  openConfirm(`Delete Order #${o ? o.number : ''}? This cannot be undone.`, async () => {
+  openConfirm(`Delete Order #${o ? getOrderNumber(o, orders) : ''}?<br>This cannot be undone.`, async () => {
     await apiWrite('orders','delete',id,null);
     orders = orders.filter(o=>o.id!==id);
     renderOrdersTab();
@@ -988,7 +988,7 @@ function deleteCustomerRow(id) {
   const rec = customers.find(c => c.id === id);
   if (!rec) return;
   const fullName = `${rec.firstName} ${rec.lastName}`.trim();
-  openConfirm(`Delete this customer record for "${fullName}"? This won't affect any past orders — it only removes the standalone contact card.`, async () => {
+  openConfirm(`Delete this customer record for "${esc(fullName)}"? This won't affect any past orders — it only removes the standalone contact card.`, async () => {
     await apiWrite('customers','delete',id,null);
     customers = customers.filter(c => c.id !== id);
     renderCustomersTab();
@@ -1326,12 +1326,11 @@ function renderRouteModalList() {
   const deliveries = orders.filter(o => o.fulfillment==='delivery' && o.fulfillmentStatus==='ready' && (o.deliveryAddress||o.address));
   const ordered = routeOrder.map(id => deliveries.find(o=>o.id===id)).filter(Boolean);
   document.getElementById('routeModalList').innerHTML = ordered.map((o,i) => {
-    const addr = parseAddress(o.deliveryAddress||o.address||'');
-    const addrLine = addr ? [addr.street, [addr.city, addr.state].filter(Boolean).join(', ')].filter(Boolean).join(' — ') : '';
+    const addrLine = formatFullAddress(o.deliveryAddress||o.address||'');
     return `<div class="d-flex align-items-center gap-2 p-2 border-bottom">
-      <div class="text-nowrap">
-        <button type="button" class="btn btn-outline-secondary btn-sm${i===0 ? ' btn-inert' : ''}" onclick="moveRouteRow('${o.id}',-1)"><i class="bi bi-arrow-up"></i></button>
-        <button type="button" class="btn btn-outline-secondary btn-sm${i===ordered.length-1 ? ' btn-inert' : ''}" onclick="moveRouteRow('${o.id}',1)"><i class="bi bi-arrow-down"></i></button>
+      <div class="d-flex flex-column" style="width:38px; height:62px; gap:2px;">
+        ${i > 0 ? `<button type="button" class="btn btn-outline-secondary btn-sm flex-fill p-0" onclick="moveRouteRow('${o.id}',-1)"><i class="bi bi-arrow-up"></i></button>` : ''}
+        ${i < ordered.length-1 ? `<button type="button" class="btn btn-outline-secondary btn-sm flex-fill p-0" onclick="moveRouteRow('${o.id}',1)"><i class="bi bi-arrow-down"></i></button>` : ''}
       </div>
       <div>
         <div class="fw-bold small">${esc(o.firstName)} ${esc(o.lastName)}</div>
@@ -1353,7 +1352,7 @@ function moveRouteRow(id, dir) {
 function openRouteMap() {
   const deliveries = orders.filter(o => o.fulfillment==='delivery' && o.fulfillmentStatus==='ready' && (o.deliveryAddress||o.address));
   const ordered = routeOrder.map(id => deliveries.find(o=>o.id===id)).filter(Boolean);
-  const addresses = ordered.map(o => encodeURIComponent(o.deliveryAddress||o.address));
+  const addresses = ordered.map(o => encodeURIComponent(formatFullAddress(o.deliveryAddress||o.address)));
   if (!addresses.length) return;
   const dest = addresses[addresses.length-1];
   const waypoints = addresses.slice(0,-1).join('|');
@@ -1566,8 +1565,10 @@ function renderProductsTab() {
       <tbody id="productsTableBody">
         ${products.map((p,i) => `<tr>
           ${reorderModeOn ? `<td class="text-nowrap">
-            <button type="button" class="btn btn-outline-secondary btn-sm${i===0 ? ' btn-inert' : ''}" onclick="moveProductRow('${p.id}',-1)"><i class="bi bi-arrow-up"></i></button>
-            <button type="button" class="btn btn-outline-secondary btn-sm${i===products.length-1 ? ' btn-inert' : ''}" onclick="moveProductRow('${p.id}',1)"><i class="bi bi-arrow-down"></i></button>
+            <div class="d-flex flex-column" style="width:38px; height:62px; gap:2px;">
+              ${i > 0 ? `<button type="button" class="btn btn-outline-secondary btn-sm flex-fill p-0" onclick="moveProductRow('${p.id}',-1)"><i class="bi bi-arrow-up"></i></button>` : ''}
+              ${i < products.length-1 ? `<button type="button" class="btn btn-outline-secondary btn-sm flex-fill p-0" onclick="moveProductRow('${p.id}',1)"><i class="bi bi-arrow-down"></i></button>` : ''}
+            </div>
           </td>` : ''}
           <td>${esc(p.name)}</td>
           <td>${p.active===false ? '<i class="bi bi-x-lg" title="Inactive"></i>' : '<i class="bi bi-check2" title="Active"></i>'}</td>
@@ -1656,7 +1657,7 @@ function removeProductOptionRow(idx) {
 }
 function deleteProductRow(id) {
   const p = products.find(p=>p.id===id); if (!p) return;
-  openConfirm(`Delete "${p.name}" from the menu? This won't affect past orders.`, async () => {
+  openConfirm(`Delete "${esc(p.name)}" from the menu? This won't affect past orders.`, async () => {
     await apiWrite('products','delete',id,null);
     products = products.filter(pr=>pr.id!==id);
     renderProductsTab();

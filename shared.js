@@ -1,4 +1,4 @@
-// version: v1.0.3 | build: 2026-07-25T04:16:36Z
+// version: v1.0.6 | build: 2026-07-25T04:34:14Z
 // ══════════════════════════════════════════
 // Edwards Family Bakery — Shared utilities
 // Used by both index.html (customer) and admin.html (admin)
@@ -104,6 +104,15 @@ function parseAddress(raw) {
     }
   }
   return { street, city, state, zip };
+}
+
+// Builds a proper "Street, City, State ZIP" address string from a raw address
+// string, for consistent display and for passing to Google Maps.
+function formatFullAddress(raw) {
+  const addr = parseAddress(raw);
+  if (!addr.street) return '';
+  const cityStateZip = [addr.city, [addr.state, addr.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ');
+  return [addr.street, cityStateZip].filter(Boolean).join(', ');
 }
 
 // ── Merge customers (explicit records + order history), deduped by phone ──

@@ -1,5 +1,23 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.6 — 2026-07-25 (pending testing)
+
+- "This cannot be undone" now on its own line in the order delete confirmation.
+- Switched the confirm modal to support line breaks, which meant escaping customer/product names in the other two delete confirmations that reuse it, to stay safe from special characters.
+
+## v1.0.5 — 2026-07-25 (pending testing)
+
+Real bug fix: the "Delete Order #221?" confirmation text added in v1.0.1 was showing "Delete Order #undefined?" instead. Order numbers were never a stored property on the order itself (`o.number` doesn't exist) - they're computed on the fly from creation order via a helper function. Fixed to use that existing helper (`getOrderNumber`) instead.
+
+## v1.0.4 — 2026-07-25 (pending testing)
+
+Delivery route modal polish, following confirmation that the v1.0.3 up/down arrows work correctly on iPhone.
+
+- Fixed address formatting — was missing ZIP code and used an odd em-dash separator; now shows proper "Street, City, State ZIP" format.
+- Same proper address format is now what's actually sent to Google Maps (previously used the raw stored string) — should improve navigation accuracy too, not just display.
+- Edge rows (first/last) now show a single arrow button spanning the full space, instead of one active button next to a visually disabled one.
+- Same edge-row button treatment applied to the Products table for consistency.
+
 ## v1.0.3 — 2026-07-25 (pending testing)
 
 Replaced HTML5 drag-and-drop with up/down arrow buttons in both places it was used, after confirming native drag doesn't fire from finger touch on iOS Safari (it only works via a Bluetooth mouse, trackpad, or Apple Pencil) - a real reliability problem given both features are meant to be used on a phone, often on the go.
