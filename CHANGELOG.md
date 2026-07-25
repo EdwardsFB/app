@@ -1,5 +1,9 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.12 — 2026-07-25 (pending testing)
+
+Surfaced the `source` field flagged as unused in the last audit. The Orders table's Type column now shows a second small icon next to the fulfillment icon (truck/cart), indicating how the order was created: a person icon for customer-placed, a pencil for manually entered in admin, and a flask for ZZTest tool orders. Older orders saved before this field existed show no icon rather than a guess.
+
 ## v1.0.11 — 2026-07-25 (pending testing)
 
 - Pickup and Delivery cards on the Fulfillment tab now sort by date, soonest first (previously unsorted). Delivery route order still respects any manually-set route once you've used "Set Delivery Route" - date sorting only determines the initial/default order.

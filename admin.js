@@ -1,4 +1,4 @@
-// version: v1.0.11 | build: 2026-07-25T15:39:25Z
+// version: v1.0.12 | build: 2026-07-25T15:50:13Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -459,7 +459,7 @@ function renderOrdersList() {
         return `<tr title="${esc(itemStr)}">
           <td>#${String(numberMap.get(o.id)).padStart(3,'0')}</td>
           <td>${esc(o.firstName)} ${esc(o.lastName)}</td>
-          <td><i class="bi ${o.fulfillment==='delivery' ? 'bi-truck' : 'bi-cart4'}" title="${cap(o.fulfillment)}"></i></td>
+          <td><i class="bi ${o.fulfillment==='delivery' ? 'bi-truck' : 'bi-cart4'}" title="${cap(o.fulfillment)}"></i> ${sourceIcon(o.source)}</td>
           <td>${cap(o.payment)}</td>
           <td>${o.date||'—'}</td>
           <td><select class="form-select form-select-sm" onchange="updatePaymentStatus('${o.id}', this.value)">

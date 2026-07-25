@@ -1,4 +1,4 @@
-// version: v1.0.11 | build: 2026-07-25T15:39:25Z
+// version: v1.0.12 | build: 2026-07-25T15:50:13Z
 // ══════════════════════════════════════════
 // Edwards Family Bakery — Shared utilities
 // Used by both index.html (customer) and admin.html (admin)
@@ -63,6 +63,15 @@ function esc(s) {
 }
 
 function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
+// Small icon distinguishing how an order was created - shows nothing for older
+// orders saved before this field existed, rather than guessing.
+function sourceIcon(source) {
+  if (source === 'customer') return '<i class="bi bi-person text-muted" title="Placed by customer"></i>';
+  if (source === 'admin-manual') return '<i class="bi bi-pencil-square text-muted" title="Entered manually in admin"></i>';
+  if (source === 'test') return '<i class="bi bi-flask text-muted" title="Test order (ZZTest tool)"></i>';
+  return '';
+}
 
 // ── Force phone inputs into ###.###.#### as the user types ──
 function formatPhoneInput(el) {
