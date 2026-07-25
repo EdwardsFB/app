@@ -1,5 +1,9 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.25 — 2026-07-25 (pending testing)
+
+Edit Product modal title now shows the product's ID (e.g., "Edit Product — p05"), matching the same pattern already used for Order # in the Edit Order modal.
+
 ## v1.0.24 — 2026-07-25 (pending testing)
 
 Real bug: rapid clicks on the Products table's reorder arrows fired an unthrottled backend save on every single click, with no guard against overlapping requests - if two saves arrived at the server out of order, an earlier click's now-stale snapshot could overwrite a later click's more correct one. This matches exactly what was reported: two products near the end of the list ending up swapped after quick successive reordering. Debounced the save the same way `madeItems` already was, so rapid clicking collapses into one final save with the correct order. The two currently-swapped products (Honey Butter / Hamburger Buns) will need to be reordered once more after this update to actually correct their saved position - this fix prevents it from happening again, it doesn't retroactively fix what's already saved wrong.

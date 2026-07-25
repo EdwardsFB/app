@@ -1,4 +1,4 @@
-// version: v1.0.24 | build: 2026-07-25T19:36:05Z
+// version: v1.0.25 | build: 2026-07-25T20:14:31Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -1600,7 +1600,7 @@ function moveProductRow(id, dir) {
 function openProductModal(id) {
   editingProductId = id || null;
   const p = id ? products.find(p=>p.id===id) : null;
-  document.getElementById('productModalTitle').textContent = p ? 'Edit Product' : 'Add Product';
+  document.getElementById('productModalTitle').textContent = p ? `Edit Product — ${p.id}` : 'Add Product';
   document.getElementById('pm-name').value = p ? p.name : '';
   document.getElementById('pm-desc').value = p ? (p.desc||'') : '';
   document.getElementById('pm-price').value = p ? p.price : '';
