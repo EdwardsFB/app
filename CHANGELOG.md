@@ -1,5 +1,9 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.22 — 2026-07-25 (pending testing)
+
+Found the actual cause of the missing ZZTest icon, after ruling out data, the icon function, and stale rendering one by one via direct console testing: the correct HTML (`<i class="bi bi-flask">`) was genuinely present in the page, but wasn't rendering visually, while every other icon in the same font displayed fine right next to it. Bootstrap's own icon documentation shows `bi-flask` used as an `<svg>` element rather than the icon-font `<i>` pattern used everywhere else in this app, suggesting this specific glyph doesn't work the same way in the font version being used. Swapped to `bi-bug`, a long-established icon in the same font, which should behave the same as every other icon already working correctly.
+
 ## v1.0.21 — 2026-07-25 (pending testing)
 
 Real bug: `admin.html` never had cache-busting on its `shared.js`/`admin.js` script tags, unlike `index.html` which has had it all along. That means browsers could keep serving an old, cached copy of admin's JavaScript indefinitely, even after real updates were deployed - which is almost certainly why the ZZTest flask icon wasn't showing despite the Sheet data being completely correct. Added the same versioned cache-busting to admin.html that index.html already had, synced to the same version number going forward.

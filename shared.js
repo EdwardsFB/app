@@ -1,4 +1,4 @@
-// version: v1.0.21 | build: 2026-07-25T19:07:43Z
+// version: v1.0.22 | build: 2026-07-25T19:18:14Z
 // ══════════════════════════════════════════
 // Edwards Family Bakery — Shared utilities
 // Used by both index.html (customer) and admin.html (admin)
@@ -57,7 +57,7 @@ function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 function sourceIcon(source) {
   if (source === 'customer') return '<i class="bi bi-person" title="Placed by customer"></i>';
   if (source === 'admin-manual') return '<i class="bi bi-clipboard-check" title="Entered manually in admin"></i>';
-  if (source === 'test') return '<i class="bi bi-flask" title="Test order (ZZTest tool)"></i>';
+  if (source === 'test') return '<i class="bi bi-bug" title="Test order (ZZTest tool)"></i>';
   if (source === 'old-tracker-v3') return '<i class="bi bi-box-arrow-in-down" title="Migrated from the old tracker"></i>';
   return '';
 }
