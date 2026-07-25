@@ -1,4 +1,4 @@
-// build: 2026-07-25T03:05:20Z
+// build: 2026-07-25T03:37:13Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -503,7 +503,7 @@ async function updateFulfillmentStatus(id, val) {
 }
 function deleteOrder(id) {
   const o = orders.find(o=>o.id===id);
-  openConfirm(`Delete ${o ? o.firstName+' '+o.lastName+"'s order" : 'this order'}? This cannot be undone.`, async () => {
+  openConfirm(`Delete Order #${o ? o.number : ''}? This cannot be undone.`, async () => {
     await apiWrite('orders','delete',id,null);
     orders = orders.filter(o=>o.id!==id);
     renderOrdersTab();
@@ -1199,7 +1199,7 @@ function renderProductionTab() {
         <div class="card-body d-flex flex-column">
           <div class="d-flex justify-content-between align-items-start">
             <div class="fs-5 fw-bold">${esc(o.firstName)} ${esc(o.lastName)}</div>
-            <a href="#" onclick="openCustomerDetail('${o.id}'); return false;">View Receipt</a>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="openCustomerDetail('${o.id}')">View Receipt</button>
           </div>
           ${o.notes ? `<div class="small text-muted fst-italic mt-3 mb-2">${esc(o.notes)}</div>` : ''}
           <ul class="list-group mt-3 mb-3">${itemListItems}</ul>
@@ -1294,7 +1294,7 @@ function renderFulfillmentTab() {
         <div class="card-body d-flex flex-column">
           <div class="d-flex justify-content-between align-items-start">
             <div class="fs-5 fw-bold">${esc(o.firstName)} ${esc(o.lastName)}</div>
-            <a href="#" onclick="moveBackToProduction('${o.id}'); return false;">Back to Prep</a>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="moveBackToProduction('${o.id}')">Back to Prep</button>
           </div>
           <div class="mt-3 mb-3">
             <div class="mb-2">${esc(o.phone||'')}</div>
