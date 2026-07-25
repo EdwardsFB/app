@@ -1,5 +1,11 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.17 — 2026-07-25 (pending testing)
+
+- **Real bug fixed (Apps Script):** production tracking ("made" checkboxes) could silently fail to save for any order that started with no `madeItems` data. The backend defaulted a blank cell to an empty array, but the frontend always expected an object - since an empty array is truthy in JavaScript, the frontend's own `|| {}` fallback never kicked in, and `JSON.stringify` silently drops non-numeric properties set on an array. The result: checking off items looked like it worked, but saved as `"[]"`, losing the actual data. Fixed the default, and also normalized any order that already has the literal `"[]"` stored from hitting this bug in the past.
+- Rechecked both ZZTest tools (generator and cleanup) against the recent orderNumber/source changes - both were already fully compatible, no changes needed.
+- Old-tracker source icon changed from an archive box to an import-style icon (arrow into a box), better representing "this was imported" rather than "this is archived."
+
 ## v1.0.16 — 2026-07-25 (pending testing + one-time migration)
 
 Order numbers are now permanent and stored, not recalculated live. Previously, an order's displayed number was its live chronological position - meaning deleting any order would silently shift every later order's number. Now, each order gets a permanent number assigned once at creation (server-side, avoiding race conditions between simultaneous orders) and never recalculated, so a reference like "order #193" stays accurate forever, matching how real invoice numbering works.
