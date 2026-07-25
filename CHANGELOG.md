@@ -1,5 +1,10 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.20 — 2026-07-25 (pending testing)
+
+- Admin-manual icon changed to a clipboard-check.
+- ZZTest orders not showing an icon: confirmed the flask icon already exists and is correctly wired for `source: 'test'`, and the current test tool file correctly sets it - likely cause is an older, previously-downloaded copy of the tool being used. Providing a fresh copy to confirm.
+
 ## v1.0.19 — 2026-07-25 (pending testing)
 
 - Fixed icon vertical alignment in the Orders table's Type column - added explicit `vertical-align: middle` to icon elements themselves, since the cell's own centering alone didn't account for different icons having slightly different internal positioning within their glyph.
