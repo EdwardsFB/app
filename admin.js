@@ -1,4 +1,4 @@
-// version: v1.0.17 | build: 2026-07-25T17:46:03Z
+// version: v1.0.18 | build: 2026-07-25T18:43:37Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -29,6 +29,7 @@ function openCustomerDetail(orderId) {
     : '—';
 
   const rows = [
+    ['Order #', esc(o.orderNumber || '—')],
     ['Phone', esc(o.phone || '—')],
     ['Email', esc((match && match.email) || '—')],
     ['Address', addressHtml],
@@ -1160,8 +1161,8 @@ function renderProductionTab() {
   }));
   const bakeProducts = Object.keys(totals).map(id => ({ id, name: nameById[id] }));
 
-  const pickups = active.filter(o => o.fulfillment === 'pickup');
-  const deliveries = active.filter(o => o.fulfillment === 'delivery');
+  const pickups = active.filter(o => o.fulfillment === 'pickup').sort((a,b) => (a.date||'').localeCompare(b.date||''));
+  const deliveries = active.filter(o => o.fulfillment === 'delivery').sort((a,b) => (a.date||'').localeCompare(b.date||''));
 
   function orderCard(o) {
     const itemListItems = (o.items||[]).map(i => {

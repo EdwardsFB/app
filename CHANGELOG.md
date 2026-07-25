@@ -1,5 +1,10 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.18 — 2026-07-25 (pending testing)
+
+- Real bug: the date-sort fix applied to the Fulfillment tab's Pickup/Delivery sections in v1.0.11 was never applied to the Production tab, which has its own separate, differently-scoped `pickups`/`deliveries` variables. Fixed - both tabs now sort consistently, soonest date first, including when viewing "All" dates on Production.
+- Added Order # to the View Receipt / order detail modal.
+
 ## v1.0.17 — 2026-07-25 (pending testing)
 
 - **Real bug fixed (Apps Script):** production tracking ("made" checkboxes) could silently fail to save for any order that started with no `madeItems` data. The backend defaulted a blank cell to an empty array, but the frontend always expected an object - since an empty array is truthy in JavaScript, the frontend's own `|| {}` fallback never kicked in, and `JSON.stringify` silently drops non-numeric properties set on an array. The result: checking off items looked like it worked, but saved as `"[]"`, losing the actual data. Fixed the default, and also normalized any order that already has the literal `"[]"` stored from hitting this bug in the past.
