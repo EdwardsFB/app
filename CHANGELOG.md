@@ -1,5 +1,10 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.35 — 2026-07-26 (pending testing)
+
+- Added space below "Start New Order" (16px) - also added `d-inline-block` since margin-bottom has no visible effect on a plain inline link otherwise.
+- "Thanks, [name]!" headline reduced from h4 to h5.
+
 ## v1.0.34 — 2026-07-26 (pending testing)
 
 Fixed radio vertical alignment. Bootstrap's `.form-check-input` has a built-in `margin-top: 0.25em`, designed for their standard form-check layout where the input sits slightly below the label's first line - not a flex-centered container like our radio cards. That margin was throwing off `align-items: center`, since flex centers the full margin box, not just the visible circle. Zeroed it out.
