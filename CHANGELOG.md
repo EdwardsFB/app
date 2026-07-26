@@ -1,5 +1,9 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.23 — 2026-07-26 (pending testing)
+
+Fixed product option checkbox still showing blue - it relies on Bootstrap's own default checked-state styling rather than picking up the `--bs-primary` variable override. Set it explicitly to teal instead of trusting that inheritance chain. Also did a full sweep of the customer view for any other remaining blue: confirmed no leftover hardcoded blue hex values anywhere, radio buttons are plain inputs already correctly handled via accent-color (not affected by this checkbox fix), and focus rings rely entirely on Bootstrap's own default styling using `--bs-primary-rgb`, which was already set correctly to teal's RGB values.
+
 ## v1.0.22 — 2026-07-26 (pending testing)
 
 "Welcome back, [name]!" and "Code applied — X% off!" both changed to the teal color, size/italics unchanged. Added a small reusable `.text-teal` class rather than duplicating the hex value in two places.
