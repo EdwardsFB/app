@@ -1,5 +1,17 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.29 — 2026-07-26 (pending testing)
+
+Cancel confirmation modal title changed from "Cancel this order?" to "Cancel Order?"
+
+## v1.0.28 — 2026-07-26 (pending testing)
+
+Real root cause found for both issues at once. Bootstrap compiles each button variant (`.btn-primary`, etc.) with its own color variables baked in at a more specific selector level than a global `:root` override - meaning overriding `--bs-primary` never reliably cascaded down into `.btn-primary`'s actual rendered color, despite looking correct in the CSS. This explains why Place Order stayed blue, and almost certainly why the earlier CSS-variable attempt at the sticky-hover fix (removed as "redundant" last round) never actually worked either.
+
+- Removed the JS `pointer-events` toggle entirely - it already caused one real regression (blocking clicks) and relies on risky timing assumptions between touchend and the browser's synthetic click.
+- Replaced with a pure CSS fix: `.btn-primary` now has its color explicitly set (not relying on variable inheritance), and every button variant used in each app has its hover/active state explicitly neutralized to match its own default appearance, scoped to touch devices only. No JS involved, so no risk of interfering with click events.
+- Caught and fixed a syntax mistake while removing the old JS handler (a dangling leftover `}, true);`) before shipping.
+
 ## v1.0.27 — 2026-07-26 (pending testing)
 
 - Real regression fix: the pointer-events toggle from last round was applied immediately on touchend, which happens *before* the browser's own synthetic click event that actually triggers onclick handlers - so it was blocking that click from ever reaching the button, breaking the qty +/- buttons' actual function while "fixing" the visual stuck state. Delayed the toggle until after the click has had time to fire and process. Applied to both apps.

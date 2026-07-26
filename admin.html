@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- version: v1.0.27 | build: 2026-07-26T21:20:58Z -->
+<!-- version: v1.0.29 | build: 2026-07-26T21:29:01Z -->
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -79,6 +79,13 @@
   @media (min-width: 992px) { #settings-discount-list { width: 50%; } }
   a { text-decoration: none; }
   .btn-inert { pointer-events: none; opacity: 1 !important; background-color: #e9ecef !important; border-color: #dee2e6 !important; color: #adb5bd !important; }
+  @media (pointer: coarse) {
+    .btn-primary:hover, .btn-primary:active, .btn-primary:focus { background-color: #0d6efd !important; border-color: #0d6efd !important; color: #fff !important; }
+    .btn-outline-secondary:hover, .btn-outline-secondary:active, .btn-outline-secondary:focus { background-color: transparent !important; border-color: #6c757d !important; color: #6c757d !important; }
+    .btn-outline-danger:hover, .btn-outline-danger:active, .btn-outline-danger:focus { background-color: transparent !important; border-color: #dc3545 !important; color: #dc3545 !important; }
+    .btn-dark:hover, .btn-dark:active, .btn-dark:focus { background-color: #212529 !important; border-color: #212529 !important; color: #fff !important; }
+    .btn-success:hover, .btn-success:active, .btn-success:focus { background-color: #198754 !important; border-color: #198754 !important; color: #fff !important; }
+  }
 </style>
 </head>
 <body>
@@ -405,7 +412,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="shared.js?v=99"></script>
-<script src="admin.js?v=99"></script>
+<script src="shared.js?v=101"></script>
+<script src="admin.js?v=101"></script>
 </body>
 </html>

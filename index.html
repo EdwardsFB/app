@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- version: v1.0.27 | build: 2026-07-26T21:20:58Z -->
+<!-- version: v1.0.29 | build: 2026-07-26T21:29:01Z -->
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -49,6 +49,11 @@
   .form-check-input:checked { background-color: #0f8b8d; border-color: #0f8b8d; }
   a { text-decoration: none; }
   .form-control, .form-select, .btn-outline-secondary:not(.btn-inert) { border-color: #ced4da; }
+  .btn-primary { --bs-btn-bg: #0f8b8d; --bs-btn-border-color: #0f8b8d; --bs-btn-hover-bg: #0c7173; --bs-btn-hover-border-color: #0c7173; --bs-btn-active-bg: #0b696b; --bs-btn-active-border-color: #0b696b; }
+  @media (pointer: coarse) {
+    .btn-primary:hover, .btn-primary:active, .btn-primary:focus { background-color: #0f8b8d !important; border-color: #0f8b8d !important; color: #fff !important; }
+    .btn-outline-secondary:hover, .btn-outline-secondary:active, .btn-outline-secondary:focus { background-color: transparent !important; border-color: #ced4da !important; color: #6c757d !important; }
+  }
 </style>
 </head>
 <body>
@@ -242,7 +247,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="cancelModalTitle">Cancel this order?</h1>
+        <h1 class="modal-title fs-5" id="cancelModalTitle">Cancel Order?</h1>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -257,8 +262,8 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="shared.js?v=99"></script>
-<script src="index.js?v=99"></script>
+<script src="shared.js?v=101"></script>
+<script src="index.js?v=101"></script>
 <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080;" id="toastContainer"></div>
 
 </body>

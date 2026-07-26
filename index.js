@@ -1,4 +1,4 @@
-// version: v1.0.27 | build: 2026-07-26T21:20:58Z
+// version: v1.0.29 | build: 2026-07-26T21:29:01Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -13,24 +13,6 @@ const VENMO_HANDLE = 'edwardsfamilybakery';
 // element is tapped, leaving buttons looking "stuck" pressed. A no-op touchstart
 // listener tricks iOS into handling touch state correctly instead.
 document.addEventListener('touchstart', function() {}, true);
-
-// The blur-based approach above didn't fully resolve it in testing. Real insight:
-// the qty minus button never sticks once it's disabled (via .btn-inert, which uses
-// pointer-events:none) - because the browser never registers the tap as
-// interacting with it at all, so :active can't apply in the first place. Applying
-// that same mechanism briefly to any tapped button forces the stuck state to clear.
-// Must be delayed, though - touchend fires before the browser's own synthetic
-// click event that actually triggers onclick handlers, so applying pointer-events:
-// none immediately blocked that click from ever reaching the button at all.
-document.addEventListener('touchend', function(e) {
-  const el = e.target.closest('button, .btn, a');
-  if (el) {
-    setTimeout(() => {
-      el.style.pointerEvents = 'none';
-      setTimeout(() => { el.style.pointerEvents = ''; }, 50);
-    }, 100);
-  }
-}, true);
 
 async function init() {
   // Fixes a known Bootstrap 5 quirk: closing a modal can leave focus on an element
