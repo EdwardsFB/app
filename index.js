@@ -1,4 +1,4 @@
-// version: v1.0.6 | build: 2026-07-26T18:23:44Z
+// version: v1.0.7 | build: 2026-07-26T18:29:05Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -481,7 +481,13 @@ function correctViewportOffset() {
 // checkboxes share the INPUT tagName with text fields, but never open a keyboard,
 // so treating them the same incorrectly hid the action bar with no reliable way
 // to bring it back (nothing else reliably triggers the matching focusout).
+// Also gated behind a touch-device check - this whole mechanism exists to work
+// around an on-screen keyboard covering the action bar, which doesn't happen on
+// desktop with a mouse/trackpad. Checking the primary pointer type (coarse=touch,
+// fine=mouse) rather than the user-agent string, so a touchscreen laptop with a
+// mouse/trackpad still correctly behaves like desktop.
 function opensKeyboard(el) {
+  if (!window.matchMedia('(pointer: coarse)').matches) return false;
   if (!el) return false;
   if (el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') return true;
   if (el.tagName === 'INPUT') return !['radio','checkbox'].includes(el.type);

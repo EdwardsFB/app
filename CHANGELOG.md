@@ -1,5 +1,9 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.7 — 2026-07-26 (pending testing)
+
+The action bar's keyboard-hiding behavior now only applies on touch devices (iOS/Android) - on desktop, clicking into a text field no longer hides the footer, since there's no on-screen keyboard to work around there in the first place. Detected via the device's primary pointer type (`pointer: coarse` = touch, `pointer: fine` = mouse/trackpad) rather than sniffing the user-agent string, so a touchscreen laptop with a mouse/trackpad still correctly behaves like desktop.
+
 ## v1.0.6 — 2026-07-26 (pending testing)
 
 Fixed Pickup vs Delivery spacing mismatch. Root cause: the date field's row had its own `mt-2` class in addition to the parent container's `mt-3`. Since `.row` is Bootstrap's flex-based grid row, CSS margin collapsing doesn't apply to it - so when Pickup is selected (address field hidden, date row becomes the first visible child), both margins stacked (24px total); when Delivery is selected (address field visible, no top margin of its own), only the parent's margin applied (16px). Removed the redundant `mt-2` from the date row - the parent's margin alone now provides consistent spacing regardless of which field ends up first. Also checked every other conditionally-toggled element in the customer app for the same "two different children alternating as first-visible with mismatched margins" pattern - found no other instances (the other two toggles are single elements simply shown/hidden, not alternating between different siblings).
