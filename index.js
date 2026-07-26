@@ -1,4 +1,4 @@
-// version: v1.0.11 | build: 2026-07-26T19:14:49Z
+// version: v1.0.12 | build: 2026-07-26T19:28:05Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -332,7 +332,7 @@ function renderReview() {
       html += `<div class="d-flex justify-content-between small"><span>${qty}× ${esc(p.name)}${optionsLabel}</span><span>$${sub.toFixed(2)}</span></div>`;
     }
   });
-  document.getElementById('reviewItems').innerHTML = html || '<div class="small text-muted">Empty</div>';
+  document.getElementById('reviewItems').innerHTML = html || '<div class="small text-muted">—</div>';
 }
 
 // ══════════════════════════════════════════
@@ -489,7 +489,9 @@ function correctViewportOffset() {
 function opensKeyboard(el) {
   if (!window.matchMedia('(pointer: coarse)').matches) return false;
   if (!el) return false;
-  if (el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') return true;
+  // SELECT is deliberately excluded - it shows a native picker/dropdown, not a
+  // text keyboard, so it shouldn't trigger the same "hide the bar" behavior.
+  if (el.tagName === 'TEXTAREA') return true;
   if (el.tagName === 'INPUT') return !['radio','checkbox'].includes(el.type);
   return false;
 }

@@ -1,5 +1,14 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.12 — 2026-07-26 (pending testing)
+
+- Removed "Menu" title from card 1.
+- Removed all-caps (`text-uppercase`) from every section title.
+- Reordered card 4 to Cart, Notes, Discount, Payment.
+- Bumped customer header logo max size from 40px to 50px.
+- Replaced "Empty" with "—" in the Cart section (both the initial HTML and the JS render fallback), same size/color.
+- Real bug: `SELECT` dropdowns were treated the same as text fields by the keyboard-hiding logic, hiding the action bar whenever a date dropdown was open - but a native select shows a picker, not a text keyboard, so there was never anything to work around there. Removed SELECT from the check.
+
 ## v1.0.11 — 2026-07-26 (pending testing)
 
 Renamed "Payment Method" to "Payment" to match the single-word title pattern of all other cards/sections.
