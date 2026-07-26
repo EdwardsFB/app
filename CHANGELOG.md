@@ -1,5 +1,9 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.14 — 2026-07-26 (pending testing)
+
+Real fix for the placeholder color from last round not actually taking effect: a leftover, pre-existing CSS rule (`#discountCodeInput::placeholder { color: #adb5bd; }`) that I didn't notice was still present further down the stylesheet, silently overriding the new rule since it came later in the cascade with equal specificity. Removed the old conflicting rule - only the correct one (#6c757d) remains now.
+
 ## v1.0.13 — 2026-07-26 (pending testing)
 
 - Standardized all form/button borders to one color (#ced4da) via a single comprehensive CSS rule, instead of scattered inline overrides - previously only the discount input/Apply button and radio-cards had it explicitly set, while everything else (qty field, other form fields, +/- buttons) used Bootstrap's own slightly different default.
