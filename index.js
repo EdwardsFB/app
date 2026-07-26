@@ -1,4 +1,4 @@
-// version: v1.0.23 | build: 2026-07-26T20:54:35Z
+// version: v1.0.25 | build: 2026-07-26T21:00:45Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -13,6 +13,14 @@ const VENMO_HANDLE = 'edwardsfamilybakery';
 // element is tapped, leaving buttons looking "stuck" pressed. A no-op touchstart
 // listener tricks iOS into handling touch state correctly instead.
 document.addEventListener('touchstart', function() {}, true);
+
+// The above didn't fully resolve it in testing, so also explicitly clear the
+// pressed/focus state the moment a tap ends, rather than relying on iOS to do it
+// reliably on its own.
+document.addEventListener('touchend', function(e) {
+  const el = e.target.closest('button, .btn, a');
+  if (el) setTimeout(() => el.blur(), 0);
+}, true);
 
 async function init() {
   // Fixes a known Bootstrap 5 quirk: closing a modal can leave focus on an element

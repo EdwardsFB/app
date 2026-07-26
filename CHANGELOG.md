@@ -1,5 +1,15 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.25 — 2026-07-26 (pending testing)
+
+- Added a 1px border-top to the footer (#dee2e6, a shade darker than the footer's own background), plus a subtle shadow on the footer's top edge and the page header's bottom edge.
+- Caught and fixed my own mistake mid-edit: an early version of this change accidentally deleted the form-floating label color rule instead of adding alongside it. Restored before shipping.
+
+## v1.0.24 — 2026-07-26 (pending testing)
+
+- The touchstart trick alone didn't fully resolve the sticky pressed-button state on iOS. Added a more direct fix alongside it: a touchend listener that explicitly blurs the tapped button/link the moment the tap ends, rather than relying on iOS to clear it reliably on its own. Applied to both the customer app and admin.
+- Lightened the footer's grey background (#e9ecef → #f1f2f3) - still a touch darker than the #fafafa page background, just less dark than before.
+
 ## v1.0.23 — 2026-07-26 (pending testing)
 
 Fixed product option checkbox still showing blue - it relies on Bootstrap's own default checked-state styling rather than picking up the `--bs-primary` variable override. Set it explicitly to teal instead of trusting that inheritance chain. Also did a full sweep of the customer view for any other remaining blue: confirmed no leftover hardcoded blue hex values anywhere, radio buttons are plain inputs already correctly handled via accent-color (not affected by this checkbox fix), and focus rings rely entirely on Bootstrap's own default styling using `--bs-primary-rgb`, which was already set correctly to teal's RGB values.

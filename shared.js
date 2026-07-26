@@ -1,4 +1,4 @@
-// version: v1.0.23 | build: 2026-07-26T20:54:35Z
+// version: v1.0.25 | build: 2026-07-26T21:00:45Z
 // ══════════════════════════════════════════
 // Edwards Family Bakery — Shared utilities
 // Used by both index.html (customer) and admin.html (admin)
