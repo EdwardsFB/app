@@ -1,5 +1,11 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.27 — 2026-07-26 (pending testing)
+
+- Real regression fix: the pointer-events toggle from last round was applied immediately on touchend, which happens *before* the browser's own synthetic click event that actually triggers onclick handlers - so it was blocking that click from ever reaching the button, breaking the qty +/- buttons' actual function while "fixing" the visual stuck state. Delayed the toggle until after the click has had time to fire and process. Applied to both apps.
+- Removed the shadows from the page header and footer.
+- Footer top border changed from 2px #dee2e6 to 1px #dddddd.
+
 ## v1.0.26 — 2026-07-26 (pending testing)
 
 - Real fix for the sticky pressed-button state, based directly on the user's own observation: the disabled qty minus button never sticks because `.btn-inert` uses `pointer-events:none`, so the browser never registers the tap as touching it at all - :active can't apply if the element never receives the event. Replaced the blur-based attempt with the same mechanism: briefly toggling `pointer-events:none` on any tapped button, then restoring it 50ms later, forcing the stuck state to clear without disabling the button for future taps. Applied to both apps.
