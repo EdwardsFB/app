@@ -1,5 +1,10 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.30 — 2026-07-26 (pending testing)
+
+- Footer border: #dddddd was already the current value, so changing to that wouldn't have done anything - used a genuinely darker shade instead (#cccccc).
+- Checked Bootstrap's actual disabled-button design per the linked docs: it doesn't switch to different colors at all - it keeps the same button color and just reduces overall opacity (default .65). Our disabled Place Order button was switching to unrelated light-gray colors instead. Replaced with the real Bootstrap approach: same teal, just faded via opacity, matching how their own blue buttons look when disabled.
+
 ## v1.0.29 — 2026-07-26 (pending testing)
 
 Cancel confirmation modal title changed from "Cancel this order?" to "Cancel Order?"
