@@ -1,4 +1,4 @@
-// version: v1.0 | build: 2026-07-26T01:12:49Z
+// version: v1.0.1 | build: 2026-07-26T14:35:19Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -1371,9 +1371,15 @@ async function copyOrderAddress(orderId, btnEl) {
   try {
     await navigator.clipboard.writeText(address);
     const icon = btnEl.querySelector('i');
-    const originalClass = icon.className;
+    const originalIconClass = icon.className;
     icon.className = 'bi bi-check-lg';
-    setTimeout(() => { icon.className = originalClass; }, 1200);
+    btnEl.classList.remove('btn-outline-secondary');
+    btnEl.classList.add('btn-outline-success');
+    setTimeout(() => {
+      icon.className = originalIconClass;
+      btnEl.classList.remove('btn-outline-success');
+      btnEl.classList.add('btn-outline-secondary');
+    }, 1200);
   } catch (err) {
     showToast('Could not copy to clipboard — your browser may be blocking it.', 'bg-danger');
   }

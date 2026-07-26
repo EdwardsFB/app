@@ -1,5 +1,14 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.1 — 2026-07-26 (pending testing)
+
+First round of tweaks after the official v1.0. Real bug fix plus three UI refinements:
+
+- **Real bug:** clicking any radio button (Pickup/Delivery, Venmo/Cash) as the very first action on the customer ordering page could permanently hide the bottom action bar. The keyboard-hide logic checked an element's tag name (`INPUT`), but radio buttons share that tag with text fields despite never opening a keyboard — so clicking one triggered the same "hide the bar, keyboard is opening" logic as typing, with no reliable way to bring it back since nothing else ever properly triggered the matching restore. Fixed by checking the actual input type, not just the tag name - affected all 5 radio inputs in the customer app, not just Venmo.
+- Product name and price on menu cards bumped up to match form-field text size; description size left as-is.
+- Pickup/Delivery and Venmo/Cash radio groups now shrink to fit their content instead of stretching full width, with both options in each pair sized to match the longer one.
+- Copy-address button on the Fulfillment screen now turns green (border and checkmark) on successful copy, reverting after the confirmation window closes.
+
 ## v1.0 — Official Release (2026-07-26)
 
 The complete, hardened v1.0 release. Built starting July 18, 2026: full customer ordering flow, full admin system (Production, Fulfillment, Orders, Customers, Products, Settings), Google Sheets/Apps Script backend, extensive iOS-specific fixes, permanent order numbering, order-source tracking, a delivery-route workflow, and dozens of real bugs found and fixed along the way (many through direct verification rather than assumption). A final hardening pass confirmed: all HTML structurally sound, all element references intact, no dead code beyond what's intentionally kept for future reference, all data fields consistent end to end, and the Apps Script backend fully verified.

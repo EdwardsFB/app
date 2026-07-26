@@ -1,4 +1,4 @@
-// version: v1.0 | build: 2026-07-26T01:12:49Z
+// version: v1.0.1 | build: 2026-07-26T14:35:19Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -164,7 +164,7 @@ function renderProducts() {
       <div class="card h-100">
         <img src="${p.photo || PLACEHOLDER_PHOTO_URI}" class="card-img-top product-card-img" alt="${esc(p.name)}">
         <div class="card-body p-2 d-flex flex-column">
-          <div class="fw-bold small">${esc(p.name)}</div>
+          <div class="fw-bold">${esc(p.name)}</div>
           ${p.desc ? `<div class="text-muted" style="font-size:0.75rem;">${esc(p.desc)}</div>` : ''}
           <div class="pt-2">
             <div class="input-group input-group-sm mb-1">
@@ -172,7 +172,7 @@ function renderProducts() {
               <span class="form-control text-center px-0" id="qty-${p.id}">0</span>
               <button class="btn btn-outline-secondary" style="border-color:#ced4da;" type="button" onclick="changeQty('${p.id}', 1)"><i class="bi bi-plus"></i></button>
             </div>
-            <div class="small fw-bold mt-3">$${Number(p.price).toFixed(2)} <span class="text-muted fw-normal">${esc(p.unit||'')}</span></div>
+            <div class="fw-bold mt-3">$${Number(p.price).toFixed(2)} <span class="text-muted fw-normal">${esc(p.unit||'')}</span></div>
             ${optionsWrapHtml}
           </div>
         </div>
@@ -468,16 +468,25 @@ function correctViewportOffset() {
 // (dynamic browser chrome, etc.), which made the bar flicker back into view
 // mid-swipe instead of staying reliably hidden. Focus state doesn't have that
 // problem - it's a plain yes/no that only changes when focus actually moves.
+// Only text-entry inputs actually bring up the keyboard - radio buttons and
+// checkboxes share the INPUT tagName with text fields, but never open a keyboard,
+// so treating them the same incorrectly hid the action bar with no reliable way
+// to bring it back (nothing else reliably triggers the matching focusout).
+function opensKeyboard(el) {
+  if (!el) return false;
+  if (el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') return true;
+  if (el.tagName === 'INPUT') return !['radio','checkbox'].includes(el.type);
+  return false;
+}
 document.getElementById('wizardScreen').addEventListener('focusin', (e) => {
-  if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) {
+  if (opensKeyboard(e.target)) {
     document.getElementById('actionBar').classList.add('d-none');
   }
 });
 document.getElementById('wizardScreen').addEventListener('focusout', () => {
   setTimeout(() => {
     const active = document.activeElement;
-    const stillEditing = active && ['INPUT','TEXTAREA','SELECT'].includes(active.tagName);
-    if (stillEditing) return;
+    if (opensKeyboard(active)) return;
     correctViewportOffset();
     const stillLoading = !document.getElementById('loading').classList.contains('d-none');
     const onConfirmScreen = !document.getElementById('confirmScreen').classList.contains('d-none');
