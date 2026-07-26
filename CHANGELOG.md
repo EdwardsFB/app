@@ -1,5 +1,20 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.11 — 2026-07-26 (pending testing)
+
+Renamed "Payment Method" to "Payment" to match the single-word title pattern of all other cards/sections.
+
+## v1.0.10 — 2026-07-26 (pending testing)
+
+Major customer-page restructuring:
+
+- Welcome paragraph hidden (not removed) - `d-none` added, kept in the code to bring back later on request.
+- Fixed space-above-first-card vs space-between-cards mismatch: the container's top padding (1.5rem) and the card spacing class's margin (previously 2rem, a leftover from the earlier 2-step wizard) now both match at 1.5rem.
+- Split the single checkout card into four separate cards: Menu (new title added), Contact, Fulfillment (renamed from "Pickup or Delivery?"), and a fourth card containing Cart, Discount (renamed from "Discount Code"), Payment Method, and Notes together.
+- All section titles bumped to 18px via a new shared `.section-title` class, replacing the smaller Bootstrap `.h6` sizing.
+
+Note: Payment Method wasn't explicitly mentioned in the requested 4-card breakdown - included it in card 4 alongside Cart/Discount/Notes as the most logical grouping, flagged for confirmation.
+
 ## v1.0.9 — 2026-07-26 (pending testing)
 
 - Delivery Date now appears before the address fields when Delivery is selected.

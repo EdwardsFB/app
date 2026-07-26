@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- version: v1.0.9 | build: 2026-07-26T18:51:07Z -->
+<!-- version: v1.0.11 | build: 2026-07-26T19:14:49Z -->
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -33,7 +33,8 @@
   .btn-inert { pointer-events: none; opacity: 1 !important; }
   .btn-outline-secondary.btn-inert { background-color: transparent !important; border-color: #ced4da !important; color: #adb5bd !important; }
   .btn-primary.btn-inert { background-color: #e9ecef !important; border-color: #dee2e6 !important; color: #adb5bd !important; }
-  .wizard-step { margin-bottom: 2rem; scroll-margin-top: var(--step-landing-offset, 96px); }
+  .wizard-step { margin-bottom: 1.5rem; scroll-margin-top: var(--step-landing-offset, 96px); }
+  .section-title { font-size: 18px; }
   .header-icon { color: #fff; font-size: 1.15rem; }
   #actionBar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1030; background: #fff; border-top: 1px solid #dee2e6; padding: .6rem 1rem calc(.6rem + env(safe-area-inset-bottom, 0px)); }
   #confirmFooter { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1030; text-align: center; padding: .6rem 1rem calc(.6rem + env(safe-area-inset-bottom, 0px)); }
@@ -76,11 +77,12 @@
     <!-- WIZARD -->
     <div id="wizardScreen">
 
-      <p class="text-start text-muted mb-4">Welcome! We offer fresh-milled bread and other homemade goods, baked weekly.</p>
+      <p class="text-start text-muted mb-4 d-none">Welcome! We offer fresh-milled bread and other homemade goods, baked weekly.</p>
 
       <div id="step1" class="wizard-step">
         <div class="card shadow-sm">
           <div class="card-body">
+            <h3 class="section-title text-uppercase text-muted mb-3">Menu</h3>
             <div id="productsList" class="row row-cols-2 row-cols-md-3 g-3"></div>
           </div>
         </div>
@@ -90,7 +92,7 @@
         <div class="card shadow-sm">
           <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <h3 class="h6 text-uppercase text-muted mb-0">Contact</h3>
+              <h3 class="section-title text-uppercase text-muted mb-0">Contact</h3>
               <span id="phoneMatchMsg" class="small text-success"></span>
             </div>
             <div class="form-floating mb-2">
@@ -105,9 +107,13 @@
               <div class="col form-floating"><input id="cf-email" name="fld-e5" class="form-control" type="email" autocomplete="off" placeholder="Email" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-email">Email</label></div>
             </div>
           </div>
+        </div>
+      </div>
 
-          <div class="card-body border-top">
-            <h3 class="h6 text-uppercase text-muted mb-3">Pickup or Delivery? <span class="text-danger">*</span></h3>
+      <div id="step3" class="wizard-step">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h3 class="section-title text-uppercase text-muted mb-3">Fulfillment <span class="text-danger">*</span></h3>
             <div class="d-inline-flex" style="border:1px solid #ced4da; border-radius:.375rem;">
               <label class="radio-card" for="rad-pickup">
                 <input type="radio" name="fulfillment" id="rad-pickup" onclick="setFulfillment('pickup')">
@@ -132,14 +138,18 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          <div class="card-body border-top">
-            <h3 class="h6 text-uppercase text-muted mb-3">Cart</h3>
+      <div id="step4" class="wizard-step">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h3 class="section-title text-uppercase text-muted mb-3">Cart</h3>
             <div id="reviewItems"><div class="small text-muted">Empty</div></div>
           </div>
 
           <div class="card-body border-top">
-            <h3 class="h6 text-uppercase text-muted mb-3">Discount Code</h3>
+            <h3 class="section-title text-uppercase text-muted mb-3">Discount</h3>
             <div class="input-group">
               <input id="discountCodeInput" type="text" class="form-control" style="border-color:#ced4da;" placeholder="Enter code" oninput="this.value = this.value.toUpperCase(); document.getElementById('discountApplyBtn').classList.toggle('btn-inert', !this.value);">
               <button id="discountApplyBtn" class="btn btn-outline-secondary btn-inert" style="border-color:#ced4da;" type="button" onclick="applyDiscountCode()">Apply</button>
@@ -148,7 +158,7 @@
           </div>
 
           <div class="card-body border-top">
-            <h3 class="h6 text-uppercase text-muted mb-3">Payment Method <span class="text-danger">*</span></h3>
+            <h3 class="section-title text-uppercase text-muted mb-3">Payment <span class="text-danger">*</span></h3>
             <div class="d-inline-flex" style="border:1px solid #ced4da; border-radius:.375rem;">
               <label class="radio-card" for="pay-venmo">
                 <input type="radio" name="paymentMethod" id="pay-venmo" onclick="setPaymentMethod('venmo')">
@@ -163,7 +173,7 @@
           </div>
 
           <div class="card-body border-top">
-            <h3 class="h6 text-uppercase text-muted mb-3">Notes</h3>
+            <h3 class="section-title text-uppercase text-muted mb-3">Notes</h3>
             <div class="row g-2"><div class="col form-floating">
               <textarea id="cf-notes" class="form-control" style="height:80px;" placeholder="Special Instructions"></textarea>
               <label for="cf-notes">Special Instructions</label>
@@ -244,8 +254,8 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="shared.js?v=80"></script>
-<script src="index.js?v=80"></script>
+<script src="shared.js?v=82"></script>
+<script src="index.js?v=82"></script>
 <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080;" id="toastContainer"></div>
 
 </body>
