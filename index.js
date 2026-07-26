@@ -1,4 +1,4 @@
-// version: v1.0.3 | build: 2026-07-26T14:50:23Z
+// version: v1.0.4 | build: 2026-07-26T15:03:00Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -166,7 +166,7 @@ function renderProducts() {
         <div class="card-body p-2 d-flex flex-column">
           <div class="fw-bold">${esc(p.name)}</div>
           ${p.desc ? `<div class="text-muted" style="font-size:0.75rem;">${esc(p.desc)}</div>` : ''}
-          <div class="pt-2 mt-auto">
+          <div class="pt-2">
             <div class="input-group input-group-sm mb-1">
               <button class="btn btn-outline-secondary btn-inert" style="border-color:#ced4da;" type="button" id="qty-minus-${p.id}" onclick="changeQty('${p.id}', -1)"><i class="bi bi-dash"></i></button>
               <span class="form-control text-center px-0" id="qty-${p.id}">0</span>
@@ -384,8 +384,16 @@ function validateOrder() {
 // SUBMIT
 // ══════════════════════════════════════════
 
-async function submitOrder() {
+// Sets step2Error's text and toggles its top margin dynamically - only adds space
+// above it when there's actually a message showing, so it contributes zero space
+// when empty (matching fulfillmentDetailsField's zero contribution when hidden).
+function setStep2Error(msg) {
   const errEl = document.getElementById('step2Error');
+  errEl.textContent = msg;
+  errEl.classList.toggle('mt-2', !!msg);
+}
+
+async function submitOrder() {
   const submitBtn = document.getElementById('actionBarBtn');
   try {
     const first = document.getElementById('cf-first').value.trim();
@@ -400,7 +408,7 @@ async function submitOrder() {
     const notes = document.getElementById('cf-notes').value.trim();
     const items = products.filter(p => (cQty[p.id]||0) > 0).map(p => ({ productId: p.id, qty: cQty[p.id], selectedOptions: getSelectedOptionsFor(p.id) }));
 
-    if (!paymentMethod) { errEl.textContent = 'Please choose how you\'ll pay.'; return; }
+    if (!paymentMethod) { setStep2Error("Please choose how you'll pay."); return; }
 
     const { orderData, error } = buildOrderData({
       first, last, phone, items, fulfillment: currentFulfillment,
@@ -409,8 +417,8 @@ async function submitOrder() {
       discountPct: appliedDiscountPct,
       products
     });
-    if (error) { errEl.textContent = error; return; }
-    errEl.textContent = '';
+    if (error) { setStep2Error(error); return; }
+    setStep2Error('');
 
     submitBtn.classList.add('btn-inert');
     submitBtn.textContent = 'Placing order...';
@@ -439,7 +447,7 @@ async function submitOrder() {
     document.getElementById('confirmFooter').classList.remove('d-none');
     document.getElementById('confirmScreen').scrollIntoView({ block: 'start' });
   } catch (err) {
-    errEl.textContent = 'Something went wrong placing your order: ' + err.message + '. Please try again, or let us know if this keeps happening.';
+    setStep2Error('Something went wrong placing your order: ' + err.message + '. Please try again, or let us know if this keeps happening.');
     if (submitBtn) { submitBtn.classList.remove('btn-inert'); submitBtn.textContent = 'Place Order'; }
   }
 }

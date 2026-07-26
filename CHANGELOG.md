@@ -1,5 +1,11 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.4 — 2026-07-26 (pending testing)
+
+- Radio card padding: reverted vertical back to .6rem, kept only horizontal doubled (1.5rem) as originally requested.
+- Found the actual remaining spacing mismatch: `step2Error` (below Venmo/Cash) had a static `mt-2` class that added margin even when empty, unlike `fulfillmentDetailsField` (below Pickup/Delivery) which is `d-none` and contributes zero space until something's selected. Fixed by adding the margin dynamically only when there's an actual message to show, via a new `setStep2Error()` helper - both sections now contribute zero space when there's nothing to display.
+- Reverted the product card qty/price `mt-auto` change from last round back to the original layout, per request to rethink it separately.
+
 ## v1.0.3 — 2026-07-26 (pending testing)
 
 - Doubled radio card padding (1.2rem 1.5rem, up from .6rem .75rem) and widened the fixed card size accordingly (155px, up from 130px) to preserve breathing room.
