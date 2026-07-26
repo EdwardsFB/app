@@ -1,70 +1,80 @@
 # Edwards Family Bakery — Changelog
 
-## v1.0.30 — 2026-07-25 (pending testing)
+## v1.0 — Official Release (2026-07-26)
+
+The complete, hardened v1.0 release. Built starting July 18, 2026: full customer ordering flow, full admin system (Production, Fulfillment, Orders, Customers, Products, Settings), Google Sheets/Apps Script backend, extensive iOS-specific fixes, permanent order numbering, order-source tracking, a delivery-route workflow, and dozens of real bugs found and fixed along the way (many through direct verification rather than assumption). A final hardening pass confirmed: all HTML structurally sound, all element references intact, no dead code beyond what's intentionally kept for future reference, all data fields consistent end to end, and the Apps Script backend fully verified.
+
+The detailed round-by-round history below is kept as a record of what changed and why, in case anything ever needs to be traced back — but as of this release, all of it is folded into a single, official v1.0.
+
+---
+
+## Development history
+
+### Round 30 — 2026-07-25
 
 - Removed the "Copy Addresses" button and "Set Delivery Route" button - the route modal itself stays in the code for now, but there's no way to launch it going forward.
 - New copy icon next to each delivery address on the Fulfillment screen - copies that one address to the clipboard, for manually pasting into Apple Maps as an "Add Stop" one at a time (Apple Maps has no bulk-paste, so this supports building a multi-stop route stop by stop: copy address, switch to Apple Maps, paste as a stop, come back, copy the next one, repeat).
 
-## v1.0.29 — 2026-07-25 (pending testing)
+### Round 29 — 2026-07-25
 
 Added a "Copy Addresses" button to the delivery route modal - copies all stops, one per line, in the current route order, ready to paste into a dedicated route-planning tool (RouteXL, MapQuest, etc.) as a workaround for Google Maps' unreliable multi-stop link handling. Researched whether Apple Maps could be pasted into directly instead - confirmed across multiple sources that Apple Maps has no bulk-paste or bulk-import feature at all, even though it supports multi-stop routes (up to 15) - every stop has to be added manually one at a time, so this doesn't help for Apple Maps specifically.
 
-## v1.0.28 — 2026-07-25 (pending testing)
+### Round 28 — 2026-07-25
 
 Real breakthrough on the Google Maps "can't find that place" issue. Confirmed via direct testing that deleting the final stop made the remaining route work perfectly - not about any specific address, and not about total stop count, but specifically about the conversion step failing once one more stop is added. Google's own multi-stop links actually use a path-based URL format (addresses as separate path segments, e.g. `/dir/stop1/stop2/stop3`), not the `?destination=&waypoints=` query-parameter style we were generating - that style requires Google to internally convert it to the path format, and that conversion is where this was breaking down. Switched to generating the path-based format directly, bypassing the unreliable conversion step entirely. Needs a real multi-stop test to confirm.
 
-## v1.0.27 — 2026-07-25 (pending testing, unconfirmed fix)
+### Round 27 — 2026-07-25
 
 Investigated "can't find that place" errors on the Google Maps route link, seen on two different, completely valid addresses (both confirmed real via Apple Maps and direct Google search) - both times specifically as the *last* stop, while earlier stops passed as waypoints resolved fine. That consistent pattern (not tied to any specific address) points to the `destination` parameter itself, not bad data. Added an explicit `origin=Current+Location` parameter, matching Google's own documented URL format, which was previously omitted entirely. This is a reasoned attempt based on the pattern observed, not a confirmed fix - needs real-world testing with an actual multi-stop delivery route.
 
-## v1.0.26 — 2026-07-25 (pending testing)
+### Round 26 — 2026-07-25
 
 Fixed a harmless but real Bootstrap console warning (aria-hidden/focus conflict on modal close) app-wide, in both admin and the customer app, with a single shared fix rather than patching one modal at a time. Investigated a "can't find that place" Google Maps error for a real address (confirmed valid via Apple Maps) - likely a gap in Google's own geocoding data for a newer address, not a bug in how the app builds the route link; awaiting a direct Google Maps test to confirm.
 
-## v1.0.25 — 2026-07-25 (pending testing)
+### Round 25 — 2026-07-25
 
 Edit Product modal title now shows the product's ID (e.g., "Edit Product — p05"), matching the same pattern already used for Order # in the Edit Order modal.
 
-## v1.0.24 — 2026-07-25 (pending testing)
+### Round 24 — 2026-07-25
 
 Real bug: rapid clicks on the Products table's reorder arrows fired an unthrottled backend save on every single click, with no guard against overlapping requests - if two saves arrived at the server out of order, an earlier click's now-stale snapshot could overwrite a later click's more correct one. This matches exactly what was reported: two products near the end of the list ending up swapped after quick successive reordering. Debounced the save the same way `madeItems` already was, so rapid clicking collapses into one final save with the correct order. The two currently-swapped products (Honey Butter / Hamburger Buns) will need to be reordered once more after this update to actually correct their saved position - this fix prevents it from happening again, it doesn't retroactively fix what's already saved wrong.
 
-## v1.0.23 — 2026-07-25 (pending testing)
+### Round 23 — 2026-07-25
 
 - Removed the Date column from the Orders table.
 - Edit Order modal title now shows the order number (e.g., "Edit Order #208").
 - Checked the option-checkbox population logic for the Edit Order modal after a reported mismatch (Sliced showing unchecked) - the code correctly reads saved selectedOptions and marks matching checkboxes, so this needs the actual saved data confirmed before treating it as a bug rather than expected unselected test data.
 
-## v1.0.22 — 2026-07-25 (pending testing)
+### Round 22 — 2026-07-25
 
 Found the actual cause of the missing ZZTest icon, after ruling out data, the icon function, and stale rendering one by one via direct console testing: the correct HTML (`<i class="bi bi-flask">`) was genuinely present in the page, but wasn't rendering visually, while every other icon in the same font displayed fine right next to it. Bootstrap's own icon documentation shows `bi-flask` used as an `<svg>` element rather than the icon-font `<i>` pattern used everywhere else in this app, suggesting this specific glyph doesn't work the same way in the font version being used. Swapped to `bi-bug`, a long-established icon in the same font, which should behave the same as every other icon already working correctly.
 
-## v1.0.21 — 2026-07-25 (pending testing)
+### Round 21 — 2026-07-25
 
 Real bug: `admin.html` never had cache-busting on its `shared.js`/`admin.js` script tags, unlike `index.html` which has had it all along. That means browsers could keep serving an old, cached copy of admin's JavaScript indefinitely, even after real updates were deployed - which is almost certainly why the ZZTest flask icon wasn't showing despite the Sheet data being completely correct. Added the same versioned cache-busting to admin.html that index.html already had, synced to the same version number going forward.
 
-## v1.0.20 — 2026-07-25 (pending testing)
+### Round 20 — 2026-07-25
 
 - Admin-manual icon changed to a clipboard-check.
 - ZZTest orders not showing an icon: confirmed the flask icon already exists and is correctly wired for `source: 'test'`, and the current test tool file correctly sets it - likely cause is an older, previously-downloaded copy of the tool being used. Providing a fresh copy to confirm.
 
-## v1.0.19 — 2026-07-25 (pending testing)
+### Round 19 — 2026-07-25
 
 - Fixed icon vertical alignment in the Orders table's Type column - added explicit `vertical-align: middle` to icon elements themselves, since the cell's own centering alone didn't account for different icons having slightly different internal positioning within their glyph.
 - Admin-manual icon changed from a pencil to a person-badge, to visually distinguish it more clearly from the customer icon.
 
-## v1.0.18 — 2026-07-25 (pending testing)
+### Round 18 — 2026-07-25
 
 - Real bug: the date-sort fix applied to the Fulfillment tab's Pickup/Delivery sections in v1.0.11 was never applied to the Production tab, which has its own separate, differently-scoped `pickups`/`deliveries` variables. Fixed - both tabs now sort consistently, soonest date first, including when viewing "All" dates on Production.
 - Added Order # to the View Receipt / order detail modal.
 
-## v1.0.17 — 2026-07-25 (pending testing)
+### Round 17 — 2026-07-25
 
 - **Real bug fixed (Apps Script):** production tracking ("made" checkboxes) could silently fail to save for any order that started with no `madeItems` data. The backend defaulted a blank cell to an empty array, but the frontend always expected an object - since an empty array is truthy in JavaScript, the frontend's own `|| {}` fallback never kicked in, and `JSON.stringify` silently drops non-numeric properties set on an array. The result: checking off items looked like it worked, but saved as `"[]"`, losing the actual data. Fixed the default, and also normalized any order that already has the literal `"[]"` stored from hitting this bug in the past.
 - Rechecked both ZZTest tools (generator and cleanup) against the recent orderNumber/source changes - both were already fully compatible, no changes needed.
 - Old-tracker source icon changed from an archive box to an import-style icon (arrow into a box), better representing "this was imported" rather than "this is archived."
 
-## v1.0.16 — 2026-07-25 (pending testing + one-time migration)
+### Round 16 — 2026-07-25
 
 Order numbers are now permanent and stored, not recalculated live. Previously, an order's displayed number was its live chronological position - meaning deleting any order would silently shift every later order's number. Now, each order gets a permanent number assigned once at creation (server-side, avoiding race conditions between simultaneous orders) and never recalculated, so a reference like "order #193" stays accurate forever, matching how real invoice numbering works.
 
@@ -72,43 +82,43 @@ Requires a one-time setup: add an `orderNumber` column to the Orders sheet, then
 
 Also added a fourth source icon (an archive box) for old-tracker-migrated orders, which previously showed no icon at all. (Also covers spacing/UI tweaks from v1.0.13-15 not separately logged here.)
 
-## v1.0.12 — 2026-07-25 (pending testing)
+### Round 12 — 2026-07-25
 
 Surfaced the `source` field flagged as unused in the last audit. The Orders table's Type column now shows a second small icon next to the fulfillment icon (truck/cart), indicating how the order was created: a person icon for customer-placed, a pencil for manually entered in admin, and a flask for ZZTest tool orders. Older orders saved before this field existed show no icon rather than a guess.
 
-## v1.0.11 — 2026-07-25 (pending testing)
+### Round 11 — 2026-07-25
 
 - Pickup and Delivery cards on the Fulfillment tab now sort by date, soonest first (previously unsorted). Delivery route order still respects any manually-set route once you've used "Set Delivery Route" - date sorting only determines the initial/default order.
 - Full write-vs-read data flow audit across the whole app, prompted by the `sortOrder` bug - traced every meaningful field to check for the same "written but never consumed" pattern, plus checked for status-value casing mismatches between files. One minor finding: orders are tagged with a `source` field (customer vs admin-entered) that's correctly saved but never displayed anywhere - not broken, just currently unused; flagged as a decision, not fixed unprompted.
 
-## v1.0.10 — 2026-07-25 (pending testing)
+### Round 10 — 2026-07-25
 
 Real, significant bug: reordering products saved `sortOrder` to the backend correctly, but nothing anywhere - not the customer menu, not even admin's own product list on a fresh load - actually sorted by it. The reorder only appeared to work within the same admin session because the in-memory list was mutated directly; a fresh load anywhere just showed raw backend order. Added a shared sort-by-`sortOrder` step applied at every point products get loaded, in both the customer app and admin, so the saved order now actually takes effect everywhere. If you don't already have a `sortOrder` column on your Products sheet, you'll need to add one for this to persist correctly, matching the pattern from earlier tonight.
 
-## v1.0.9 — 2026-07-25 (pending testing)
+### Round 9 — 2026-07-25
 
 Audited every modal in the app for the same swipe-bleed-through risk fixed in v1.0.8 for the route modal, instead of just the one reported instance. Applied `modal-dialog-scrollable` consistently to every modal with variable or potentially-long content: Product, Customer, Merge Customers, and Customer Detail/Receipt (`orderModal` and the route modal already had it). Left the two simple "Are you sure?" confirmation dialogs alone, since their content is short and fixed and will never actually overflow.
 
-## v1.0.8 — 2026-07-25 (pending testing)
+### Round 8 — 2026-07-25
 
 - Fixed the delivery route modal letting swipe gestures bleed through to the page behind it - added Bootstrap's `modal-dialog-scrollable`, which was missing.
 - Reorder buttons (route modal and Products table) now use Bootstrap's actual button-group component with the "justified" pattern from their docs, instead of a custom flex container.
 - Test order generator (`Generate_Test_Orders.html`, not part of the deployed site) now uses real addresses borrowed from actual existing customers instead of a hardcoded fake list, and delivery test orders default to "Ready" status most of the time - so a batch of generated orders is immediately useful for testing the Google Maps route feature. Also audited against the current order data structure - no other gaps found.
 
-## v1.0.7 — 2026-07-25 (pending testing)
+### Round 7 — 2026-07-25
 
 Fixed a misread of the original request: v1.0.4 changed the button layout from side-by-side to stacked, which was never asked for - the ask was only to fix how the edge-row single button looked, not to change the middle-row layout. Reverted to side-by-side for normal rows; the edge-row single button now spans the combined width (not height) of both buttons, at normal size.
 
-## v1.0.6 — 2026-07-25 (pending testing)
+### Round 6 — 2026-07-25
 
 - "This cannot be undone" now on its own line in the order delete confirmation.
 - Switched the confirm modal to support line breaks, which meant escaping customer/product names in the other two delete confirmations that reuse it, to stay safe from special characters.
 
-## v1.0.5 — 2026-07-25 (pending testing)
+### Round 5 — 2026-07-25
 
 Real bug fix: the "Delete Order #221?" confirmation text added in v1.0.1 was showing "Delete Order #undefined?" instead. Order numbers were never a stored property on the order itself (`o.number` doesn't exist) - they're computed on the fly from creation order via a helper function. Fixed to use that existing helper (`getOrderNumber`) instead.
 
-## v1.0.4 — 2026-07-25 (pending testing)
+### Round 4 — 2026-07-25
 
 Delivery route modal polish, following confirmation that the v1.0.3 up/down arrows work correctly on iPhone.
 
@@ -117,7 +127,7 @@ Delivery route modal polish, following confirmation that the v1.0.3 up/down arro
 - Edge rows (first/last) now show a single arrow button spanning the full space, instead of one active button next to a visually disabled one.
 - Same edge-row button treatment applied to the Products table for consistency.
 
-## v1.0.3 — 2026-07-25 (pending testing)
+### Round 3 — 2026-07-25
 
 Replaced HTML5 drag-and-drop with up/down arrow buttons in both places it was used, after confirming native drag doesn't fire from finger touch on iOS Safari (it only works via a Bluetooth mouse, trackpad, or Apple Pencil) - a real reliability problem given both features are meant to be used on a phone, often on the go.
 
@@ -125,7 +135,7 @@ Replaced HTML5 drag-and-drop with up/down arrow buttons in both places it was us
 - Delivery route ordering (new in v1.0.2): drag handles → up/down arrow buttons.
 - Removed all now-dead drag-related code (`onProductDrag*`, `onRouteDrag*`, `dragProductId`, `dragRouteId`, `.drag-handle` CSS).
 
-## v1.0.2 — 2026-07-25
+### Round 2 — 2026-07-25
 
 Finished the delivery route feature flagged as half-built in v1.0.1's audit.
 
@@ -134,7 +144,7 @@ Finished the delivery route feature flagged as half-built in v1.0.1's audit.
 - "Open Route in Google Maps" now lives inside that modal, launching with stops in whatever order was just set.
 - Removed `moveRoute()` (the old, never-wired-up up/down reorder logic) in favor of the new drag-based approach.
 
-## v1.0.1 — 2026-07-25
+### Round 1 — 2026-07-25
 
 Code hardening pass — no user-facing feature changes, just cleanup and consistency fixes found during a full audit.
 
@@ -145,7 +155,7 @@ Code hardening pass — no user-facing feature changes, just cleanup and consist
 - **Found but not fixed — needs a decision:** `moveRoute()` in admin.js (delivery route reordering) is fully implemented but has no button wired to it anywhere in the UI. Right now deliveries render in whatever order they were first added, with no way to manually reorder them for an efficient route. Worth deciding whether to finish this (add up/down buttons) or remove the unused logic.
 - Verified clean: no missing closing tags, no unused CSS classes elsewhere, no orphaned functions elsewhere, no leftover diagnostic comments, all button/spacing patterns for Edit/Delete pairs and card sections are consistent, all logo sizes are contextually appropriate.
 
-## v1.0 — 2026-07-25
+### Round 0 (Initial build) — 2026-07-25
 
 
 First complete release. Full admin + customer ordering system, ready for real use.
