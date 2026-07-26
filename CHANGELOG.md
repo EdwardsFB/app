@@ -1,5 +1,9 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.2 — 2026-07-26 (pending testing)
+
+Fixed radio card padding - the fixed width set in v1.0.1 (105px) was too narrow once Bootstrap's border-box sizing was factored in, squeezing the content ("Delivery" + icon) against the edges with no visible padding left over. Widened to 130px.
+
 ## v1.0.1 — 2026-07-26 (pending testing)
 
 First round of tweaks after the official v1.0. Real bug fix plus three UI refinements:
