@@ -1,5 +1,10 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.8 — 2026-07-26 (pending testing)
+
+- Removed `input-group-sm` from the qty control on product cards - was shrinking the qty number, +/- buttons, and icons together via Bootstrap's small-size variant. Now regular size, matching form-field text.
+- Extended the copy-address button's green/checkmark confirmation from 1.2s to 3s before reverting to default.
+
 ## v1.0.7 — 2026-07-26 (pending testing)
 
 The action bar's keyboard-hiding behavior now only applies on touch devices (iOS/Android) - on desktop, clicking into a text field no longer hides the footer, since there's no on-screen keyboard to work around there in the first place. Detected via the device's primary pointer type (`pointer: coarse` = touch, `pointer: fine` = mouse/trackpad) rather than sniffing the user-agent string, so a touchscreen laptop with a mouse/trackpad still correctly behaves like desktop.

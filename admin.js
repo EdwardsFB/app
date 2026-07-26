@@ -1,4 +1,4 @@
-// version: v1.0.7 | build: 2026-07-26T18:29:05Z
+// version: v1.0.8 | build: 2026-07-26T18:42:18Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -1379,7 +1379,7 @@ async function copyOrderAddress(orderId, btnEl) {
       icon.className = originalIconClass;
       btnEl.classList.remove('btn-outline-success');
       btnEl.classList.add('btn-outline-secondary');
-    }, 1200);
+    }, 3000);
   } catch (err) {
     showToast('Could not copy to clipboard — your browser may be blocking it.', 'bg-danger');
   }
