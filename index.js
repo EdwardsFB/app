@@ -1,4 +1,4 @@
-// version: v1.0.4 | build: 2026-07-26T15:03:00Z
+// version: v1.0.5 | build: 2026-07-26T15:59:06Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -265,6 +265,7 @@ function populateDateOptions(type) {
 function setFulfillment(type) {
   currentFulfillment = type;
   document.getElementById('fulfillmentDetailsField').classList.remove('d-none');
+  document.getElementById('fulfillmentDetailsField').classList.add('mt-3');
   document.getElementById('addressField').classList.toggle('d-none', type !== 'delivery');
   document.getElementById('cf-date-label').innerHTML = (type === 'delivery' ? 'Delivery Date' : 'Pickup Date') + ' <span class="text-danger">*</span>';
   populateDateOptions(type);

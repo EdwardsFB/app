@@ -1,5 +1,9 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.5 — 2026-07-26 (pending testing)
+
+Fixed a regression from v1.0.4: removing the static margin below Pickup/Delivery fixed the "empty" state to match Venmo/Cash correctly, but also removed spacing needed when the address/date fields actually become visible after selecting Pickup or Delivery - they were butting directly against the radio cards with no gap. Added the margin dynamically in `setFulfillment()`, present only while those fields are actually shown, mirroring the same conditional approach already used for `step2Error`.
+
 ## v1.0.4 — 2026-07-26 (pending testing)
 
 - Radio card padding: reverted vertical back to .6rem, kept only horizontal doubled (1.5rem) as originally requested.
