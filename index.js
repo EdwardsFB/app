@@ -1,4 +1,4 @@
-// version: v1.0.12 | build: 2026-07-26T19:28:05Z
+// version: v1.0.13 | build: 2026-07-26T19:42:57Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -332,7 +332,7 @@ function renderReview() {
       html += `<div class="d-flex justify-content-between small"><span>${qty}× ${esc(p.name)}${optionsLabel}</span><span>$${sub.toFixed(2)}</span></div>`;
     }
   });
-  document.getElementById('reviewItems').innerHTML = html || '<div class="small text-muted">—</div>';
+  document.getElementById('reviewItems').innerHTML = html || '<div class="small" style="color:#6c757d;">—</div>';
 }
 
 // ══════════════════════════════════════════

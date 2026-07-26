@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- version: v1.0.12 | build: 2026-07-26T19:28:05Z -->
+<!-- version: v1.0.13 | build: 2026-07-26T19:42:57Z -->
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -12,6 +12,7 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <style>
   .form-floating > label { color: #6c757d !important; }
+  #discountCodeInput::placeholder { color: #6c757d; }
   .form-floating > .form-control.has-value ~ label { transform: scale(.85) translateY(-.5rem) translateX(.15rem); }
   button, .btn { touch-action: manipulation; }
   #logoImg { max-height: 50px; }
@@ -39,12 +40,13 @@
   #actionBar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1030; background: #fff; border-top: 1px solid #dee2e6; padding: .6rem 1rem calc(.6rem + env(safe-area-inset-bottom, 0px)); }
   #confirmFooter { position: fixed; bottom: 0; left: 0; right: 0; z-index: 1030; text-align: center; padding: .6rem 1rem calc(.6rem + env(safe-area-inset-bottom, 0px)); }
   body { background-color: #fafafa; }
-  .radio-card { display: flex; align-items: center; justify-content: center; gap: .5rem; cursor: pointer; flex: 0 0 auto; width: 155px; padding: .6rem 1.5rem; }
+  .radio-card { display: flex; align-items: center; justify-content: center; gap: .5rem; cursor: pointer; flex: 1; padding: .6rem 1.5rem; }
   .radio-card:not(:last-child) { border-right: 1px solid #ced4da; }
   .radio-card input[type="radio"] { width: 1.2em; height: 1.2em; accent-color: #0d6efd; flex-shrink: 0; }
   .radio-card i { font-size: 1.1rem; }
   .qty-active { font-weight: bold; color: #0d6efd; }
   a { text-decoration: none; }
+  .form-control, .form-select, .btn-outline-secondary:not(.btn-inert) { border-color: #ced4da; }
 </style>
 </head>
 <body>
@@ -113,7 +115,7 @@
         <div class="card shadow-sm">
           <div class="card-body">
             <h3 class="section-title text-muted mb-3">Fulfillment <span class="text-danger">*</span></h3>
-            <div class="d-inline-flex" style="border:1px solid #ced4da; border-radius:.375rem;">
+            <div class="d-flex" style="border:1px solid #ced4da; border-radius:.375rem;">
               <label class="radio-card" for="rad-pickup">
                 <input type="radio" name="fulfillment" id="rad-pickup" onclick="setFulfillment('pickup')">
                 Pickup <i class="bi bi-cart4"></i>
@@ -144,7 +146,7 @@
         <div class="card shadow-sm">
           <div class="card-body">
             <h3 class="section-title text-muted mb-3">Cart</h3>
-            <div id="reviewItems"><div class="small text-muted">—</div></div>
+            <div id="reviewItems"><div class="small" style="color:#6c757d;">—</div></div>
           </div>
 
           <div class="card-body border-top">
@@ -166,7 +168,7 @@
 
           <div class="card-body border-top">
             <h3 class="section-title text-muted mb-3">Payment <span class="text-danger">*</span></h3>
-            <div class="d-inline-flex" style="border:1px solid #ced4da; border-radius:.375rem;">
+            <div class="d-flex" style="border:1px solid #ced4da; border-radius:.375rem;">
               <label class="radio-card" for="pay-venmo">
                 <input type="radio" name="paymentMethod" id="pay-venmo" onclick="setPaymentMethod('venmo')">
                 Venmo <i class="bi bi-phone"></i>
@@ -253,8 +255,8 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="shared.js?v=83"></script>
-<script src="index.js?v=83"></script>
+<script src="shared.js?v=84"></script>
+<script src="index.js?v=84"></script>
 <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080;" id="toastContainer"></div>
 
 </body>

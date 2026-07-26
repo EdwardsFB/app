@@ -1,5 +1,11 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.13 — 2026-07-26 (pending testing)
+
+- Standardized all form/button borders to one color (#ced4da) via a single comprehensive CSS rule, instead of scattered inline overrides - previously only the discount input/Apply button and radio-cards had it explicitly set, while everything else (qty field, other form fields, +/- buttons) used Bootstrap's own slightly different default.
+- Reverted radio cards back to filling the full card width (flex:1, d-flex), keeping the same internal padding/spacing from the last round - only the overall width behavior changed back.
+- Matched "Enter code" placeholder and the Cart section's "—" to the same color already used for "Special Instructions" (#6c757d, the explicit form-floating label color) - previously "Enter code" used Bootstrap's own default placeholder color, which is a different shade.
+
 ## v1.0.12 — 2026-07-26 (pending testing)
 
 - Removed "Menu" title from card 1.
