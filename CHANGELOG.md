@@ -1,5 +1,27 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.22 — 2026-07-26 (pending testing)
+
+"Welcome back, [name]!" and "Code applied — X% off!" both changed to the teal color, size/italics unchanged. Added a small reusable `.text-teal` class rather than duplicating the hex value in two places.
+
+## v1.0.21 — 2026-07-26 (pending testing)
+
+"Code applied — X% off!" changed from green to match "Welcome back, [name]!" - same size, regular font color, italic. Error messages (invalid code, etc.) left as red, unchanged.
+
+## v1.0.20 — 2026-07-26 (pending testing)
+
+Fixed a real bug: applying a discount grows the fixed footer taller (adding the Discount row), but the spacer reserving room for it below the last card was a static 90px - so the footer simply covered more of that space instead of the page growing to compensate. Made the spacer's height dynamically sync to the footer's actual height, recalculated every time the discount row toggles.
+
+## v1.0.19 — 2026-07-26 (pending testing)
+
+Fixed the iOS "sticky button" behavior (tapping +/- or other buttons leaves them visually stuck in their pressed state until tapping elsewhere) - a well-documented WebKit quirk (has its own official WebKit bug report), not something specific to our CSS. iOS applies a button's :hover/:active style on tap but doesn't reliably clear it until a different element is tapped. Added the standard fix: a no-op touchstart listener, which tricks iOS into handling touch state correctly. Applied to both the customer app and admin, since both have the same kind of buttons that could show this.
+
+## v1.0.18 — 2026-07-26 (pending testing)
+
+- Reduced top spacing above product price slightly (mt-3 → mt-2).
+- Footer background changed from teal back to a light grey (#e9ecef, slightly darker than the #fafafa page background). Discount row, Total price, and Total label reverted to their original light-background colors; Cancel back to outline-secondary. Place Order reverted to `.btn-primary` - now correctly renders as teal (not blue) thanks to the global primary-color override from last round, so it gets the new color without needing its own custom class.
+- Caught a real issue before shipping: the disabled Place Order button's background would have exactly matched the new footer background, making it invisible. Changed the disabled background to white instead, keeping it visible against the grey footer.
+
 ## v1.0.17 — 2026-07-26 (pending testing)
 
 "Welcome back, [name]!" text changed from green to regular font color, made italic.

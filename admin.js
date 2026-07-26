@@ -1,4 +1,4 @@
-// version: v1.0.17 | build: 2026-07-26T20:35:02Z
+// version: v1.0.22 | build: 2026-07-26T20:50:40Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -61,6 +61,12 @@ function setReorderMode(on) {
 // ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
+// Works around a well-documented iOS Safari quirk: tapping a button applies its
+// :hover/:active style, but WebKit doesn't reliably clear it until a different
+// element is tapped, leaving buttons looking "stuck" pressed. A no-op touchstart
+// listener tricks iOS into handling touch state correctly instead.
+document.addEventListener('touchstart', function() {}, true);
+
 async function init() {
   // Fixes a known Bootstrap 5 quirk: closing a modal can leave focus on an element
   // inside it (like the close button) at the exact moment the modal gets marked

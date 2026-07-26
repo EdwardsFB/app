@@ -1,4 +1,4 @@
-// version: v1.0.17 | build: 2026-07-26T20:35:02Z
+// version: v1.0.22 | build: 2026-07-26T20:50:40Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -7,6 +7,12 @@ let currentFulfillment = null;
 let paymentMethod = null;
 let appliedDiscountPct = 0;
 const VENMO_HANDLE = 'edwardsfamilybakery';
+
+// Works around a well-documented iOS Safari quirk: tapping a button applies its
+// :hover/:active style, but WebKit doesn't reliably clear it until a different
+// element is tapped, leaving buttons looking "stuck" pressed. A no-op touchstart
+// listener tricks iOS into handling touch state correctly instead.
+document.addEventListener('touchstart', function() {}, true);
 
 async function init() {
   // Fixes a known Bootstrap 5 quirk: closing a modal can leave focus on an element
@@ -172,7 +178,7 @@ function renderProducts() {
               <span class="form-control text-center px-0" id="qty-${p.id}">0</span>
               <button class="btn btn-outline-secondary" style="border-color:#ced4da;" type="button" onclick="changeQty('${p.id}', 1)"><i class="bi bi-plus"></i></button>
             </div>
-            <div class="fw-bold mt-3">$${Number(p.price).toFixed(2)} <span class="text-muted fw-normal d-none">${esc(p.unit||'')}</span></div>
+            <div class="fw-bold mt-2">$${Number(p.price).toFixed(2)} <span class="text-muted fw-normal d-none">${esc(p.unit||'')}</span></div>
             ${optionsWrapHtml}
           </div>
         </div>
@@ -225,6 +231,15 @@ function updateOrderTotal() {
   document.getElementById('actionBarTotal').textContent = '$' + (total - discountAmt).toFixed(2);
   document.getElementById('actionBarDiscountRow').classList.toggle('d-none', appliedDiscountPct === 0);
   document.getElementById('actionBarDiscountAmt').textContent = '-$' + discountAmt.toFixed(2);
+
+  // Keep the spacer reserving exactly as much room as the footer actually takes up -
+  // the footer grows taller when the discount row appears, and without this the
+  // space below the last card would shrink by that same amount (the footer would
+  // simply cover more of it).
+  const actionBarEl = document.getElementById('actionBar');
+  if (!actionBarEl.classList.contains('d-none')) {
+    document.getElementById('actionBarSpacer').style.height = actionBarEl.offsetHeight + 'px';
+  }
 }
 
 // ══════════════════════════════════════════
@@ -298,7 +313,7 @@ function applyDiscountCode() {
     msg.textContent = "That code isn't valid.";
   } else {
     appliedDiscountPct = Number(match.discountPct) || 0;
-    msg.className = 'small mt-1 text-success';
+    msg.className = 'small mt-1 fst-italic text-teal';
     msg.textContent = `Code applied — ${appliedDiscountPct}% off!`;
   }
   renderReview();
