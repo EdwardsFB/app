@@ -1,4 +1,4 @@
-// version: v1.0.2 | build: 2026-07-26T14:41:04Z
+// version: v1.0.3 | build: 2026-07-26T14:50:23Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -166,7 +166,7 @@ function renderProducts() {
         <div class="card-body p-2 d-flex flex-column">
           <div class="fw-bold">${esc(p.name)}</div>
           ${p.desc ? `<div class="text-muted" style="font-size:0.75rem;">${esc(p.desc)}</div>` : ''}
-          <div class="pt-2">
+          <div class="pt-2 mt-auto">
             <div class="input-group input-group-sm mb-1">
               <button class="btn btn-outline-secondary btn-inert" style="border-color:#ced4da;" type="button" id="qty-minus-${p.id}" onclick="changeQty('${p.id}', -1)"><i class="bi bi-dash"></i></button>
               <span class="form-control text-center px-0" id="qty-${p.id}">0</span>
