@@ -1,4 +1,4 @@
-// version: v1.0.14 | build: 2026-07-26T20:12:34Z
+// version: v1.0.17 | build: 2026-07-26T20:35:02Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -155,7 +155,7 @@ function renderProducts() {
     const optionsHtml = options.map(opt => `
       <div class="form-check">
         <input class="form-check-input" type="checkbox" id="opt-${p.id}-${esc(opt.name)}" onchange="toggleOption('${p.id}', '${esc(opt.name)}', ${opt.price}, this.checked)">
-        <label class="form-check-label small" for="opt-${p.id}-${esc(opt.name)}">${esc(opt.name)} (+$${Number(opt.price).toFixed(2)} ea)</label>
+        <label class="form-check-label small" for="opt-${p.id}-${esc(opt.name)}">${esc(opt.name)} ($${Number(opt.price).toFixed(2).replace(/^0\./, '.')} ea)</label>
       </div>
     `).join('');
     const optionsWrapHtml = options.length ? `<div id="opts-wrap-${p.id}" class="d-none mt-1">${optionsHtml}</div>` : '';
@@ -172,7 +172,7 @@ function renderProducts() {
               <span class="form-control text-center px-0" id="qty-${p.id}">0</span>
               <button class="btn btn-outline-secondary" style="border-color:#ced4da;" type="button" onclick="changeQty('${p.id}', 1)"><i class="bi bi-plus"></i></button>
             </div>
-            <div class="fw-bold mt-3">$${Number(p.price).toFixed(2)} <span class="text-muted fw-normal">${esc(p.unit||'')}</span></div>
+            <div class="fw-bold mt-3">$${Number(p.price).toFixed(2)} <span class="text-muted fw-normal d-none">${esc(p.unit||'')}</span></div>
             ${optionsWrapHtml}
           </div>
         </div>

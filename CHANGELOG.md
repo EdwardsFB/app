@@ -1,5 +1,27 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.17 — 2026-07-26 (pending testing)
+
+"Welcome back, [name]!" text changed from green to regular font color, made italic.
+
+## v1.0.16 — 2026-07-26 (pending testing)
+
+Brought back the blue-ish teal (#0f8b8d) tried on July 23 but not currently in the live app - customer view only, admin untouched.
+
+- Overrode Bootstrap's `--bs-primary` variable globally (customer app only) - automatically catches every `.btn-primary` usage (e.g. "Pay with Venmo") without hunting down each one individually.
+- Radio accent color and the qty-active (bold, above-zero quantity) color both switched from blue to teal directly.
+- "Place Order" deliberately excluded from the primary-color swap, per request - instead, researched Bootstrap's own guidance on dark-background button contrast (their docs explicitly note some button styles need a dark background for sufficient contrast; community best practice is inverting to a light fill/dark text for the active state, and treating disabled as a dimmed version of the background rather than reusing a light-background disabled style). Implemented accordingly:
+  - Action bar background changed from white to teal, old light-gray border-top removed (no longer appropriate against a colored background).
+  - Discount row and Total price text changed to white; Total label to a muted-but-visible light tone.
+  - Cancel button switched to Bootstrap's built-in `.btn-outline-light` (designed for dark backgrounds).
+  - Place Order (enabled) switched to `.btn-light` - white fill, dark text, for real contrast against teal rather than blending into it.
+  - Place Order (disabled) given its own new dimmed-white treatment, distinct from the old gray-on-white disabled style which wouldn't have read correctly here.
+
+## v1.0.15 — 2026-07-26 (pending testing)
+
+- Hid product unit display in menu cards (per loaf, each, etc.) - kept in code, easy to bring back later.
+- Changed product option label format from "Sliced (+$0.50 ea)" to "Sliced ($.50 ea)" - dropped the plus sign, and strips the leading zero for amounts under $1 (1.50 still displays as 1.50).
+
 ## v1.0.14 — 2026-07-26 (pending testing)
 
 Real fix for the placeholder color from last round not actually taking effect: a leftover, pre-existing CSS rule (`#discountCodeInput::placeholder { color: #adb5bd; }`) that I didn't notice was still present further down the stylesheet, silently overriding the new rule since it came later in the cascade with equal specificity. Removed the old conflicting rule - only the correct one (#6c757d) remains now.
