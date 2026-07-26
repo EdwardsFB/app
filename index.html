@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- version: v1.0.8 | build: 2026-07-26T18:42:18Z -->
+<!-- version: v1.0.9 | build: 2026-07-26T18:51:07Z -->
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -119,7 +119,10 @@
               </label>
             </div>
             <div id="fulfillmentDetailsField" class="d-none">
-              <div id="addressField" class="d-none mb-2">
+              <div class="row g-2 mb-2">
+                <div class="col form-floating"><select id="cf-date" class="form-select" onchange="this.classList.toggle('has-value', !!this.value); updateActionBar();"><option value="" disabled selected>Select</option></select><label for="cf-date" id="cf-date-label">Pickup Date <span class="text-danger">*</span></label></div>
+              </div>
+              <div id="addressField" class="d-none">
                 <div class="row g-2 mb-2"><div class="col form-floating"><input id="cf-street" class="form-control" type="text" placeholder="Street Address" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-street">Street Address <span class="text-danger">*</span></label></div></div>
                 <div class="row g-2">
                   <div class="col-6 form-floating"><input id="cf-city" class="form-control" type="text" placeholder="City" oninput="this.classList.toggle('has-value', !!this.value)"/><label for="cf-city">City <span class="text-danger">*</span></label></div>
@@ -127,13 +130,6 @@
                   <div class="col-3 form-floating"><input id="cf-zip" class="form-control" type="text" inputmode="numeric" placeholder="ZIP" oninput="formatZipInput(this); this.classList.toggle('has-value', !!this.value);"/><label for="cf-zip">ZIP <span class="text-danger">*</span></label></div>
                 </div>
               </div>
-              <div class="row g-2 mb-2">
-                <div class="col form-floating"><select id="cf-date" class="form-select" onchange="this.classList.toggle('has-value', !!this.value); updateActionBar();"><option value="" disabled selected>Select</option></select><label for="cf-date" id="cf-date-label">Pickup Date <span class="text-danger">*</span></label></div>
-              </div>
-              <div class="row g-2"><div class="col form-floating">
-                <textarea id="cf-notes" class="form-control" style="height:80px;" placeholder="Notes"></textarea>
-                <label for="cf-notes">Notes</label>
-              </div></div>
             </div>
           </div>
 
@@ -164,6 +160,14 @@
               </label>
             </div>
             <div id="step2Error" class="text-danger small mb-0"></div>
+          </div>
+
+          <div class="card-body border-top">
+            <h3 class="h6 text-uppercase text-muted mb-3">Notes</h3>
+            <div class="row g-2"><div class="col form-floating">
+              <textarea id="cf-notes" class="form-control" style="height:80px;" placeholder="Special Instructions"></textarea>
+              <label for="cf-notes">Special Instructions</label>
+            </div></div>
           </div>
         </div>
       </div>
@@ -240,8 +244,8 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="shared.js?v=79"></script>
-<script src="index.js?v=79"></script>
+<script src="shared.js?v=80"></script>
+<script src="index.js?v=80"></script>
 <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080;" id="toastContainer"></div>
 
 </body>

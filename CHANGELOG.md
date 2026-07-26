@@ -1,5 +1,11 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.9 — 2026-07-26 (pending testing)
+
+- Delivery Date now appears before the address fields when Delivery is selected.
+- Removed the Notes field from the Pickup/Delivery section.
+- Added a new standalone "Notes" section below Payment Method, containing that same field (moved, not duplicated) - labeled "Special Instructions" so it doesn't repeat the section title. This section is now always visible regardless of Pickup/Delivery selection.
+
 ## v1.0.8 — 2026-07-26 (pending testing)
 
 - Removed `input-group-sm` from the qty control on product cards - was shrinking the qty number, +/- buttons, and icons together via Bootstrap's small-size variant. Now regular size, matching form-field text.
