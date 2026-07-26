@@ -1,5 +1,10 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.31 — 2026-07-26 (pending testing)
+
+- "Start New Order" link changed to teal.
+- Fixed radio button size/appearance mismatch with Bootstrap's design. Root cause: our radios were plain native inputs styled only with `accent-color`, which just tints the browser's own native rendering (a white circle with a colored dot inside) - not Bootstrap's actual `.form-check-input` component, which uses their own SVG-based design (a colored circle with a white dot inside) at their own default size. Added the proper `.form-check-input` class to all four radios and removed the custom 1.2em sizing, letting Bootstrap's real component take over - now matches their documented appearance exactly, just in teal instead of blue.
+
 ## v1.0.30 — 2026-07-26 (pending testing)
 
 - Footer border: #dddddd was already the current value, so changing to that wouldn't have done anything - used a genuinely darker shade instead (#cccccc).

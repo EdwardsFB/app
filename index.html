@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- version: v1.0.30 | build: 2026-07-26T21:38:05Z -->
+<!-- version: v1.0.31 | build: 2026-07-26T21:46:48Z -->
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -42,7 +42,7 @@
   body { background-color: #fafafa; }
   .radio-card { display: flex; align-items: center; justify-content: center; gap: .5rem; cursor: pointer; flex: 1; padding: .6rem 1.5rem; }
   .radio-card:not(:last-child) { border-right: 1px solid #ced4da; }
-  .radio-card input[type="radio"] { width: 1.2em; height: 1.2em; accent-color: #0f8b8d; flex-shrink: 0; }
+  .radio-card input[type="radio"] { flex-shrink: 0; }
   .radio-card i { font-size: 1.1rem; }
   .qty-active { font-weight: bold; color: #0f8b8d; }
   .text-teal { color: #0f8b8d; }
@@ -124,11 +124,11 @@
             <h3 class="section-title text-muted mb-3">Fulfillment <span class="text-danger">*</span></h3>
             <div class="d-flex" style="border:1px solid #ced4da; border-radius:.375rem;">
               <label class="radio-card" for="rad-pickup">
-                <input type="radio" name="fulfillment" id="rad-pickup" onclick="setFulfillment('pickup')">
+                <input type="radio" class="form-check-input" name="fulfillment" id="rad-pickup" onclick="setFulfillment('pickup')">
                 Pickup <i class="bi bi-cart4"></i>
               </label>
               <label class="radio-card" for="rad-delivery">
-                <input type="radio" name="fulfillment" id="rad-delivery" onclick="setFulfillment('delivery')">
+                <input type="radio" class="form-check-input" name="fulfillment" id="rad-delivery" onclick="setFulfillment('delivery')">
                 Delivery <i class="bi bi-truck"></i>
               </label>
             </div>
@@ -177,11 +177,11 @@
             <h3 class="section-title text-muted mb-3">Payment <span class="text-danger">*</span></h3>
             <div class="d-flex" style="border:1px solid #ced4da; border-radius:.375rem;">
               <label class="radio-card" for="pay-venmo">
-                <input type="radio" name="paymentMethod" id="pay-venmo" onclick="setPaymentMethod('venmo')">
+                <input type="radio" class="form-check-input" name="paymentMethod" id="pay-venmo" onclick="setPaymentMethod('venmo')">
                 Venmo <i class="bi bi-phone"></i>
               </label>
               <label class="radio-card" for="pay-cash">
-                <input type="radio" name="paymentMethod" id="pay-cash" onclick="setPaymentMethod('cash')">
+                <input type="radio" class="form-check-input" name="paymentMethod" id="pay-cash" onclick="setPaymentMethod('cash')">
                 Cash <i class="bi bi-piggy-bank"></i>
               </label>
             </div>
@@ -237,7 +237,7 @@
   </div>
 
   <div id="confirmFooter" class="d-none">
-    <a href="#" onclick="location.reload(); return false;">Start New Order</a>
+    <a href="#" onclick="location.reload(); return false;" class="text-teal">Start New Order</a>
   </div>
 
 
@@ -262,8 +262,8 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="shared.js?v=102"></script>
-<script src="index.js?v=102"></script>
+<script src="shared.js?v=103"></script>
+<script src="index.js?v=103"></script>
 <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080;" id="toastContainer"></div>
 
 </body>
