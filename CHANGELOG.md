@@ -1,5 +1,23 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.34 — 2026-07-26 (pending testing)
+
+Fixed radio vertical alignment. Bootstrap's `.form-check-input` has a built-in `margin-top: 0.25em`, designed for their standard form-check layout where the input sits slightly below the label's first line - not a flex-centered container like our radio cards. That margin was throwing off `align-items: center`, since flex centers the full margin box, not just the visible circle. Zeroed it out.
+
+## v1.0.33 — 2026-07-26 (pending testing, unconfirmed fix)
+
+Sidebar nav left as custom-built for now, per request - not a Bootstrap Offcanvas conversion at this time.
+
+Investigated the new radio flash/flicker on iOS. Bootstrap's form controls have a built-in transition on background-color/border-color/box-shadow, and CSS transitions interacting badly with iOS's rendering during a rapid tap is a known general category of iOS quirk - but couldn't find a source describing this exact symptom to confirm the mechanism precisely. Disabled the transition on form-check-input specifically on touch devices as a reasoned attempt, not a guaranteed fix - needs real testing on your end.
+
+## v1.0.32 — 2026-07-26 (pending testing)
+
+Full audit of the entire app for non-Bootstrap controls, prompted by the radio button finding. Checked every input, checkbox, radio, select, and textarea in both apps against Bootstrap's actual components.
+
+- Found and fixed one real gap: the customer bulk-select checkbox (merge-duplicates feature) was missing the `form-check-input` class entirely.
+- Confirmed correct: all other checkboxes and radios in admin already use `.form-check-input` properly; the "switch-grey"/"switch-green" toggles are built on Bootstrap's real `.form-switch` component with color overrides on top (not a custom replacement); toasts use Bootstrap's actual `.toast` component with its own dismissal mechanism; the sidebar backdrop overlay is a standard pattern (same as Bootstrap's own offcanvas backdrop), not a button substitute.
+- One significant finding not yet fixed: the entire admin sidebar navigation is custom-built (manual CSS transitions, custom show/hide logic, custom backdrop) rather than using Bootstrap's actual Offcanvas component, which is specifically designed for this exact slide-in-sidebar-with-backdrop pattern. This is a much larger, riskier change than the radio fix - replacing a currently-working custom implementation, not just swapping a class name. Flagging for a decision rather than undertaking it unprompted.
+
 ## v1.0.31 — 2026-07-26 (pending testing)
 
 - "Start New Order" link changed to teal.
