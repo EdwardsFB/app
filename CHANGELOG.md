@@ -1,5 +1,10 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.26 — 2026-07-26 (pending testing)
+
+- Real fix for the sticky pressed-button state, based directly on the user's own observation: the disabled qty minus button never sticks because `.btn-inert` uses `pointer-events:none`, so the browser never registers the tap as touching it at all - :active can't apply if the element never receives the event. Replaced the blur-based attempt with the same mechanism: briefly toggling `pointer-events:none` on any tapped button, then restoring it 50ms later, forcing the stuck state to clear without disabling the button for future taps. Applied to both apps.
+- Footer background back to white, border-top bumped to 2px for extra visibility, Place Order confirmed still teal (via the existing primary-color override, no change needed there). Reverted the disabled Place Order button's background back to light grey - it had been set to white specifically to stay visible against the (now-reverted) grey footer, and would have exactly matched the footer going back to white.
+
 ## v1.0.25 — 2026-07-26 (pending testing)
 
 - Added a 1px border-top to the footer (#dee2e6, a shade darker than the footer's own background), plus a subtle shadow on the footer's top edge and the page header's bottom edge.

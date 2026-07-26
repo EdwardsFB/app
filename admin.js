@@ -1,4 +1,4 @@
-// version: v1.0.25 | build: 2026-07-26T21:00:45Z
+// version: v1.0.26 | build: 2026-07-26T21:11:19Z
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -67,12 +67,18 @@ function setReorderMode(on) {
 // listener tricks iOS into handling touch state correctly instead.
 document.addEventListener('touchstart', function() {}, true);
 
-// The above didn't fully resolve it in testing, so also explicitly clear the
-// pressed/focus state the moment a tap ends, rather than relying on iOS to do it
-// reliably on its own.
+// The blur-based approach above didn't fully resolve it in testing. Real insight:
+// the qty minus button never sticks once it's disabled (via .btn-inert, which uses
+// pointer-events:none) - because the browser never registers the tap as
+// interacting with it at all, so :active can't apply in the first place. Applying
+// that same mechanism briefly to any tapped button forces the stuck state to clear
+// immediately, without actually disabling the button for future taps.
 document.addEventListener('touchend', function(e) {
   const el = e.target.closest('button, .btn, a');
-  if (el) setTimeout(() => el.blur(), 0);
+  if (el) {
+    el.style.pointerEvents = 'none';
+    setTimeout(() => { el.style.pointerEvents = ''; }, 50);
+  }
 }, true);
 
 async function init() {
