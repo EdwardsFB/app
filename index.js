@@ -1,4 +1,4 @@
-// version: v1.0.35 | build: 2026-07-26T22:04:37Z
+// version: v1.0.36 | build: 2026-07-27T14:15:12Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -228,7 +228,10 @@ function updateOrderTotal() {
     total += qty * (p.price + optionsUnitPrice);
   });
   const discountAmt = total * (appliedDiscountPct / 100);
-  document.getElementById('actionBarTotal').textContent = '$' + (total - discountAmt).toFixed(2);
+  const finalTotal = total - discountAmt;
+  const totalEl = document.getElementById('actionBarTotal');
+  totalEl.textContent = '$' + finalTotal.toFixed(2);
+  totalEl.classList.toggle('text-muted', finalTotal === 0);
   document.getElementById('actionBarDiscountRow').classList.toggle('d-none', appliedDiscountPct === 0);
   document.getElementById('actionBarDiscountAmt').textContent = '-$' + discountAmt.toFixed(2);
 

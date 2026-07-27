@@ -1,5 +1,10 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.36 — 2026-07-27 (pending testing)
+
+- Total value in footer reduced from h5 to h6, and now dynamically toggles color - muted/lighter at $0.00, regular dark color once the total goes above zero.
+- Unselected radio border color matched to the same grey used for input field borders (#ced4da) - was using Bootstrap's own, slightly lighter default.
+
 ## v1.0.35 — 2026-07-26 (pending testing)
 
 - Added space below "Start New Order" (16px) - also added `d-inline-block` since margin-bottom has no visible effect on a plain inline link otherwise.
