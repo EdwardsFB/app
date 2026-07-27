@@ -1,5 +1,9 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.37 — 2026-07-27 (pending testing)
+
+Total value now bolds when above $0.00, regular weight at $0.00. Font-weight changes affect a character's horizontal width, not its vertical line-height/metrics, so this shouldn't cause any footer height change - the existing dynamic spacer-height sync from a couple rounds back already covers height regardless. The total's own width may shift slightly wider when bold, but since it's right-aligned in its row (not center-anchored), that just nudges its position slightly, not the footer's overall size.
+
 ## v1.0.36 — 2026-07-27 (pending testing)
 
 - Total value in footer reduced from h5 to h6, and now dynamically toggles color - muted/lighter at $0.00, regular dark color once the total goes above zero.

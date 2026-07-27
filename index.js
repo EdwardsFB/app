@@ -1,4 +1,4 @@
-// version: v1.0.36 | build: 2026-07-27T14:15:12Z
+// version: v1.0.37 | build: 2026-07-27T14:22:30Z
 let products = [], orders = [], customers = [];
 let settings = {};
 let cQty = {};
@@ -232,6 +232,7 @@ function updateOrderTotal() {
   const totalEl = document.getElementById('actionBarTotal');
   totalEl.textContent = '$' + finalTotal.toFixed(2);
   totalEl.classList.toggle('text-muted', finalTotal === 0);
+  totalEl.classList.toggle('fw-bold', finalTotal > 0);
   document.getElementById('actionBarDiscountRow').classList.toggle('d-none', appliedDiscountPct === 0);
   document.getElementById('actionBarDiscountAmt').textContent = '-$' + discountAmt.toFixed(2);
 
