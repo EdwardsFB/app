@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- version: v1.0.37 | build: 2026-07-27T14:22:30Z -->
+<!-- version: v1.0.38 | build: 2026-08-03T15:23:07Z -->
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -55,8 +55,8 @@
   .form-control, .form-select, .btn-outline-secondary:not(.btn-inert) { border-color: #ced4da; }
   .btn-primary { --bs-btn-bg: #0f8b8d; --bs-btn-border-color: #0f8b8d; --bs-btn-hover-bg: #0c7173; --bs-btn-hover-border-color: #0c7173; --bs-btn-active-bg: #0b696b; --bs-btn-active-border-color: #0b696b; }
   @media (pointer: coarse) {
-    .btn-primary:hover, .btn-primary:active, .btn-primary:focus { background-color: #0f8b8d !important; border-color: #0f8b8d !important; color: #fff !important; }
-    .btn-outline-secondary:hover, .btn-outline-secondary:active, .btn-outline-secondary:focus { background-color: transparent !important; border-color: #ced4da !important; color: #6c757d !important; }
+    .btn-primary:hover, .btn-primary:active:not(.active), .btn-primary:focus { background-color: #0f8b8d !important; border-color: #0f8b8d !important; color: #fff !important; }
+    .btn-outline-secondary:hover, .btn-outline-secondary:active:not(.active), .btn-outline-secondary:focus { background-color: transparent !important; border-color: #ced4da !important; color: #6c757d !important; }
   }
 </style>
 </head>
@@ -266,8 +266,8 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="shared.js?v=109"></script>
-<script src="index.js?v=109"></script>
+<script src="shared.js?v=110"></script>
+<script src="index.js?v=110"></script>
 <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3" style="z-index: 1080;" id="toastContainer"></div>
 
 </body>

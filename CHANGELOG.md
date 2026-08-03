@@ -1,5 +1,11 @@
 # Edwards Family Bakery — Changelog
 
+## v1.0.38 — 2026-08-03 (pending testing)
+
+Real, confirmed regression from the earlier sticky-button fix. That fix forces the `:active` pseudo-class (finger currently pressing) to look identical to a button's default state on touch devices, using `!important` - which is exactly right for buttons that don't carry selection state. But Production's date filter buttons use Bootstrap's separate `.active` *class* (JS-applied, to show which date is currently selected) - and since iOS's well-documented stuck-`:active` quirk is the exact thing that fix exists to work around, a stuck `:active` state was permanently masking the `.active` class's intended highlight with `!important`. Selecting a date worked correctly underneath, but the visual confirmation was being hidden by our own fix. Excluded `.active`-class buttons from the neutralization in both apps - applied to admin (where the bug is real, active) and to the customer app too (no `.active`-class buttons currently exist there, but it's a low-risk safeguard against the same bug if one's ever added).
+
+Also: the working sandbox appears to have reset since the last session - re-extracted from the last known-good zip and confirmed the version matched before making any changes.
+
 ## v1.0.37 — 2026-07-27 (pending testing)
 
 Total value now bolds when above $0.00, regular weight at $0.00. Font-weight changes affect a character's horizontal width, not its vertical line-height/metrics, so this shouldn't cause any footer height change - the existing dynamic spacer-height sync from a couple rounds back already covers height regardless. The total's own width may shift slightly wider when bold, but since it's right-aligned in its row (not center-anchored), that just nudges its position slightly, not the footer's overall size.
